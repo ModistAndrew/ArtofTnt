@@ -1,0 +1,9 @@
+{
+    "parent": "artoftnt:block/tnt_frame",
+    "textures": {
+        "side": "artoftnt:block/tnt_frame_side_3",
+        "wall": "artoftnt:block/tnt_frame_wall_3",
+        "floor": "artoftnt:block/tnt_frame_floor_3",
+        "bottom": "artoftnt:block/tnt_frame_bottom_3"
+    }
+}
