@@ -6,6 +6,7 @@ import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntDefuserItem;
+import modist.artoftnt.common.item.TntFrameItem;
 import modist.artoftnt.core.addition.Addition;
 import modist.artoftnt.core.addition.AdditionHelper;
 import net.minecraft.core.BlockPos;
@@ -37,6 +38,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
@@ -85,7 +87,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     public boolean explode(float minInstability, Level pLevel, BlockPos pPos, @Nullable LivingEntity pEntity) {
         if (!pLevel.isClientSide && pLevel.getBlockEntity(pPos) instanceof TntFrameBlockEntity be) {
             if (be.getInstability() >= minInstability) {
-                PrimedTntFrame tnt = new PrimedTntFrame(be.getDataTag(), pLevel, pPos.getX(), pPos.getY(), pPos.getZ(), pEntity, tier);
+                PrimedTntFrame tnt = new PrimedTntFrame(be.getDataTag(), pLevel, pPos.getX(), pPos.getY() + be.getDeflation(), pPos.getZ(), pEntity, tier);
                 tnt.shoot(0, 1, 0, 1.0F, 1.0F); //default:up
                 pLevel.addFreshEntity(tnt);
                 pLevel.playSound(null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -168,8 +170,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
             float f = be.getDeflation();
             return Shapes.create(f, f, f, 1 - f, 1 - f, 1 - f);
         }
-        return Shapes.empty(); //return block() will cause strange bugs
-        //TODO: still strange when placed
+        return Shapes.empty();
     }
 
     @Override

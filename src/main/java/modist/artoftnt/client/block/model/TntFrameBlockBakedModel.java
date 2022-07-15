@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-//TODO special render when completely empty
+//TODO special render when completely empty? (for cloner)
 public class TntFrameBlockBakedModel implements IDynamicBakedModel {
 
     private static final float DELTA = 0.001F; //fix z-fighting

@@ -76,8 +76,12 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         return this.entityData.get(DATA_SIZE);
     }
 
-    public int getLingeringFuse() {
+    private int getLingeringFuse() {
         return (int)data.getValue(AdditionType.LINGERING);
+    }
+
+    private float getLightness() {
+        return data.getValue(AdditionType.LIGHTNESS);
     }
 
     public PrimedTntFrame(CompoundTag tag, Level level, double x, double y, double z, @Nullable LivingEntity owner, int tier) {
@@ -94,8 +98,12 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
 
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> pKey) {
+        //TODO update data
         if (DATA_SIZE.equals(pKey)) {
             this.refreshDimensions();
+        }
+        if(DATA_TNT_FRAME.equals(pKey)){
+            this.data.deserializeNBT(getDataTag());
         }
         super.onSyncedDataUpdated(pKey);
     }
@@ -126,7 +134,9 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         }
 
         if (!this.isNoGravity()) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.04D, 0.0D));
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0D,
+                    -0.04D * (1-getLightness()),
+                    0.0D));
         }
 
         this.move(MoverType.SELF, this.getDeltaMovement());
