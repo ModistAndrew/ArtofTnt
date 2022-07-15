@@ -18,6 +18,7 @@ import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -193,6 +194,16 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
             this.explode();
         }
         this.discard();
+    }
+
+    @Override
+    protected void onHitBlock(BlockHitResult pResult) {
+        float elasticity = data.getValue(AdditionType.ELASTICITY);
+        switch (pResult.getDirection().getAxis()){
+            case X -> this.setDeltaMovement(this.getDeltaMovement().multiply(-elasticity, 1, 1));
+            case Y -> this.setDeltaMovement(this.getDeltaMovement().multiply(1, -elasticity, 1));
+            case Z -> this.setDeltaMovement(this.getDeltaMovement().multiply(1, 1, -elasticity));
+        }
     }
 
     /*@Override

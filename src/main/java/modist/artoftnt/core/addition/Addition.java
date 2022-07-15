@@ -78,7 +78,7 @@ public class Addition {
         register(AdditionType.DROP, 1, 1, 8, 0, 0, false, Items.SAND);
         register(AdditionType.CONTAINER, 1, 1, 8, 0, 0, false, ItemLoader.POSITION_CONTAINER_MARKERS[0].get());
         register(AdditionType.LIGHTNESS, 0.4F, 1, 8, 0, 0, false, Items.FEATHER);
-
+        register(AdditionType.ELASTICITY, 0.4F, 1, 8, 0, 0, false, Items.SLIME_BALL);
     }
 
 }
