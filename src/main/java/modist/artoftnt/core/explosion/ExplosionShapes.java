@@ -13,7 +13,7 @@ import java.util.Stack;
 import java.util.function.Function;
 
 public class ExplosionShapes {
-    public static HashMap<Item, Function<CustomExplosion, AbstractExplosionShape>> SHAPES = new HashMap<>();
+    public static final HashMap<Item, Function<CustomExplosion, AbstractExplosionShape>> SHAPES = new HashMap<>();
 
     private static void register(Item addition, Function<CustomExplosion, AbstractExplosionShape> shape){
         SHAPES.put(addition, shape);

@@ -1,6 +1,7 @@
 package modist.artoftnt.core.addition;
 
 import modist.artoftnt.ArtofTnt;
+import modist.artoftnt.common.item.ItemLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -60,9 +61,9 @@ public class Addition {
     }
 
     static {
-        register(AdditionType.ELASTICITY, 1, 2, 8, 0, 0, true, Items.SLIME_BALL);
+        register(AdditionType.ELASTICITY, 1, 1, 8, 0, 0, true, Items.SLIME_BALL);
         register(AdditionType.FIREWORK, 1, 1, 8, 0, 0, true, Items.FIREWORK_STAR);
-        register(AdditionType.POTION, 1, 3, 8, 0, 0, true, Items.LINGERING_POTION);
+        register(AdditionType.POTION, 1, 1, 8, 0, 0, true, Items.LINGERING_POTION);
         register(AdditionType.FUSE, 100, 1, 8, 0, 0, true, Items.STRING);
         register(AdditionType.RANGE, 1, 1, 16, 10, 1, false, Items.GUNPOWDER);
         register(AdditionType.STRENGTH, 1, 1, 16, 10, 0, false, Items.OBSIDIAN);
@@ -70,6 +71,12 @@ public class Addition {
         register(AdditionType.DAMAGE, 1, 1, 16, 0, 0, false, Items.QUARTZ);
         register(AdditionType.VELOCITY, 1, 1, 16, 0, 0, false, Items.FIREWORK_ROCKET);
         register(AdditionType.SHAPE, 1, 1, 1, 0, 0, false, Items.GOLDEN_APPLE);
+        register(AdditionType.PIERCING, 1, 1, 8, 0, 0, false, Items.ENDER_PEARL);
+        register(AdditionType.TEMPERATURE, 1, 1, 8, 0, 0, false, Items.LAVA_BUCKET);
+        register(AdditionType.LIGHTNING, 1, 1, 8, 0, 0, false, Items.COPPER_BLOCK);
+        register(AdditionType.FLAME, 1, 1, 8, 0, 0, false, Items.BLAZE_POWDER);
+        register(AdditionType.DROP, 1, 1, 8, 0, 0, false, Items.SAND);
+        register(AdditionType.CONTAINER, 1, 1, 8, 0, 0, false, ItemLoader.POSITION_CONTAINER_MARKERS[0].get());
     }
 
 }

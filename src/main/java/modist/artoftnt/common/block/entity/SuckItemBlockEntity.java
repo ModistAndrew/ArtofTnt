@@ -35,7 +35,7 @@ public abstract class SuckItemBlockEntity extends BlockEntity {
     public void tick() { //on client and server separately
         if (coolDown > 0) {
             coolDown--;
-            if(!level.isClientSide) {
+            if (!level.isClientSide) {
                 setChanged();
                 if (coolDown <= finishTime && !stacks.isEmpty()) {
                     dispense();
@@ -45,9 +45,9 @@ public abstract class SuckItemBlockEntity extends BlockEntity {
     }
 
     //called when activated on server, suck in item and set coolDown
-    public void activated(){
-        if(!level.isClientSide && coolDown<=0){
-            if(suckItem()) {
+    public void activated() {
+        if (!level.isClientSide && coolDown <= 0) {
+            if (suckItem()) {
                 setCoolDown();
                 setChangedAndUpdate();
             }
@@ -55,8 +55,8 @@ public abstract class SuckItemBlockEntity extends BlockEntity {
     }
 
     //called on server when coolDown <= finishTime
-    protected void dispense(){
-        if(!level.isClientSide){
+    protected void dispense() {
+        if (!level.isClientSide) {
             doDispense();
             stacks.clear();
             setChangedAndUpdate();
@@ -65,12 +65,14 @@ public abstract class SuckItemBlockEntity extends BlockEntity {
 
     protected abstract void doDispense();
 
-    public boolean suckItem(){
+    public boolean suckItem() {
         AtomicBoolean ret = new AtomicBoolean(false);
-        this.level.getBlockEntity(this.getBlockPos().above())
-                .getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(c -> {
-                    ret.set(suckItemFrom(c));
-                });
+        BlockEntity be = this.level.getBlockEntity(this.getBlockPos().above());
+        if (be != null) {
+            be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(c -> {
+                ret.set(suckItemFrom(c));
+            });
+        }
         return ret.get();
     }
 

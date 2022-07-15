@@ -169,6 +169,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
             return Shapes.create(f, f, f, 1 - f, 1 - f, 1 - f);
         }
         return Shapes.empty(); //return block() will cause strange bugs
+        //TODO: still strange when placed
     }
 
     @Override
@@ -199,7 +200,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
                     }
                     return InteractionResult.sidedSuccess(pLevel.isClientSide);
                 }
-                return InteractionResult.FAIL;
+                return InteractionResult.CONSUME;
             }
         }
         return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);

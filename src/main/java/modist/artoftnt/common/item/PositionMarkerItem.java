@@ -46,4 +46,9 @@ public final boolean isContainer;
             TntFrameData.addTooltip("position", NbtUtils.readBlockPos(tag), pTooltipComponents);
         }
     }
+
+    public BlockPos getPos(ItemStack stack){
+        CompoundTag tag = stack.getTagElement("position");
+        return tag==null ? null : NbtUtils.readBlockPos(tag);
+    }
 }

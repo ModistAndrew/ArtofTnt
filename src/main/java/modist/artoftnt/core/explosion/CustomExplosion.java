@@ -3,35 +3,48 @@ package modist.artoftnt.core.explosion;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.*;
+import modist.artoftnt.common.item.PositionMarkerItem;
 import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.Container;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -48,14 +61,26 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     final float radius;
     final float[] directionRadii = new float[6];
     final float strength;
-
+    final float piercing;
+    final float temperature;
     @Nullable
     private final Entity source;
+
+    private final float loudness;
+    private final Stack<ItemStack> sounds = new Stack<>();
     private final float punch;
-    private final float sharpness;
-    private final float piercing;
-    private final float fire;
-    private final float sound;
+    private final float damage;
+    private final List<ItemStack> potions = new ArrayList<>();
+    private final float drop;
+    @Nullable
+    private IItemHandler container;
+    @Nullable
+    private BlockPos containerPos;
+    private final float flame;
+    private final float lightning;
+    private final List<ItemStack> fireworks = new ArrayList<>();
+    private final List<ItemStack> particles = new ArrayList<>();
+
     private final AbstractExplosionShape explosionShape;
     private final DamageSource damageSource;
     private final ExplosionDamageCalculator damageCalculator;
@@ -67,6 +92,7 @@ public class CustomExplosion extends Explosion { //have to override private fiel
         this(stack, pLevel, pSource, null, null, pToBlowX, pToBlowY, pToBlowZ, pRadius, false, Explosion.BlockInteraction.DESTROY);
         this.toBlow.addAll(pPositions);
     }
+
     //TODO: client no shape
     public CustomExplosion(AdditionStack stack, Level pLevel, @Nullable Entity pSource, @Nullable DamageSource pDamageSource, @Nullable ExplosionDamageCalculator pDamageCalculator, double pToBlowX, double pToBlowY, double pToBlowZ, float pRadius, boolean pFire, net.minecraft.world.level.Explosion.BlockInteraction pBlockInteraction) {
         super(pLevel, pSource, pDamageSource, pDamageCalculator, pToBlowX, pToBlowY, pToBlowZ, pRadius, pFire, pBlockInteraction);
@@ -74,12 +100,33 @@ public class CustomExplosion extends Explosion { //have to override private fiel
         this.source = pSource;
         //this.radius = pRadius; //ignore parameter and use stack
         this.radius = stack.getValue(AdditionType.RANGE);
-        this.punch = stack.getValue(AdditionType.PUNCH);
-        this.sharpness = stack.getValue(AdditionType.DAMAGE);
+        this.punch = stack.getValue(AdditionType.PUNCH) - stack.getValue(AdditionType.DRAW);
+        this.damage = stack.getValue(AdditionType.DAMAGE);
         this.strength = stack.getValue(AdditionType.STRENGTH);
         this.piercing = stack.getValue(AdditionType.PIERCING);
-        this.fire = stack.getValue(AdditionType.FLAME);
-        this.sound = stack.getValue(AdditionType.LOUDNESS);
+        this.flame = stack.getValue(AdditionType.FLAME);
+        this.temperature = stack.getValue(AdditionType.TEMPERATURE);
+        this.loudness = stack.getValue(AdditionType.LOUDNESS);
+        this.drop = stack.getValue(AdditionType.DROP);
+        this.lightning = stack.getValue(AdditionType.LIGHTNING);
+        ItemStack marker = stack.getItems(AdditionType.CONTAINER).isEmpty() ?
+                null : stack.getItems(AdditionType.CONTAINER).peek();
+        if (marker != null && marker.getItem() instanceof PositionMarkerItem item) {
+            if (item.isContainer) {
+                BlockPos pos = item.getPos(marker);
+                if (pos != null) {
+                    containerPos = pos;
+                    BlockEntity be = level.getBlockEntity(pos);
+                    if (be != null) {
+                        be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(c ->
+                                this.container = c);
+                    }
+                }
+            }
+        }
+        this.potions.addAll(stack.getItems(AdditionType.POTION));
+        this.fireworks.addAll(stack.getItems(AdditionType.FIREWORK));
+        this.particles.addAll(stack.getItems(AdditionType.PARTICLE));
         this.directionRadii[0] = stack.getValue(AdditionType.DOWN);
         this.directionRadii[1] = stack.getValue(AdditionType.UP);
         this.directionRadii[2] = stack.getValue(AdditionType.NORTH);
@@ -99,42 +146,6 @@ public class CustomExplosion extends Explosion { //have to override private fiel
 
     private ExplosionDamageCalculator makeDamageCalculator(@Nullable Entity pEntity) {
         return pEntity == null ? EXPLOSION_DAMAGE_CALCULATOR : new EntityBasedExplosionDamageCalculator(pEntity);
-    }
-
-    public static float getSeenPercent(Vec3 pExplosionVector, Entity pEntity) {
-        //get the percentage of the entity that are exposed to the tnt
-        AABB aabb = pEntity.getBoundingBox();
-        double d0 = 1.0D / ((aabb.maxX - aabb.minX) * 2.0D + 1.0D);
-        double d1 = 1.0D / ((aabb.maxY - aabb.minY) * 2.0D + 1.0D);
-        double d2 = 1.0D / ((aabb.maxZ - aabb.minZ) * 2.0D + 1.0D);
-        double d3 = (1.0D - Math.floor(1.0D / d0) * d0) / 2.0D;
-        double d4 = (1.0D - Math.floor(1.0D / d2) * d2) / 2.0D; //offset to make sure that d5 and d7 is in the middle
-        //for example, 0 0.3 0.6 0.9 -> 0.05 0.35 0.65 0.95
-        //for axis Y, it will ignore the top
-        if (!(d0 < 0.0D) && !(d1 < 0.0D) && !(d2 < 0.0D)) {
-            int i = 0;
-            int j = 0;
-
-            for (double d5 = 0.0D; d5 <= 1.0D; d5 += d0) {
-                for (double d6 = 0.0D; d6 <= 1.0D; d6 += d1) {
-                    for (double d7 = 0.0D; d7 <= 1.0D; d7 += d2) { //go through the aabb
-                        double d8 = Mth.lerp(d5, aabb.minX, aabb.maxX);
-                        double d9 = Mth.lerp(d6, aabb.minY, aabb.maxY);
-                        double d10 = Mth.lerp(d7, aabb.minZ, aabb.maxZ);
-                        Vec3 vec3 = new Vec3(d8 + d3, d9, d10 + d4); //go through the aabb
-                        if (pEntity.level.clip(new ClipContext(vec3, pExplosionVector, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, pEntity)).getType() == HitResult.Type.MISS) {
-                            ++i;
-                        }
-
-                        ++j;
-                    }
-                }
-            }
-
-            return (float) i / (float) j;
-        } else {
-            return 0.0F;
-        }
     }
 
     /**
@@ -196,59 +207,98 @@ public class CustomExplosion extends Explosion { //have to override private fiel
             }
         }*/
 
+        if (this.strength > 0) {
+            explosionShape.generateData();
+        }
         this.toBlow.addAll(explosionShape.getToBlow());
-        float f2 = this.radius * 2.0F * Math.max(sharpness, Math.abs(punch)); //the actual radius
-        int k1 = Mth.floor(this.x - (double) f2 - 1.0D);
-        int l1 = Mth.floor(this.x + (double) f2 + 1.0D);
-        int i2 = Mth.floor(this.y - (double) f2 - 1.0D);
-        int i1 = Mth.floor(this.y + (double) f2 + 1.0D);
-        int j2 = Mth.floor(this.z - (double) f2 - 1.0D);
-        int j1 = Mth.floor(this.z + (double) f2 + 1.0D);
         //TODO : larger?
-        List<Entity> list = this.level.getEntities(this.source, new AABB(k1, i2, j2, l1, i1, j1));
         //select all entities in the box
         //later will select entities in the sphere
-        net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(this.level, this, list, f2);
-        Vec3 vec3 = new Vec3(this.x, this.y, this.z);
+        //entity start
+        Object2FloatMap<Entity> list = explosionShape.getEntities();
+        net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(this.level, this, list.keySet().stream().toList(), radius * 2);
+        for (Entity entity : list.keySet()) {
+            //double d14 = getSeenPercent(vec3, entity); //get percentage
+            //d14 += (1 - d14) * piercing;
+            //double d10 = (1.0D - d12) * d14; //total strength
+            float percentage = list.getFloat(entity); //percentage of explosion the entity get
 
-        for (Entity entity : list) {
-            if (!entity.ignoreExplosion()) {
-                double d12 = Math.sqrt(entity.distanceToSqr(vec3)) / (double) f2;
-                //distance from the center divided by strength, the smaller, the farther to blow
-                if (d12 <= 1.0D) { //in the sphere
-                    double d5 = entity.getX() - this.x;
-                    double d7 = (entity instanceof PrimedTnt ? entity.getY() : entity.getEyeY()) - this.y;
-                    //tnt can be blown higher
-                    double d9 = entity.getZ() - this.z;
-                    double d13 = Math.sqrt(d5 * d5 + d7 * d7 + d9 * d9); //distance
-                    if (d13 != 0.0D) { //not centre
-                        d5 /= d13;
-                        d7 /= d13;
-                        d9 /= d13; //normalize
-                        double d14 = getSeenPercent(vec3, entity); //get percentage
-                        d14 += (1 - d14) * piercing;
-                        double d10 = (1.0D - d12) * d14; //total strength
-                        if (sharpness > 0) {
-                            entity.hurt(this.getDamageSource(), sharpness * ((int) ((d10 * d10 + d10) / 2.0D * 7.0D * (double) f2 + 1.0D)));
-                        } else if (sharpness < 0 && entity instanceof LivingEntity le) {
-                            le.heal(-sharpness * ((int) ((d10 * d10 + d10) / 2.0D * 7.0D * (double) f2 + 1.0D)));
-                        }
-                        double d11 = d10;
-                        if (entity instanceof LivingEntity) {
-                            d11 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity) entity, d10);
-                            //enchantment
-                        }
-                        entity.setDeltaMovement(entity.getDeltaMovement().add(d5 * d11 * punch, d7 * d11 * punch, d9 * d11 * punch));
-                        if (entity instanceof Player player) {
-                            if (!player.isSpectator() && (!player.isCreative() || !player.getAbilities().flying)) {
-                                this.hitPlayers.put(player, new Vec3(d5 * d10 * punch, d7 * d10 * punch, d9 * d10 * punch));
-                                //for players, also do on the client side
+            if (damage > 0) {
+                entity.hurt(this.getDamageSource(), damage * ((int) ((percentage * percentage + percentage) / 2.0D * 7.0D + 1.0D)));
+            }
+
+            if (entity instanceof LivingEntity le) {
+                for (ItemStack stack : potions) {
+                    Potion potion = PotionUtils.getPotion(stack);
+                    if (potion != Potions.EMPTY) {
+                        if (le.isAffectedByPotions()) {
+                            for (MobEffectInstance mobeffectinstance : potion.getEffects()) {
+                                mobeffectinstance = new MobEffectInstance(mobeffectinstance.getEffect(), (int) (mobeffectinstance.getDuration() * percentage),
+                                        mobeffectinstance.getAmplifier(), mobeffectinstance.isAmbient(), mobeffectinstance.isVisible());
+                                if (mobeffectinstance.getEffect().isInstantenous()) {
+                                    mobeffectinstance.getEffect().applyInstantenousEffect(this.source, this.getSourceMob(),
+                                            le, mobeffectinstance.getAmplifier(), 0.5D);
+                                } else {
+                                    le.addEffect(new MobEffectInstance(mobeffectinstance), this.source);
+                                }
                             }
                         }
                     }
                 }
             }
+
+            if (punch != 0) {
+                double d5 = entity.getX() - this.x;
+                double d7 = (entity instanceof PrimedTnt ? entity.getY() : entity.getEyeY()) - this.y;
+                //tnt can be blown higher
+                double d9 = entity.getZ() - this.z;
+                double d13 = Math.sqrt(d5 * d5 + d7 * d7 + d9 * d9); //distance
+                if (d13 != 0.0D) {
+                    d5 /= d13;
+                    d7 /= d13;
+                    d9 /= d13; //normalize
+                    double d11 = percentage;
+                    if (entity instanceof LivingEntity) {
+                        d11 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity) entity, percentage);
+                        //enchantment
+                    }
+                    entity.setDeltaMovement(entity.getDeltaMovement().add(d5 * d11 * punch, d7 * d11 * punch, d9 * d11 * punch));
+                    if (entity instanceof Player player) {
+                        if (!player.isSpectator() && (!player.isCreative() || !player.getAbilities().flying)) {
+                            this.hitPlayers.put(player, new Vec3(d5 * percentage * punch, d7 * percentage * punch, d9 * percentage * punch));
+                            //for players, also do on the client side
+                        }
+                    }
+                }
+            }
+
+            if (flame > 0) {
+                if (!entity.fireImmune()) {
+                    entity.setRemainingFireTicks((int) (flame * 200 * percentage));
+                }
+            }
+
+            if (lightning > 0) {
+                BlockPos pos = entity.blockPosition();
+                if (entity instanceof LivingEntity && level.canSeeSky(pos) && random.nextInt(4) < lightning * percentage) {
+                    summonLightningBolt(pos);
+                }
+            }
         }
+    }
+
+    private void summonLightningBolt(BlockPos pos) {
+        LightningBolt lightningbolt = EntityType.LIGHTNING_BOLT.create(level);
+        lightningbolt.moveTo(Vec3.atBottomCenterOf(pos));
+        Entity source = this.getSourceMob();
+        lightningbolt.setCause(source instanceof ServerPlayer ? (ServerPlayer) source : null);
+        level.addFreshEntity(lightningbolt);
+        level.playSound(null, pos, SoundEvents.TRIDENT_THUNDER, SoundSource.WEATHER, 5.0F, 1.0F);
+    }
+
+    private float getBlockPercentage(BlockPos pos) {
+        float percentage = explosionShape.getToBlowData().get(pos).strength() / strength;
+        return percentage;
     }
 
     /**
@@ -257,7 +307,7 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     @Override
     public void finalizeExplosion(boolean pSpawnParticles) {
         if (this.level.isClientSide) {
-            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.ARROW_HIT, SoundSource.BLOCKS, random.nextFloat() * 10F * sound, (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F, false);
+            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.ARROW_HIT, SoundSource.BLOCKS, random.nextFloat() * 10F * loudness, (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F, false);
             //TODO
         }
 
@@ -271,28 +321,37 @@ public class CustomExplosion extends Explosion { //have to override private fiel
             //TODO
         }
 
-        if (flag) { //fill blocks with air
+        if (flag && !this.level.isClientSide) { //fill blocks with air
             ObjectArrayList<Pair<ItemStack, BlockPos>> objectArrayList = new ObjectArrayList<>();
             Collections.shuffle(this.toBlow, this.level.random);
+            Object2BooleanMap<BlockPos> isStones = new Object2BooleanOpenHashMap<>();
 
             for (BlockPos blockpos : this.toBlow) {
                 BlockState blockstate = this.level.getBlockState(blockpos);
+                isStones.put(blockpos, blockstate.is(BlockTags.BASE_STONE_OVERWORLD));
                 if (!blockstate.isAir()) {
                     BlockPos blockPos1 = blockpos.immutable();
                     this.level.getProfiler().push("explosion_blocks");
-                    if (blockstate.canDropFromExplosion(this.level, blockpos, this) && this.level instanceof ServerLevel) {
-                        BlockEntity blockentity = blockstate.hasBlockEntity() ? this.level.getBlockEntity(blockpos) : null;
-                        LootContext.Builder lootContext$builder = (new LootContext.Builder((ServerLevel) this.level)).withRandom(this.level.random)
-                                .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(blockpos))
-                                .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
-                                .withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockentity)
-                                .withOptionalParameter(LootContextParams.THIS_ENTITY, this.source);
-                        if (this.blockInteraction == net.minecraft.world.level.Explosion.BlockInteraction.DESTROY) {
-                            lootContext$builder.withParameter(LootContextParams.EXPLOSION_RADIUS, this.radius);
+                    if (drop > 0 && blockstate.canDropFromExplosion(this.level, blockpos, this)) {
+                        ItemStack specialDrop = ExplosionSpecialBlockDrops.getSpecialDrop(blockstate.getBlock(), getBlockPercentage(blockpos), temperature, strength);
+                        if (!specialDrop.isEmpty()) {
+                            addBlockDrops(objectArrayList, specialDrop, blockPos1);
+                        } else {
+                            BlockEntity blockentity = blockstate.hasBlockEntity() ? this.level.getBlockEntity(blockpos) : null;
+                            LootContext.Builder lootContext$builder = (new LootContext.Builder((ServerLevel) this.level)).withRandom(this.level.random)
+                                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(blockpos))
+                                    .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
+                                    .withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockentity)
+                                    .withOptionalParameter(LootContextParams.THIS_ENTITY, this.source);
+                            if (this.blockInteraction == net.minecraft.world.level.Explosion.BlockInteraction.DESTROY) {
+                                if (drop < 1) {
+                                    lootContext$builder.withParameter(LootContextParams.EXPLOSION_RADIUS, 1 / drop);
+                                }
+                            }
+                            //TODO
+                            //drop with loot context
+                            blockstate.getDrops(lootContext$builder).forEach((p_46074_) -> addBlockDrops(objectArrayList, p_46074_, blockPos1));
                         }
-                        //TODO
-                        //drop with loot context
-                        blockstate.getDrops(lootContext$builder).forEach((p_46074_) -> addBlockDrops(objectArrayList, p_46074_, blockPos1));
                     }
 
                     blockstate.onBlockExploded(this.level, blockpos, this);
@@ -302,15 +361,46 @@ public class CustomExplosion extends Explosion { //have to override private fiel
             }
 
             for (Pair<ItemStack, BlockPos> pair : objectArrayList) {
-                Block.popResource(this.level, pair.getSecond(), pair.getFirst());
-                //generate items
+                if (this.containerPos != null) {
+                    ItemStack remain = pair.getFirst();
+                    if (this.container != null) {
+                        for (int i = 0; i < container.getSlots(); i++) {
+                            remain = container.insertItem(i, remain, false);
+                            if (remain.isEmpty()) {
+                                break;
+                            }
+                        }
+                    }
+                    if (!remain.isEmpty()) {
+                        Block.popResource(this.level, containerPos, remain);
+                    }
+                } else {
+                    Block.popResource(this.level, pair.getSecond(), pair.getFirst());
+                    //generate items
+                }
             }
-        }
 
-        if (this.fire > 0F) { //set fire
-            for (BlockPos blockPos2 : this.toBlow) {
-                if (this.random.nextInt(10) < this.fire && this.level.getBlockState(blockPos2).isAir() && this.level.getBlockState(blockPos2.below()).isSolidRender(this.level, blockPos2.below())) {
-                    this.level.setBlockAndUpdate(blockPos2, BaseFireBlock.getState(this.level, blockPos2));
+            if (this.lightning > 4F) {
+                for (BlockPos blockPos2 : this.toBlow) {
+                    if (this.random.nextInt(10) < this.lightning * getBlockPercentage(blockPos2) && this.level.getBlockState(blockPos2).isAir() && this.level.getBlockState(blockPos2.below()).isSolidRender(this.level, blockPos2.below())) {
+                        summonLightningBolt(blockPos2);
+                    }
+                }
+            }
+
+            if (this.flame > 0F) {
+                for (BlockPos blockPos2 : this.toBlow) {
+                    if (this.random.nextInt(10) < this.flame * getBlockPercentage(blockPos2) && this.level.getBlockState(blockPos2).isAir() && this.level.getBlockState(blockPos2.below()).isSolidRender(this.level, blockPos2.below())) {
+                        this.level.setBlockAndUpdate(blockPos2, BaseFireBlock.getState(this.level, blockPos2));
+                    }
+                }
+            }
+
+            if (this.temperature > 4F) {
+                for (BlockPos blockPos2 : this.toBlow) {
+                    if (this.random.nextInt(10) < this.temperature * getBlockPercentage(blockPos2) && isStones.getBoolean(blockPos2)) {
+                        this.level.setBlockAndUpdate(blockPos2, Fluids.LAVA.defaultFluidState().createLegacyBlock());
+                    }
                 }
             }
         }
@@ -319,7 +409,6 @@ public class CustomExplosion extends Explosion { //have to override private fiel
 
     private static void addBlockDrops(ObjectArrayList<Pair<ItemStack, BlockPos>> pDropPositionArray, ItemStack pStack, BlockPos pPos) {
         //TODO
-        //pStack = new ItemStack(Items.ENCHANTED_GOLDEN_APPLE, 64);
         int i = pDropPositionArray.size();
         for (int j = 0; j < i; ++j) { //try to merge items into groups with size of 16
             Pair<ItemStack, BlockPos> pair = pDropPositionArray.get(j);
@@ -338,6 +427,10 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     @Override
     public DamageSource getDamageSource() {
         return this.damageSource;
+    }
+
+    public Entity getSource() {
+        return this.source;
     }
 
     @Override
