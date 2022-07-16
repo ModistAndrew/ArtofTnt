@@ -6,11 +6,9 @@ import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntDefuserItem;
-import modist.artoftnt.common.item.TntFrameItem;
 import modist.artoftnt.core.addition.Addition;
-import modist.artoftnt.core.addition.AdditionHelper;
+import modist.artoftnt.core.addition.InstabilityHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -38,7 +36,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
@@ -61,7 +58,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
         if (!pOldState.is(pState.getBlock())) {
             if (pLevel.hasNeighborSignal(pPos)) {
-                explode(AdditionHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
+                explode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
             }
         }
     }
@@ -69,7 +66,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @Override
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
         if (pLevel.hasNeighborSignal(pPos)) {
-            explode(AdditionHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
+            explode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
         }
     }
 
@@ -81,7 +78,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
 
     @Override
     public void onCaughtFire(BlockState state, Level pLevel, BlockPos pPos, @Nullable net.minecraft.core.Direction face, @Nullable LivingEntity pEntity) {
-        explode(AdditionHelper.FIRE_MIN_INSTABILITY, pLevel, pPos, pEntity);
+        explode(InstabilityHelper.FIRE_MIN_INSTABILITY, pLevel, pPos, pEntity);
     } //TODO:not available
 
     public boolean explode(float minInstability, Level pLevel, BlockPos pPos, @Nullable LivingEntity pEntity) {
@@ -106,7 +103,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
 
     @Override
     public void wasExploded(Level pLevel, BlockPos pPos, Explosion pExplosion) {
-        explode(AdditionHelper.EXPLOSION_MIN_INSTABILITY, pLevel, pPos, pExplosion.getSourceMob());
+        explode(InstabilityHelper.EXPLODED_MIN_INSTABILITY, pLevel, pPos, pExplosion.getSourceMob());
     }
 
     //TODO drop is strange!

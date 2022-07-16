@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import modist.artoftnt.core.explosion.AbstractExplosionShape;
 import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 
@@ -21,15 +22,28 @@ public class CubeExplosionShape extends AbstractExplosionShape {
     @Override
     public Set<BlockPos> getEdge() {
         Set<BlockPos> ret = new HashSet<>();
-        int r = (int) radius;
-        for(int i = -r; i <= r; i++){
-            for(int j = -r; j <= r; j++){
-                ret.add(p(i, j, r));
-                ret.add(p(i, j, -r));
-                ret.add(p(i, r, j));
-                ret.add(p(i, -r, j));
-                ret.add(p(r, i, j));
-                ret.add(p(-r, i, j));
+        int xn = -(int)(radius+directionRadii[4]);
+        int xp = (int)(radius+directionRadii[5]);
+        int yn = -(int)(radius+directionRadii[0]);
+        int yp = (int)(radius+directionRadii[1]);
+        int zn = -(int)(radius+directionRadii[2]);
+        int zp = (int)(radius+directionRadii[3]);
+        for(int i = xn; i <= xp; i++){
+            for(int j = yn; j <= yp; j++){
+                ret.add(p(i, j, zn));
+                ret.add(p(i, j, zp));
+            }
+        }
+        for(int i = xn; i <= xp; i++){
+            for(int j = zn; j <= zp; j++){
+                ret.add(p(i, yn, j));
+                ret.add(p(i, yp, j));
+            }
+        }
+        for(int i = yn; i <= yp; i++){
+            for(int j = zn; j <= zp; j++){
+                ret.add(p(xn, i, j));
+                ret.add(p(xp, i, j));
             }
         }
         return ret;

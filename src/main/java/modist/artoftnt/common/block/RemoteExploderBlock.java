@@ -1,7 +1,7 @@
 package modist.artoftnt.common.block;
 
 import modist.artoftnt.common.block.entity.RemoteExploderBlockEntity;
-import modist.artoftnt.core.addition.AdditionHelper;
+import modist.artoftnt.core.addition.InstabilityHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -67,7 +67,7 @@ public class RemoteExploderBlock extends Block implements EntityBlock {
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
         if (!pOldState.is(pState.getBlock())) {
             if (pLevel.hasNeighborSignal(pPos)) {
-                explode(AdditionHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos);
+                explode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos);
             }
         }
     }
@@ -76,7 +76,7 @@ public class RemoteExploderBlock extends Block implements EntityBlock {
     @SuppressWarnings("deprecation")
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
         if (pLevel.hasNeighborSignal(pPos)) {
-                explode(AdditionHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos);
+                explode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos);
         }
     }
 

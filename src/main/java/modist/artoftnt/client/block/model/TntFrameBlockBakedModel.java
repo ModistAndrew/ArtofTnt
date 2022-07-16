@@ -6,7 +6,6 @@ import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.Addition;
-import modist.artoftnt.core.addition.AdditionHelper;
 import modist.artoftnt.core.addition.AdditionSlot;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.client.Minecraft;
@@ -110,11 +109,19 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
     }
 
     private ResourceLocation getInstabilityTexture(float instability) {
-        return AdditionSpecialRenderer.INSTABILITY[AdditionHelper.getInstabilityTextureId(instability)];
+        return AdditionSpecialRenderer.INSTABILITY[getInstabilityTextureId(instability)];
     }
 
     private ResourceLocation getWeightTexture(float weight) {
-        return AdditionSpecialRenderer.WEIGHT[AdditionHelper.getWeightTextureId(weight)];
+        return AdditionSpecialRenderer.WEIGHT[getWeightTextureId(weight)];
+    }
+
+    public static int getInstabilityTextureId(float instability) {
+        return instability > 7F ? 7 : (int)instability;
+    }
+
+    public static int getWeightTextureId(float weight) {
+        return weight > 7F ? 7 : (int)weight;
     }
 
     private void putItemStackQuads(RenderUtil renderer, Stack<ItemStack> stacks, int slot) {

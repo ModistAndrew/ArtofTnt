@@ -18,12 +18,10 @@ import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class PrimedTntFrame extends AbstractHurtingProjectile {
     public final int tier;
@@ -81,10 +79,6 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         return (int)data.getValue(AdditionType.LINGERING);
     }
 
-    private float getLightness() {
-        return data.getValue(AdditionType.LIGHTNESS);
-    }
-
     public PrimedTntFrame(CompoundTag tag, Level level, double x, double y, double z, @Nullable LivingEntity owner, int tier) {
         this(EntityLoader.PRIMED_TNT_FRAMES[tier].get(), level, tier);
         this.setPos(x+0.5D, y, z+0.5D); //offset
@@ -128,6 +122,10 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
      */
     @Override
     public void tick() {
+        float punch = data.getValue(AdditionType.TNT_PUNCH) - data.getValue(AdditionType.TNT_DRAW);
+        if(punch!=0){
+            doPunch(punch);
+        }
         //super.tick();
         HitResult hitresult = ProjectileUtil.getHitResult(this, this::canHitEntity);
         if (hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
@@ -136,7 +134,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
 
         if (!this.isNoGravity()) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0D,
-                    -0.04D * (1-getLightness()),
+                    -0.04D * (1-data.getValue(AdditionType.LIGHTNESS)),
                     0.0D));
         }
 
@@ -162,6 +160,20 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
             this.updateInWaterStateAndDoFluidPushing();
             if (this.level.isClientSide) {
                 this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
+            }
+        }
+    }
+
+    private void doPunch(float punch) {
+        float range = data.getValue(AdditionType.RANGE);
+        List<Entity> list = this.level.getEntities(this,
+                new AABB(this.position().add(-range, -range, -range), this.position().add(range, range, range)));
+        for(Entity e : list){
+            float distancePercentage = (float) (Math.sqrt(e.distanceToSqr(this.position())) / range);
+            if(distancePercentage <= 1F){
+                float p = punch * (1-distancePercentage);
+                e.setDeltaMovement(e.getDeltaMovement().add(position().subtract(e.position()).normalize().
+                        multiply(p, p, p)));
             }
         }
     }

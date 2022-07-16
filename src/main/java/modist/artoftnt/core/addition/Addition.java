@@ -65,8 +65,17 @@ public class Addition {
         register(AdditionType.POTION, 1, 1, 8, 0, 0, true, Items.LINGERING_POTION);
         register(AdditionType.FUSE, 100, 1, 8, 0, 0, true, Items.STRING);
         register(AdditionType.RANGE, 1, 1, 16, 10, 1, false, Items.GUNPOWDER);
+        register(AdditionType.DOWN, 1, 1, 8, 1, 1, false, Items.WHITE_WOOL);
+        register(AdditionType.UP, 1, 1, 8, 1, 1, false, Items.BLACK_WOOL);
+        register(AdditionType.NORTH, 1, 1, 8, 1, 1, false, Items.RED_WOOL);
+        register(AdditionType.SOUTH, 1, 1, 8, 1, 1, false, Items.GREEN_WOOL);
+        register(AdditionType.EAST, 1, 1, 8, 1, 1, false, Items.BLUE_WOOL);
+        register(AdditionType.WEST, 1, 1, 8, 1, 1, false, Items.ORANGE_WOOL);
         register(AdditionType.STRENGTH, 1, 1, 16, 10, 0, false, Items.OBSIDIAN);
         register(AdditionType.PUNCH, 1, 1, 16, 0, 1, false, Items.PISTON);
+        register(AdditionType.DRAW, 1, 1, 16, 0, 1, false, Items.HOPPER);
+        register(AdditionType.TNT_PUNCH, 1, 1, 16, 0, 1, false, Items.STICKY_PISTON);
+        register(AdditionType.TNT_DRAW, 1, 1, 16, 0, 1, false, Items.TRAPPED_CHEST);
         register(AdditionType.DAMAGE, 1, 1, 16, 0, 0, false, Items.QUARTZ);
         register(AdditionType.VELOCITY, 1, 1, 16, 0, 0, false, Items.FIREWORK_ROCKET);
         register(AdditionType.SHAPE, 1, 1, 1, 0, 0, false, Items.GOLDEN_APPLE);
