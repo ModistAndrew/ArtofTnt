@@ -199,10 +199,11 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     @Override
     protected void onHitBlock(BlockHitResult pResult) {
         float elasticity = data.getValue(AdditionType.ELASTICITY);
+        float stickiness = Math.max(0, 1-data.getValue(AdditionType.STICKINESS));
         switch (pResult.getDirection().getAxis()){
-            case X -> this.setDeltaMovement(this.getDeltaMovement().multiply(-elasticity, 1, 1));
-            case Y -> this.setDeltaMovement(this.getDeltaMovement().multiply(1, -elasticity, 1));
-            case Z -> this.setDeltaMovement(this.getDeltaMovement().multiply(1, 1, -elasticity));
+            case X -> this.setDeltaMovement(this.getDeltaMovement().multiply(-elasticity, stickiness, stickiness));
+            case Y -> this.setDeltaMovement(this.getDeltaMovement().multiply(stickiness, -elasticity, stickiness));
+            case Z -> this.setDeltaMovement(this.getDeltaMovement().multiply(stickiness, stickiness, -elasticity));
         }
     }
 

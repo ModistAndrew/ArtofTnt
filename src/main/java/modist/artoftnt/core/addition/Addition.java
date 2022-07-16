@@ -61,7 +61,6 @@ public class Addition {
     }
 
     static {
-        register(AdditionType.ELASTICITY, 1, 1, 8, 0, 0, true, Items.SLIME_BALL);
         register(AdditionType.FIREWORK, 1, 1, 8, 0, 0, true, Items.FIREWORK_STAR);
         register(AdditionType.POTION, 1, 1, 8, 0, 0, true, Items.LINGERING_POTION);
         register(AdditionType.FUSE, 100, 1, 8, 0, 0, true, Items.STRING);
@@ -78,7 +77,8 @@ public class Addition {
         register(AdditionType.DROP, 1, 1, 8, 0, 0, false, Items.SAND);
         register(AdditionType.CONTAINER, 1, 1, 8, 0, 0, false, ItemLoader.POSITION_CONTAINER_MARKERS[0].get());
         register(AdditionType.LIGHTNESS, 0.4F, 1, 8, 0, 0, false, Items.FEATHER);
-        register(AdditionType.ELASTICITY, 0.4F, 1, 8, 0, 0, false, Items.SLIME_BALL);
+        register(AdditionType.ELASTICITY, 0.4F, 1, 8, 0, 0, true, Items.SLIME_BLOCK);
+        register(AdditionType.STICKINESS, 0.4F, 1, 8, 0, 0, true, Items.HONEY_BLOCK);
     }
 
 }

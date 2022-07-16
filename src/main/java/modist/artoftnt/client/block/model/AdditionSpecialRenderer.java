@@ -15,6 +15,8 @@ public class AdditionSpecialRenderer {
     public static final Set<ResourceLocation> TEXTURES = new HashSet<>();
     private static final ResourceLocation SLIME_OUTER = registerTexture("slime_outer");
     private static final ResourceLocation SLIME_INNER = registerTexture("slime_inner");
+    private static final ResourceLocation HONEY_OUTER = registerTexture("honey_outer");
+    private static final ResourceLocation HONEY_INNER = registerTexture("honey_inner");
     private static final ResourceLocation POTION_OUTER = registerTexture("potion_outer");
     private static final ResourceLocation POTION_INNER = registerTexture("potion_inner");
     private static final ResourceLocation FIREWORK_OUTER = registerTexture("firework_outer");
@@ -51,18 +53,27 @@ public class AdditionSpecialRenderer {
 
 
     public static void putSpecialItemStackQuads(RenderUtil renderer, ItemStack stack, Addition addition, int index, int slot, boolean up, boolean down) {
+        float top = index * 2 + 2 - (index == 7 ? 2 * DELTA : 0F);
         switch (addition.name) {
-            case "slime_ball" -> {
+            case "slime_block" -> {
                 renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, index * 2 + 2 - (index == 7 ? 2 * DELTA : 0), AdditionSlot.getV(slot) + 2,
+                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         SLIME_OUTER, up, down);
                 renderer.putCube16(AdditionSlot.getU(slot) + 0.5F, index * 2 + 0.5F, AdditionSlot.getV(slot) + 0.5F,
                         AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
                         SLIME_INNER, true, true);
             }
+            case "honey_block" -> {
+                renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
+                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
+                        HONEY_OUTER, up, down);
+                renderer.putCube16(AdditionSlot.getU(slot) + 0.5F, index * 2 + 0.5F, AdditionSlot.getV(slot) + 0.5F,
+                        AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
+                        HONEY_INNER, true, true);
+            }
             case "lingering_potion" -> {
                 renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, index * 2 + 2 - (index == 7 ? 2 * DELTA : 0), AdditionSlot.getV(slot) + 2,
+                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         POTION_OUTER, up, down);
                 renderer.putCube16(AdditionSlot.getU(slot) + 0.5F, index * 2 + 0.5F, AdditionSlot.getV(slot) + 0.5F,
                         AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
@@ -70,10 +81,10 @@ public class AdditionSpecialRenderer {
             }
             case "firework_star" -> {
                 renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, index * 2 + 2 - (index == 7 ? 2 * DELTA : 0), AdditionSlot.getV(slot) + 2,
+                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         FIREWORK_OUTER, up, down);
                 renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, index * 2 + 2 - (index == 7 ? 2 * DELTA : 0), AdditionSlot.getV(slot) + 2,
+                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         FIREWORK_INNER, true, true, Minecraft.getInstance().getItemColors().getColor(stack, 1));
             }
             case "string" -> renderer.putCubeFace16(0, 16, 0, 16, 16, 16, STRINGS[index], Direction.UP);

@@ -6,7 +6,8 @@ import java.util.function.BiFunction;
 public enum AdditionType {
     LOUDNESS(8, AdditionSlot.EXPLOSION_SOUND), SOUND_TYPE(8, AdditionSlot.EXPLOSION_SOUND),
 
-    VELOCITY(16, AdditionSlot.TNT_MOTION), ELASTICITY(8, AdditionSlot.TNT_MOTION), LIGHTNESS(8, AdditionSlot.TNT_MOTION),
+    VELOCITY(16, AdditionSlot.TNT_MOTION), ELASTICITY(8, AdditionSlot.TNT_MOTION),
+    STICKINESS(8, AdditionSlot.TNT_MOTION), LIGHTNESS(8, AdditionSlot.TNT_MOTION),
 
     PUNCH(16, AdditionSlot.ENTITY_IMPACT), DRAW(8, AdditionSlot.ENTITY_IMPACT), TNT_PUNCH(8, AdditionSlot.ENTITY_IMPACT),
     TNT_DRAW(8, AdditionSlot.ENTITY_IMPACT),
