@@ -164,6 +164,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         }
     }
 
+
     private void doPunch(float punch) {
         float range = data.getValue(AdditionType.RANGE);
         List<Entity> list = this.level.getEntities(this,
@@ -171,8 +172,8 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         for(Entity e : list){
             float distancePercentage = (float) (Math.sqrt(e.distanceToSqr(this.position())) / range);
             if(distancePercentage <= 1F){
-                float p = punch * (1-distancePercentage);
-                e.setDeltaMovement(e.getDeltaMovement().add(position().subtract(e.position()).normalize().
+                float p = Math.max(-distancePercentage, punch * (1-distancePercentage)); //avoid draw too much
+                e.setDeltaMovement(e.getDeltaMovement().add(e.position().subtract(this.position()).normalize().
                         multiply(p, p, p)));
             }
         }
