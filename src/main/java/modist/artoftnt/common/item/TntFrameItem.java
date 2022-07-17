@@ -1,22 +1,21 @@
 package modist.artoftnt.common.item;
 
+import modist.artoftnt.client.block.entity.TntFrameBEWLR;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.block.entity.TntFrameData;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.IItemRenderProperties;
 
 import java.util.function.Consumer;
@@ -30,11 +29,12 @@ public class TntFrameItem extends BlockItem {
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     public void initializeClient(Consumer<IItemRenderProperties> consumer) {
         consumer.accept(new IItemRenderProperties() {
             @Override
             public BlockEntityWithoutLevelRenderer getItemStackRenderer() {
-                return ItemLoader.BEWLR_INSTANCE;
+                return TntFrameBEWLR.BEWLR_INSTANCE;
             }
         });
     }

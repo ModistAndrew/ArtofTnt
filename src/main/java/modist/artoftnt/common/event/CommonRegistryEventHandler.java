@@ -2,6 +2,7 @@ package modist.artoftnt.common.event;
 
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.entity.PrimedTntFrame;
+import modist.artoftnt.network.NetworkHandler;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
@@ -36,5 +37,9 @@ public class CommonRegistryEventHandler {
         }
     }
 
-    ;
+    @SubscribeEvent
+    public static void onCommonSetup(FMLCommonSetupEvent event) {
+        NetworkHandler.registerMessage();
+    }
+
 }

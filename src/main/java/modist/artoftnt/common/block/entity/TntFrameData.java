@@ -16,6 +16,8 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -78,6 +80,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
         return (1-size)/2;
     }
 
+    @OnlyIn(Dist.CLIENT)
     public void addText(List<Component> pTooltip) { //TODO shift?
         if(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT)) {
             int i = 0;

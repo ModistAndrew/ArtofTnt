@@ -6,10 +6,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.HashSet;
 import java.util.Set;
 
+@OnlyIn(Dist.CLIENT)
 public class AdditionSpecialRenderer {
     private static final float DELTA = 0.0001F; //fix z-fighting
     public static final Set<ResourceLocation> TEXTURES = new HashSet<>();

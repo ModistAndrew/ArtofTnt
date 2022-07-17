@@ -1,13 +1,12 @@
 package modist.artoftnt.common.entity;
 
-import com.sun.jna.platform.win32.WinUser;
 import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
+import modist.artoftnt.core.addition.InstabilityHelper;
 import modist.artoftnt.core.explosion.ExplosionHelper;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -25,10 +24,12 @@ import java.util.List;
 
 public class PrimedTntFrame extends AbstractHurtingProjectile {
     public final int tier;
-    private static final EntityDataAccessor<Integer> DATA_FUSE = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<CompoundTag> DATA_TNT_FRAME = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.COMPOUND_TAG);
-    private static final EntityDataAccessor<Float> DATA_SIZE = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.FLOAT);
-    private final TntFrameData data;
+    private static final EntityDataAccessor<Integer> DATA_LEFT_COUNT = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_COOL_DOWN = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_FUSE = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.INT);
+
+    private final TntFrameData data; //cache
 
     public PrimedTntFrame(EntityType<? extends PrimedTntFrame> p_32076_, Level p_32077_, int tier) {
         super(p_32076_, p_32077_);
@@ -40,23 +41,27 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     protected void defineSynchedData() {
         this.entityData.define(DATA_TNT_FRAME, new CompoundTag());
         this.entityData.define(DATA_FUSE, 0);
-        this.entityData.define(DATA_SIZE, 1F);
+        this.entityData.define(DATA_LEFT_COUNT, 1);
+        this.entityData.define(DATA_COOL_DOWN, 0);
     }
 
     public CompoundTag getDataTag() { //TODO command default tag shouldn't be new? just empty TntFrameData...
         return this.entityData.get(DATA_TNT_FRAME);
     }
 
-    private void setDataTag(CompoundTag tag) {
+    public void setDataTag(CompoundTag tag) {
         this.entityData.set(DATA_TNT_FRAME, tag == null ? new CompoundTag() : tag);
-        this.data.deserializeNBT(tag);
-        setFuse((int) (data.getValue(AdditionType.FUSE) + data.getValue(AdditionType.LINGERING)));
-        setSize(data.size);
-        //this.refreshDimensions();
     }
 
-    public int getWeight(){
-        return (int)this.data.getWeight();
+    private void setDataTagAndInit(CompoundTag tag) {
+        setDataTag(tag);
+        setFuse((int) (data.getValue(AdditionType.FUSE)));
+        setLeftCount((int) (data.getValue(AdditionType.EXPLOSION_COUNT)));
+        setCoolDown(0); //may be overwritten when loaded
+    }
+
+    public int getWeight() {
+        return (int) this.data.getWeight();
     }
 
     public void setFuse(int pFuse) {
@@ -67,45 +72,47 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         return this.entityData.get(DATA_FUSE);
     }
 
-    public void setSize(float size) {
-        this.entityData.set(DATA_SIZE, size);
+    public void setLeftCount(int count) {
+        this.entityData.set(DATA_LEFT_COUNT, count);
     }
 
-    public float getSize() {
-        return this.entityData.get(DATA_SIZE);
+    public int getLeftCount() {
+        return this.entityData.get(DATA_LEFT_COUNT);
     }
 
-    private int getLingeringFuse() {
-        return (int)data.getValue(AdditionType.LINGERING);
+    public void setCoolDown(int coolDown) {
+        this.entityData.set(DATA_COOL_DOWN, coolDown);
+    }
+
+    public int getCoolDown() {
+        return this.entityData.get(DATA_COOL_DOWN);
     }
 
     public PrimedTntFrame(CompoundTag tag, Level level, double x, double y, double z, @Nullable LivingEntity owner, int tier) {
         this(EntityLoader.PRIMED_TNT_FRAMES[tier].get(), level, tier);
-        this.setPos(x+0.5D, y, z+0.5D); //offset
+        this.setPos(x + 0.5D, y, z + 0.5D); //offset
         double d0 = level.random.nextDouble() * (double) ((float) Math.PI * 2F);
         //this.setDeltaMovement(-Math.sin(d0) * 0.02D, 0.2F, -Math.cos(d0) * 0.02D);
         this.xo = x;
         this.yo = y;
         this.zo = z;
         this.setOwner(owner);
-        setDataTag(tag);
+        setDataTagAndInit(tag);
     }
 
     @Override
+    //both sides!
     public void onSyncedDataUpdated(EntityDataAccessor<?> pKey) {
-        //TODO update data
-        if (DATA_SIZE.equals(pKey)) {
-            this.refreshDimensions();
-        }
-        if(DATA_TNT_FRAME.equals(pKey)){
+        if (DATA_TNT_FRAME.equals(pKey)) {
             this.data.deserializeNBT(getDataTag());
+            this.refreshDimensions();
         }
         super.onSyncedDataUpdated(pKey);
     }
 
     @Override
     public EntityDimensions getDimensions(Pose pPose) {
-        return super.getDimensions(pPose).scale(getSize());
+        return super.getDimensions(pPose).scale(data.size);
     }
 
     @Override
@@ -123,7 +130,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     @Override
     public void tick() {
         float punch = data.getValue(AdditionType.TNT_PUNCH) - data.getValue(AdditionType.TNT_DRAW);
-        if(punch!=0){
+        if (punch != 0) {
             doPunch(punch);
         }
         //super.tick();
@@ -134,7 +141,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
 
         if (!this.isNoGravity()) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0D,
-                    -0.04D * (1-data.getValue(AdditionType.LIGHTNESS)),
+                    -0.04D * (1 - data.getValue(AdditionType.LIGHTNESS)),
                     0.0D));
         }
 
@@ -144,20 +151,18 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.7D, -0.5D, 0.7D));
         }
 
+        this.updateInWaterStateAndDoFluidPushing();
+
+        int coolDown = this.getCoolDown() - 1;
+        if (coolDown >= 0) {
+            this.setCoolDown(coolDown);
+        }
+
         int i = this.getFuse() - 1;
         this.setFuse(i);
-        if (i <= getLingeringFuse() && i % 5 == 0) { //TODO
-            if (!this.level.isClientSide) {
-                this.explode();
-            }
-        }
         if (i <= 0) {
-            if (!this.level.isClientSide) {
-                this.explode();
-            }
-            this.discard();
+            doExplosion();
         } else {
-            this.updateInWaterStateAndDoFluidPushing();
             if (this.level.isClientSide) {
                 this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
             }
@@ -165,14 +170,30 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     }
 
 
+    private void doExplosion() {
+        if (this.getCoolDown() > 0) {
+            return;
+        }
+        if (!this.level.isClientSide) {
+            this.explode();
+        }
+        int count = this.getLeftCount() - 1;
+        this.setLeftCount(count);
+        int coolDown = (int) (data.getValue(AdditionType.EXPLOSION_INTERVAL));
+        this.setCoolDown(coolDown);
+        if (count <= 0) {
+            this.discard();
+        }
+    }
+
     private void doPunch(float punch) {
         float range = data.getValue(AdditionType.RANGE);
         List<Entity> list = this.level.getEntities(this,
                 new AABB(this.position().add(-range, -range, -range), this.position().add(range, range, range)));
-        for(Entity e : list){
+        for (Entity e : list) {
             float distancePercentage = (float) (Math.sqrt(e.distanceToSqr(this.position())) / range);
-            if(distancePercentage <= 1F){
-                float p = Math.max(-distancePercentage, punch * (1-distancePercentage)); //avoid draw too much
+            if (distancePercentage <= 1F) {
+                float p = Math.max(-distancePercentage, punch * (1 - distancePercentage)); //avoid draw too much
                 e.setDeltaMovement(e.getDeltaMovement().add(e.position().subtract(this.position()).normalize().
                         multiply(p, p, p)));
             }
@@ -192,52 +213,52 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     @Override
     public void addAdditionalSaveData(CompoundTag pCompound) {
         pCompound.put("tntFrameData", getDataTag());
+        pCompound.putInt("leftCount", getLeftCount());
+        pCompound.putInt("coolDown", getCoolDown());
+        pCompound.putInt("fuse", getFuse());
         super.addAdditionalSaveData(pCompound);
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag pCompound) {
         setDataTag(pCompound.getCompound("tntFrameData"));
+        setLeftCount(pCompound.getInt("leftCount"));
+        setCoolDown(pCompound.getInt("coolDown"));
+        setFuse(pCompound.getInt("fuse"));
         super.readAdditionalSaveData(pCompound);
     }
 
     @Override
-    protected void onHitEntity(EntityHitResult pResult) {
-        if (!this.level.isClientSide) {
-            this.explode();
+    protected void onHitEntity(EntityHitResult pResult) { //TODO can hit entity
+        if(this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_ENTITY_MIN_INSTABILITY) {
+            this.doExplosion();
         }
-        this.discard();
     }
 
     @Override
     protected void onHitBlock(BlockHitResult pResult) {
+        if(this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_BLOCK_MIN_INSTABILITY) {
+            this.doExplosion();
+        }
         float elasticity = data.getValue(AdditionType.ELASTICITY);
-        float stickiness = Math.max(0, 1-data.getValue(AdditionType.STICKINESS));
-        switch (pResult.getDirection().getAxis()){
+        float stickiness = Math.max(0, 1 + elasticity - data.getValue(AdditionType.STICKINESS));
+        switch (pResult.getDirection().getAxis()) {
             case X -> this.setDeltaMovement(this.getDeltaMovement().multiply(-elasticity, stickiness, stickiness));
             case Y -> this.setDeltaMovement(this.getDeltaMovement().multiply(stickiness, -elasticity, stickiness));
             case Z -> this.setDeltaMovement(this.getDeltaMovement().multiply(stickiness, stickiness, -elasticity));
         }
     }
 
-    /*@Override
-    protected void onHitBlock(BlockHitResult result) {
-        if (!this.level.isClientSide) {
-            this.explode();
-        }
-        this.discard();
-    }*/
-
     @Override
     public void shoot(double pX, double pY, double pZ, float pVelocity, float pInaccuracy) {
-        float velocity = this.data.getValue(AdditionType.VELOCITY)*pVelocity; //multiply self
-        Vec3 vec3 = (new Vec3(pX, pY, pZ)).normalize().add(this.random.nextGaussian() * (double)0.0075F * (double)pInaccuracy,
-                this.random.nextGaussian() * (double)0.0075F * (double)pInaccuracy,
-                this.random.nextGaussian() * (double)0.0075F * (double)pInaccuracy).scale((double)velocity);
+        float velocity = this.data.getValue(AdditionType.VELOCITY) * pVelocity; //multiply self
+        Vec3 vec3 = (new Vec3(pX, pY, pZ)).normalize().add(this.random.nextGaussian() * (double) 0.0075F * (double) pInaccuracy,
+                this.random.nextGaussian() * (double) 0.0075F * (double) pInaccuracy,
+                this.random.nextGaussian() * (double) 0.0075F * (double) pInaccuracy).scale((double) velocity);
         this.setDeltaMovement(vec3);
         double d0 = vec3.horizontalDistance();
-        this.setYRot((float)(Mth.atan2(vec3.x, vec3.z) * (double)(180F / (float)Math.PI)));
-        this.setXRot((float)(Mth.atan2(vec3.y, d0) * (double)(180F / (float)Math.PI)));
+        this.setYRot((float) (Mth.atan2(vec3.x, vec3.z) * (double) (180F / (float) Math.PI)));
+        this.setXRot((float) (Mth.atan2(vec3.y, d0) * (double) (180F / (float) Math.PI)));
         this.yRotO = this.getYRot();
         this.xRotO = this.getXRot();
     }
@@ -253,7 +274,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     }
 
     public void defuse() {
-        if(!this.level.isClientSide){
+        if (!this.level.isClientSide) {
             this.spawnAtLocation(TntFrameBlock.getDrop(true, data));
         }
         this.discard();

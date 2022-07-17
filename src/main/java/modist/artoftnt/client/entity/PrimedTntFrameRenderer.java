@@ -27,12 +27,14 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 
 import java.util.*;
-
+@OnlyIn(Dist.CLIENT)
 public class PrimedTntFrameRenderer extends EntityRenderer<PrimedTntFrame> {
 
     public PrimedTntFrameRenderer(EntityRendererProvider.Context pContext) {

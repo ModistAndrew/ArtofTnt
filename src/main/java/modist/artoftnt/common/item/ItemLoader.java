@@ -3,17 +3,14 @@ package modist.artoftnt.common.item;
 import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.client.block.entity.TntFrameBEWLR;
 import modist.artoftnt.common.block.BlockLoader;
-import modist.artoftnt.common.block.TntFrameBlock;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.IItemRenderProperties;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-
-import java.util.function.Consumer;
 
 public class ItemLoader {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ArtofTnt.MODID);
@@ -43,8 +40,6 @@ public class ItemLoader {
     public static Item.Properties getProperty(){
        return new Item.Properties().tab(ArtofTnt.ITEM_GROUP);
     }
-
-    public static final BlockEntityWithoutLevelRenderer BEWLR_INSTANCE = new TntFrameBEWLR();
 
     private static RegistryObject<Item> fromBlock(RegistryObject<Block> block) {
         return ITEMS.register(block.getId().getPath(), () -> new BlockItem(block.get(), getProperty()));

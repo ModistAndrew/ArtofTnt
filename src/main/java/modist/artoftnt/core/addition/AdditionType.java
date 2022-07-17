@@ -6,7 +6,7 @@ import java.util.function.BiFunction;
 public enum AdditionType {
     LOUDNESS(8, AdditionSlot.EXPLOSION_SOUND), SOUND_TYPE(8, AdditionSlot.EXPLOSION_SOUND),
 
-    VELOCITY(16, AdditionSlot.TNT_MOTION), ELASTICITY(8, AdditionSlot.TNT_MOTION),
+    VELOCITY(16, 0.2F, 10F, AdditionSlot.TNT_MOTION), ELASTICITY(8, AdditionSlot.TNT_MOTION),
     STICKINESS(8, AdditionSlot.TNT_MOTION), LIGHTNESS(8, AdditionSlot.TNT_MOTION),
 
     PUNCH(16, AdditionSlot.ENTITY_IMPACT), DRAW(8, AdditionSlot.ENTITY_IMPACT), TNT_PUNCH(8, AdditionSlot.ENTITY_IMPACT),
@@ -28,7 +28,7 @@ public enum AdditionType {
 
     FLAME(8, AdditionSlot.EXPLOSION_FLAME), TEMPERATURE(8, 0F, 8F, AdditionSlot.EXPLOSION_FLAME), LIGHTNING(8, AdditionSlot.EXPLOSION_FLAME),
 
-    LINGERING(8, AdditionSlot.EXPLOSION_DURATION), FREQUENCY(8, AdditionSlot.EXPLOSION_DURATION),
+    EXPLOSION_COUNT(8, 1, 8, AdditionSlot.EXPLOSION_DURATION), EXPLOSION_INTERVAL(8, 1, 10, AdditionSlot.EXPLOSION_DURATION),
 
     FIREWORK(8, AdditionSlot.EXPLOSION_EFFECT), PARTICLE(8, AdditionSlot.EXPLOSION_EFFECT),
     TNT_PARTICLE(8, AdditionSlot.ENTITY_EFFECT),

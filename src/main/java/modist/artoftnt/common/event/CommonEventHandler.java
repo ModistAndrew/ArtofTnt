@@ -2,7 +2,6 @@ package modist.artoftnt.common.event;
 
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.TntDefuserItem;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

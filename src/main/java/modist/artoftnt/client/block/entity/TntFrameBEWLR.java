@@ -10,8 +10,12 @@ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
+@OnlyIn(Dist.CLIENT)
 public class TntFrameBEWLR extends BlockEntityWithoutLevelRenderer {
+    public static final BlockEntityWithoutLevelRenderer BEWLR_INSTANCE = new TntFrameBEWLR();
     public TntFrameBEWLR() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
     }

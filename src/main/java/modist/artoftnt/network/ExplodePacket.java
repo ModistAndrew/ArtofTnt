@@ -5,15 +5,18 @@ import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.PacketUtils;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.network.NetworkEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Supplier;
 
-public class ExplodePacket extends ClientboundExplodePacket { //TODO forge
+public class ExplodePacket extends ClientboundExplodePacket {
     private final AdditionStack stack;
     private final int tier;
 
@@ -24,9 +27,9 @@ public class ExplodePacket extends ClientboundExplodePacket { //TODO forge
     }
 
     public ExplodePacket(FriendlyByteBuf pBuffer) {
-    super(pBuffer);
-    this.tier = pBuffer.readInt();
-    this.stack = new AdditionStack(tier, pBuffer.readNbt());
+        super(pBuffer);
+        this.tier = pBuffer.readInt();
+        this.stack = new AdditionStack(tier, pBuffer.readNbt());
     }
 
     public void write(FriendlyByteBuf pBuffer) {
@@ -35,10 +38,16 @@ public class ExplodePacket extends ClientboundExplodePacket { //TODO forge
         pBuffer.writeNbt(stack.serializeNBT());
     }
 
-    @Override
-    public void handle(ClientGamePacketListener pHandler) {
+    public void handle(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() ->
+                DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> () -> doExplode()
+                ));
+        ctx.get().setPacketHandled(true);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private void doExplode(){
         Minecraft minecraft = Minecraft.getInstance();
-        PacketUtils.ensureRunningOnSameThread(this, pHandler, minecraft);
         CustomExplosion exp = new CustomExplosion(stack, minecraft.level, null, this.getX(), this.getY(), this.getZ(), this.getPower(), this.getToBlow());
         exp.finalizeExplosion(true);
         minecraft.player.setDeltaMovement(minecraft.player.getDeltaMovement().add(this.getKnockbackX(), this.getKnockbackY(), this.getKnockbackZ()));

@@ -17,6 +17,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
 
 import javax.annotation.Nullable;
@@ -25,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+@OnlyIn(Dist.CLIENT)
 public class RenderUtil {
     private Transformation globalTransform;
     private final List<BakedQuad> quads = new ArrayList<>();

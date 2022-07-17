@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.entity.EntityLoader;
 import modist.artoftnt.common.item.ItemLoader;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.*;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -20,6 +22,15 @@ public class ArtofTnt {
         @Override
         public ItemStack makeIcon() {
             return new ItemStack(ItemLoader.TNT_FRAMES[0].get());
+        }
+
+        @Override
+        public Component getDisplayName() {
+            MutableComponent mutablecomponent = (new TextComponent("")).append(super.getDisplayName());
+            MutableComponent mutablecomponent1 = new TextComponent("[WIP!]");
+                mutablecomponent1.withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.RED);
+                mutablecomponent.append(mutablecomponent1);
+            return mutablecomponent;
         }
     };
 

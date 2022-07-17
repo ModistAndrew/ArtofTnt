@@ -88,6 +88,10 @@ public class Addition {
         register(AdditionType.LIGHTNESS, 0.4F, 1, 8, 0, 0, false, Items.FEATHER);
         register(AdditionType.ELASTICITY, 0.4F, 1, 8, 0, 0, true, Items.SLIME_BLOCK);
         register(AdditionType.STICKINESS, 0.4F, 1, 8, 0, 0, true, Items.HONEY_BLOCK);
+        register(AdditionType.EXPLOSION_COUNT, 5, 1, 8, 0, 0, false, Items.DRAGON_BREATH);
+        register(AdditionType.EXPLOSION_INTERVAL, 5, 1, 8, 0, 0, false, Items.REDSTONE);
+        register(AdditionType.INSTABILITY, 1, 1, 8, 0, 0, false, Items.GOLD_INGOT);
+        register(AdditionType.INSTABILITY, -1, 1, 8, 0, 0, false, Items.IRON_INGOT);
     }
 
 }
