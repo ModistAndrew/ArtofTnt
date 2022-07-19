@@ -57,8 +57,8 @@ public class AdditionSpecialRenderer {
 
     public static void putSpecialItemStackQuads(RenderUtil renderer, ItemStack stack, Addition addition, int index, int slot, boolean up, boolean down) {
         float top = index * 2 + 2 - (index == 7 ? 2 * DELTA : 0F);
-        switch (addition.name) {
-            case "slime_block" -> {
+        switch (addition.name.toString()) {
+            case "artoftnt:slime_block" -> {
                 renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
                         AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         SLIME_OUTER, up, down);
@@ -66,7 +66,7 @@ public class AdditionSpecialRenderer {
                         AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
                         SLIME_INNER, true, true);
             }
-            case "honey_block" -> {
+            case "artoftnt:honey_block" -> {
                 renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
                         AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         HONEY_OUTER, up, down);
@@ -74,7 +74,7 @@ public class AdditionSpecialRenderer {
                         AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
                         HONEY_INNER, true, true);
             }
-            case "lingering_potion" -> {
+            case "artoftnt:lingering_potion" -> {
                 renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
                         AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         POTION_OUTER, up, down);
@@ -82,7 +82,7 @@ public class AdditionSpecialRenderer {
                         AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
                         POTION_INNER, true, true, Minecraft.getInstance().getItemColors().getColor(stack, 0));
             }
-            case "firework_star" -> {
+            case "artoftnt:firework_star" -> {
                 renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
                         AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         FIREWORK_OUTER, up, down);
@@ -90,7 +90,7 @@ public class AdditionSpecialRenderer {
                         AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
                         FIREWORK_INNER, true, true, Minecraft.getInstance().getItemColors().getColor(stack, 1));
             }
-            case "string" -> renderer.putCubeFace16(0, 16, 0, 16, 16, 16, STRINGS[index], Direction.UP);
+            case "artoftnt:string" -> renderer.putCubeFace16(0, 16, 0, 16, 16, 16, STRINGS[index], Direction.UP);
         }
     }
 

@@ -1,6 +1,7 @@
 package modist.artoftnt.core.addition.data;
 
 import com.google.gson.*;
+import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.core.addition.Addition;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +30,7 @@ public class AdditionManager extends SimpleJsonResourceReloadListener {
     protected void apply(Map<ResourceLocation, JsonElement> pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
         pObject.forEach((r, j)-> {
             AdditionWrapper wrapper = GSON.fromJson(j, AdditionWrapper.class);
-            Addition.register(r.getPath(), wrapper);
+            Addition.register(r, wrapper);
         });
     }
 

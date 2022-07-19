@@ -92,6 +92,9 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
         if (!checkCount(addition)) {
             return false;
         }
+        if(addition.minTier > this.tier) {
+            return false;
+        }
         addAndUpdate(getFreeSlot(addition.type.slot), itemStack);
         return true;
     }

@@ -11,7 +11,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.*;
 
 public class Addition {
-    public final String name;
+    public final ResourceLocation name;
     public final AdditionType type;
     public final float increment; //may <0 when type is instability
     public final int minTier;
@@ -26,7 +26,7 @@ public class Addition {
 
     private static final String ADDITION = "tnt_frame_additions/";
 
-    public Addition(String name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
+    public Addition(ResourceLocation name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
         this.item = item;
         this.name = name;
         this.type = type;
@@ -36,19 +36,25 @@ public class Addition {
         this.weight = weight;
         this.instability = instability;
         this.specialRenderer = specialRenderer;
-        this.texture = createResourceLocation(name);
+        this.texture = new ResourceLocation(name.getNamespace(), ADDITION+name.getPath());
     }
 
-    public static void register(String name, AdditionManager.AdditionWrapper wrapper){
+    public static void register(ResourceLocation name, AdditionManager.AdditionWrapper wrapper){
         register(name, AdditionType.fromString(wrapper.type), wrapper.increment, wrapper.minTier, wrapper.maxCount, wrapper.weight,
                 wrapper.instability, wrapper.specialRenderer, ForgeRegistries.ITEMS.getValue(new ResourceLocation(wrapper.item)));
     }
 
-    public static void register(String name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
+    public static void register(ResourceLocation name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
         Addition addition = new Addition(name, type, increment, minTier, maxCount, weight, instability, specialRenderer, item);
-        ITEM_MAP.put(addition.item, addition);
+        if(!ITEM_MAP.containsKey(addition.item)) {
+            ITEM_MAP.put(addition.item, addition);
+        } else {
+            ArtofTnt.LOGGER.warn("duplicate item {} for tnt frame addition json {} and {}, you may overwrite by creating a same file",
+                    addition.item.getRegistryName().toString(), ITEM_MAP.get(addition.item).name, name);
+        }
     }
 
+    @Deprecated
     public static ResourceLocation createResourceLocation(String name) {
         return new ResourceLocation(ArtofTnt.MODID, ADDITION+name);
     }
