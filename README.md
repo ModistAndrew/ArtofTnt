@@ -4,7 +4,8 @@ put additions json in data/**[namespace]**/tnt_frame_additions, use artoftnt nam
 **demo:**  
 `data/artoftnt/gunpowder.json`  
 _//the texture or the model file(if specialRenderer is true and is not built in) should be put in_  
-_//assets/[namespace]/textures/tnt_frame_additions or assets/[namespace]/models/tnt_frame_additions with a same name_  
+_//assets/[namespace]/textures/tnt_frame_additions or_ 
+_//assets/[namespace]/models/tnt_frame_additions with a same name_  
 `{`  
 `"type": "range",` _//the addition type, see @AdditionType_  
 `"item": "minecraft:gunpowder",` _//the registry name of the item to add, shouldn't duplicate_  
