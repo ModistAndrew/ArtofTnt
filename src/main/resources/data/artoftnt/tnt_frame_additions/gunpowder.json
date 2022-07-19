@@ -1,8 +1,8 @@
 {
-  "type": "loudness",
-  "item": "minecraft:grass",
+  "type": "range",
+  "item": "minecraft:gunpowder",
   "increment": 1.0,
-  "minTier": 1,
+  "minTier": 0,
   "maxCount": 8,
   "weight": 0.0,
   "instability": 0.0,

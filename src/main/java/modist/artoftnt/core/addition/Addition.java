@@ -67,4 +67,8 @@ public class Addition {
         return ITEM_MAP.get(item);
     }
 
+    public static void clear(){
+        ITEM_MAP.clear();
+    }
+
 }

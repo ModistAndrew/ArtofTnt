@@ -9,7 +9,7 @@ _//assets/[namespace]/textures/tnt_frame_additions or assets/[namespace]/models/
 `"type": "range",` _//the addition type, see @AdditionType_  
 `"item": "minecraft:gunpowder",` _//the registry name of the item to add, shouldn't duplicate_  
 `"increment": 1.0,` _//the increment to the addition type, may be negative when type is instability_  
-`"minTier": 1,` _//the min level of the tnt frame to put, 0-3_  
+`"minTier": 0,` _//the min level of the tnt frame to put, 0-3， 4+ to ban_  
 `"maxCount": 8,` _//max count of the addition, will also be restricted by the max count of type and slot_  
 `"weight": 0.0,` _//weight added to the tnt frame_  
 `"instability": 0.0,` _//instability added to the tnt frame, should be 0 when type is instability_  

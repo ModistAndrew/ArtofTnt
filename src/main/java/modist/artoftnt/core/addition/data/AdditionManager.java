@@ -28,6 +28,7 @@ public class AdditionManager extends SimpleJsonResourceReloadListener {
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        Addition.clear(); //clear first!
         pObject.forEach((r, j)-> {
             AdditionWrapper wrapper = GSON.fromJson(j, AdditionWrapper.class);
             Addition.register(r, wrapper);
