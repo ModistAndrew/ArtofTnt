@@ -6,7 +6,7 @@ import java.util.function.BiFunction;
 
 public class AdditionType {
     private static final HashMap<String, AdditionType> TYPES = new HashMap<>();
-    public static final AdditionType EMPTY = new Builder("empty", AdditionSlot.EXPLOSION_EFFECT).build();
+    public static final AdditionType EMPTY = new Builder("empty", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO dead bush
     public static final AdditionType LOUDNESS = new Builder("loudness", AdditionSlot.EXPLOSION_SOUND).build();
     public static final AdditionType SOUND_TYPE = new Builder("sound_type", AdditionSlot.EXPLOSION_SOUND).build();
     public static final AdditionType VELOCITY = new Builder("velocity", AdditionSlot.TNT_MOTION).important().withInitialValue(0.2F).build();

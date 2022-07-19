@@ -23,8 +23,8 @@ public class Addition {
     public final Item item;
     public final ResourceLocation texture;
     private static final Map<Item, Addition> ITEM_MAP = new HashMap<>(); //item 2 addition
-
     private static final String ADDITION = "tnt_frame_additions/";
+    private static Addition EMPTY;
 
     public Addition(ResourceLocation name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
         this.item = item;
@@ -46,6 +46,9 @@ public class Addition {
 
     public static void register(ResourceLocation name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
         Addition addition = new Addition(name, type, increment, minTier, maxCount, weight, instability, specialRenderer, item);
+        if(addition.name.equals(new ResourceLocation(ArtofTnt.MODID, "empty"))){
+            EMPTY = addition;
+        }
         if(!ITEM_MAP.containsKey(addition.item)) {
             ITEM_MAP.put(addition.item, addition);
         } else {
@@ -64,7 +67,7 @@ public class Addition {
     }
 
     public static Addition fromItem(Item item) {
-        return ITEM_MAP.get(item);
+        return ITEM_MAP.getOrDefault(item, EMPTY);
     }
 
     public static void clear(){
