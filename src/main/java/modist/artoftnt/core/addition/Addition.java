@@ -53,52 +53,12 @@ public class Addition {
         return new ResourceLocation(ArtofTnt.MODID, ADDITION+name);
     }
 
-    @Deprecated
-    public static void register(AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
-        Addition addition = new Addition(item.getRegistryName().getPath(), type, increment, minTier, maxCount, weight, instability, specialRenderer, item);
-        ITEM_MAP.put(addition.item, addition);
-    }
-
     public static boolean contains(Item item) {
         return ITEM_MAP.containsKey(item);
     }
 
     public static Addition fromItem(Item item) {
         return ITEM_MAP.get(item);
-    }
-
-    static {
-        register(AdditionType.FIREWORK, 1, 1, 8, 0, 0, true, Items.FIREWORK_STAR);
-        register(AdditionType.POTION, 1, 1, 8, 0, 0, true, Items.LINGERING_POTION);
-        register(AdditionType.FUSE, 100, 1, 8, 0, 0, true, Items.STRING);
-        register(AdditionType.RANGE, 1, 1, 16, 10, 1, false, Items.GUNPOWDER);
-        register(AdditionType.DOWN, 1, 1, 8, 1, 1, false, Items.WHITE_WOOL);
-        register(AdditionType.UP, 1, 1, 8, 1, 1, false, Items.BLACK_WOOL);
-        register(AdditionType.NORTH, 1, 1, 8, 1, 1, false, Items.RED_WOOL);
-        register(AdditionType.SOUTH, 1, 1, 8, 1, 1, false, Items.GREEN_WOOL);
-        register(AdditionType.EAST, 1, 1, 8, 1, 1, false, Items.BLUE_WOOL);
-        register(AdditionType.WEST, 1, 1, 8, 1, 1, false, Items.ORANGE_WOOL);
-        register(AdditionType.STRENGTH, 1, 1, 16, 10, 0, false, Items.OBSIDIAN);
-        register(AdditionType.PUNCH, 1, 1, 16, 0, 1, false, Items.PISTON);
-        register(AdditionType.DRAW, 1, 1, 16, 0, 1, false, Items.HOPPER);
-        register(AdditionType.TNT_PUNCH, 1, 1, 16, 0, 1, false, Items.STICKY_PISTON);
-        register(AdditionType.TNT_DRAW, 1, 1, 16, 0, 1, false, Items.TRAPPED_CHEST);
-        register(AdditionType.DAMAGE, 1, 1, 16, 0, 0, false, Items.QUARTZ);
-        register(AdditionType.VELOCITY, 1, 1, 16, 0, 0, false, Items.FIREWORK_ROCKET);
-        register(AdditionType.SHAPE, 1, 1, 1, 0, 0, false, Items.GOLDEN_APPLE);
-        register(AdditionType.PIERCING, 1, 1, 8, 0, 0, false, Items.ENDER_PEARL);
-        register(AdditionType.TEMPERATURE, 1, 1, 8, 0, 0, false, Items.LAVA_BUCKET);
-        register(AdditionType.LIGHTNING, 1, 1, 8, 0, 0, false, Items.COPPER_BLOCK);
-        register(AdditionType.FLAME, 1, 1, 8, 0, 0, false, Items.BLAZE_POWDER);
-        register(AdditionType.DROP, 1, 1, 8, 0, 0, false, Items.SAND);
-        register(AdditionType.CONTAINER, 1, 1, 8, 0, 0, false, ItemLoader.POSITION_CONTAINER_MARKERS[0].get());
-        register(AdditionType.LIGHTNESS, 0.4F, 1, 8, 0, 0, false, Items.FEATHER);
-        register(AdditionType.ELASTICITY, 0.4F, 1, 8, 0, 0, true, Items.SLIME_BLOCK);
-        register(AdditionType.STICKINESS, 0.4F, 1, 8, 0, 0, true, Items.HONEY_BLOCK);
-        register(AdditionType.EXPLOSION_COUNT, 5, 1, 8, 0, 0, false, Items.DRAGON_BREATH);
-        register(AdditionType.EXPLOSION_INTERVAL, 5, 1, 8, 0, 0, false, Items.REDSTONE);
-        register(AdditionType.INSTABILITY, 1, 1, 8, 0, 0, false, Items.GOLD_INGOT);
-        register(AdditionType.INSTABILITY, -1, 1, 8, 0, 0, false, Items.IRON_INGOT);
     }
 
 }
