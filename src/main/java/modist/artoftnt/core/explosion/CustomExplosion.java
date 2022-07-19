@@ -135,10 +135,12 @@ public class CustomExplosion extends Explosion { //have to override private fiel
 
             for (BlockPos blockpos : this.toBlow) {
                 BlockPos pos1 = blockpos.immutable();
-                MinecraftForge.EVENT_BUS.post(new CustomExplosionBlockBreakEvent(this, pos1, getBlockPercentage(pos1)));
-                MinecraftForge.EVENT_BUS.post(new CustomExplosionBlockDropEvent(this, pos1, getBlockPercentage(pos1), objectArrayList));
-                BlockState blockstate = level.getBlockState(pos1);
-                blockstate.onBlockExploded(level, pos1, this);
+                if(!MinecraftForge.EVENT_BUS.post(new CustomExplosionBlockBreakEvent.Pre(this, pos1, getBlockPercentage(pos1)))) {
+                    MinecraftForge.EVENT_BUS.post(new CustomExplosionBlockDropEvent(this, pos1, getBlockPercentage(pos1), objectArrayList));
+                    BlockState blockstate = level.getBlockState(pos1);
+                    blockstate.onBlockExploded(level, pos1, this);
+                    MinecraftForge.EVENT_BUS.post(new CustomExplosionBlockBreakEvent.Post(this, pos1, getBlockPercentage(pos1)));
+                }
             }
 
             MinecraftForge.EVENT_BUS.post(new CustomExplosionDoBlockDropEvent(this, objectArrayList));

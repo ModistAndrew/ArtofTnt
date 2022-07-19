@@ -2,7 +2,9 @@ package modist.artoftnt.core.explosion.event;
 
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.explosion.CustomExplosion;
+import net.minecraftforge.eventbus.api.Cancelable;
 
+@Cancelable
 public class CustomExplosionEvent extends TntFrameEvent{ //TODO cancelable
     public final CustomExplosion explosion;
 

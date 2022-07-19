@@ -7,8 +7,8 @@ import java.util.function.BiFunction;
 public class AdditionType {
     private static final HashMap<String, AdditionType> TYPES = new HashMap<>();
     public static final AdditionType EMPTY = new Builder("empty", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO dead bush
-    public static final AdditionType LOUDNESS = new Builder("loudness", AdditionSlot.EXPLOSION_SOUND).build();
-    public static final AdditionType SOUND_TYPE = new Builder("sound_type", AdditionSlot.EXPLOSION_SOUND).build();
+    public static final AdditionType LOUDNESS = new Builder("loudness", AdditionSlot.EXPLOSION_SOUND).build(); //TODO
+    public static final AdditionType SOUND_TYPE = new Builder("sound_type", AdditionSlot.EXPLOSION_SOUND).build(); //TODO
     public static final AdditionType VELOCITY = new Builder("velocity", AdditionSlot.TNT_MOTION).important().withInitialValue(0.2F).build();
     public static final AdditionType ELASTICITY = new Builder("elasticity", AdditionSlot.TNT_MOTION).build();
     public static final AdditionType STICKINESS = new Builder("stickiness", AdditionSlot.TNT_MOTION).build();
@@ -30,19 +30,19 @@ public class AdditionType {
     public static final AdditionType STRENGTH = new Builder("strength", AdditionSlot.EXPLOSION_STRENGTH).important().build();
     public static final AdditionType DAMAGE = new Builder("damage", AdditionSlot.ENTITY_EFFECT).important().build();
     public static final AdditionType POTION = new Builder("potion", AdditionSlot.ENTITY_EFFECT).build();
-    public static final AdditionType DROP = new Builder("drop", AdditionSlot.BLOCK_DROP).build();
+    public static final AdditionType DROP = new Builder("drop", AdditionSlot.BLOCK_DROP).build(); //TODO rough
     public static final AdditionType CONTAINER = new Builder("container", AdditionSlot.BLOCK_DROP).single().build();
     public static final AdditionType FLAME = new Builder("flame", AdditionSlot.EXPLOSION_FLAME).build();
     public static final AdditionType TEMPERATURE = new Builder("temperature", AdditionSlot.EXPLOSION_FLAME).withMaxValue(8F).build();
     public static final AdditionType LIGHTNING = new Builder("lightning", AdditionSlot.EXPLOSION_FLAME).build();
     public static final AdditionType EXPLOSION_COUNT = new Builder("explosion_count", AdditionSlot.EXPLOSION_DURATION).withInitialValue(1).build();
     public static final AdditionType EXPLOSION_INTERVAL = new Builder("explosion_interval", AdditionSlot.EXPLOSION_DURATION).withInitialValue(1).build();
-    public static final AdditionType FIREWORK = new Builder("firework", AdditionSlot.EXPLOSION_EFFECT).build();
-    public static final AdditionType PARTICLE = new Builder("particle", AdditionSlot.EXPLOSION_EFFECT).build();
-    public static final AdditionType TNT_PARTICLE = new Builder("tnt_particle", AdditionSlot.EXPLOSION_EFFECT).build();
+    public static final AdditionType FIREWORK = new Builder("firework", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
+    public static final AdditionType PARTICLE = new Builder("particle", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
+    public static final AdditionType TNT_PARTICLE = new Builder("tnt_particle", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
     public static final AdditionType FUSE = new Builder("fuse", AdditionSlot.TNT_FUSE).important().build();
     public static final AdditionType SHAPE = new Builder("explosion_shape", AdditionSlot.EXPLOSION_SHAPE).single().build();
-
+//TODO light and directional push
     public final String id;
     public final int maxCount;
     public final AdditionSlot slot;

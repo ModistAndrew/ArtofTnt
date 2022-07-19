@@ -16,8 +16,8 @@ import javax.annotation.Nullable;
 
 public class ExplosionHelper {
 
-    public static void explode(AdditionStack stack, Level pLevel, @Nullable PrimedTntFrame pEntity, double pX, double pY, double pZ, float pExplosionRadius, boolean pCausesFire, Explosion.BlockInteraction pMode) {
-        explode(stack, pLevel, pEntity, null, null, pX, pY, pZ, pExplosionRadius, pCausesFire, pMode);
+    public static void explode(AdditionStack stack, Level pLevel, @Nullable PrimedTntFrame pEntity, double pX, double pY, double pZ, float pExplosionRadius, boolean pCausesFire) {
+        explode(stack, pLevel, pEntity, null, null, pX, pY, pZ, pExplosionRadius, pCausesFire, Explosion.BlockInteraction.BREAK);
     }
 
     public static void explode(AdditionStack stack, Level pLevel, @Nullable PrimedTntFrame pExploder, @Nullable DamageSource pDamageSource, @Nullable ExplosionDamageCalculator pContext,

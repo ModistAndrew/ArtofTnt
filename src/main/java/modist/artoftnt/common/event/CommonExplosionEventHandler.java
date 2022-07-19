@@ -1,6 +1,7 @@
 package modist.artoftnt.common.event;
 
 import com.mojang.datafixers.util.Pair;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import modist.artoftnt.common.item.PositionMarkerItem;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
@@ -33,12 +34,17 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.apache.logging.log4j.core.net.Priority;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CommonExplosionEventHandler {
@@ -137,20 +143,14 @@ public class CommonExplosionEventHandler {
         BlockPos blockPos = event.pos;
         CustomExplosion explosion = event.explosion;
         BlockState blockstate = explosion.level.getBlockState(blockPos);
-        float drop = explosion.getAdditionStack().getValue(AdditionType.DROP);
         if (!blockstate.isAir()) {
-            if (drop > 0 && blockstate.canDropFromExplosion(explosion.level, blockPos, explosion)) {
+            if (blockstate.canDropFromExplosion(explosion.level, blockPos, explosion)) {
                 BlockEntity blockentity = blockstate.hasBlockEntity() ? explosion.level.getBlockEntity(blockPos) : null;
                 LootContext.Builder lootContext$builder = (new LootContext.Builder((ServerLevel) explosion.level)).withRandom(explosion.level.random)
                         .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(blockPos))
                         .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
                         .withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockentity)
                         .withOptionalParameter(LootContextParams.THIS_ENTITY, explosion.getSource());
-                if (explosion.blockInteraction == net.minecraft.world.level.Explosion.BlockInteraction.DESTROY) {
-                    if (drop < 1) {
-                        lootContext$builder.withParameter(LootContextParams.EXPLOSION_RADIUS, 1 / drop);
-                    }
-                }
                 blockstate.getDrops(lootContext$builder).forEach(stack -> CustomExplosion.addBlockDrops(event.objectArrayList, stack, blockPos));
             }
         }
@@ -163,9 +163,8 @@ public class CommonExplosionEventHandler {
         BlockState blockstate = explosion.level.getBlockState(blockPos);
         float temperature = explosion.getAdditionStack().getValue(AdditionType.TEMPERATURE);
         float strength = explosion.getAdditionStack().getValue(AdditionType.STRENGTH);
-        float drop = explosion.getAdditionStack().getValue(AdditionType.DROP);
         if (!blockstate.isAir()) {
-            if (drop > 0 && blockstate.canDropFromExplosion(explosion.level, blockPos, explosion)) {
+            if (blockstate.canDropFromExplosion(explosion.level, blockPos, explosion)) {
                 ItemStack specialDrop = ExplosionSpecialBlockDrops.getSpecialDrop(blockstate.getBlock(), event.percentage, temperature, strength);
                 if (!specialDrop.isEmpty()) {
                     CustomExplosion.addBlockDrops(event.objectArrayList, specialDrop, blockPos);
@@ -175,7 +174,7 @@ public class CommonExplosionEventHandler {
     }
 
     @SubscribeEvent
-    public static void lightningBlockEvent(CustomExplosionBlockBreakEvent event) {
+    public static void lightningBlockEvent(CustomExplosionBlockBreakEvent.Post event) {
         CustomExplosion explosion = event.explosion;
         float lightning = explosion.getAdditionStack().getValue(AdditionType.LIGHTNING);
         if (lightning > 4F) {
@@ -188,7 +187,7 @@ public class CommonExplosionEventHandler {
     }
 
     @SubscribeEvent
-    public static void flameBlockEvent(CustomExplosionBlockBreakEvent event) {
+    public static void flameBlockEvent(CustomExplosionBlockBreakEvent.Post event) {
         CustomExplosion explosion = event.explosion;
         float flame = explosion.getAdditionStack().getValue(AdditionType.FLAME);
         if (flame > 0F) {
@@ -201,13 +200,14 @@ public class CommonExplosionEventHandler {
     }
 
     @SubscribeEvent
-    public static void temperatureBlockEvent(CustomExplosionBlockBreakEvent event) {
+    public static void temperatureBlockEvent(CustomExplosionBlockBreakEvent.Pre event) {
         CustomExplosion explosion = event.explosion;
         float temperature = explosion.getAdditionStack().getValue(AdditionType.TEMPERATURE);
         if (temperature > 4F) {
             BlockState state = explosion.level.getBlockState(event.pos);
             if (explosion.random.nextInt(10) < temperature * event.percentage && state.is(BlockTags.BASE_STONE_OVERWORLD)) {
                 explosion.level.setBlockAndUpdate(event.pos, Fluids.LAVA.defaultFluidState().createLegacyBlock());
+                event.setCanceled(true); //prevent block drop
             }
         }
     }
@@ -219,7 +219,16 @@ public class CommonExplosionEventHandler {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void setBlockDropChance(CustomExplosionDoBlockDropEvent event) {
+        float drop = event.explosion.getAdditionStack().getValue(AdditionType.DROP);
+        List<Pair<ItemStack, BlockPos>> stacks = event.objectArrayList.stream().filter(o -> event.explosion.random.nextFloat() <= drop)
+                .collect(Collectors.toList());
+        event.objectArrayList.clear();
+        event.objectArrayList.addAll(stacks);
+    }
+
+    @SubscribeEvent(priority=EventPriority.HIGH)
     public static void specialDoBlockDropEvent(CustomExplosionDoBlockDropEvent event) {
         CustomExplosion explosion = event.explosion;
         BlockPos containerPos = null;
@@ -239,10 +248,10 @@ public class CommonExplosionEventHandler {
                 }
             }
         }
-        for (Pair<ItemStack, BlockPos> pair : event.objectArrayList) {
-            if (containerPos != null) {
+        if(containerPos != null) { //has pos
+            for (Pair<ItemStack, BlockPos> pair : event.objectArrayList) {
                 ItemStack remain = pair.getFirst();
-                if (container.get()!=null) {
+                if (container.get() != null) {
                     for (int i = 0; i < container.get().getSlots(); i++) {
                         remain = container.get().insertItem(i, remain, false);
                         if (remain.isEmpty()) {
@@ -254,6 +263,7 @@ public class CommonExplosionEventHandler {
                     Block.popResource(explosion.level, containerPos, remain);
                 }
             }
+            event.setCanceled(true);
         }
     }
 

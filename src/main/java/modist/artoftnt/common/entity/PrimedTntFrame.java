@@ -22,7 +22,7 @@ import net.minecraft.world.phys.*;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class PrimedTntFrame extends AbstractHurtingProjectile {
+public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't event
     public final int tier;
     private static final EntityDataAccessor<CompoundTag> DATA_TNT_FRAME = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.COMPOUND_TAG);
     private static final EntityDataAccessor<Integer> DATA_LEFT_COUNT = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.INT);
@@ -203,7 +203,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
 
     protected void explode() {
         ExplosionHelper.explode(this.data.additions, this.level, this, this.getX(), this.getY(0.0625D), this.getZ(),
-                4F, false, Explosion.BlockInteraction.DESTROY);
+                4F, false);
     }
 
     @Override
