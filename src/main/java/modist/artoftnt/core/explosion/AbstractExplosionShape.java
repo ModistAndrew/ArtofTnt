@@ -2,6 +2,7 @@ package modist.artoftnt.core.explosion;
 
 import com.mojang.math.Vector3f;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -23,7 +24,7 @@ public abstract class AbstractExplosionShape {
     protected  final int y;
     protected  final int z;
     protected final float radius;
-    protected final float[] directionRadii;
+    protected final float[] directionRadii = new float[6];
     protected final float fluidFactor;
     protected final float piercingFactor;
     protected final float strengthFactor;
@@ -40,11 +41,17 @@ public abstract class AbstractExplosionShape {
         this.x = center.getX();
         this.y = center.getY();
         this.z = center.getZ();
-        this.radius = explosion.radius;
-        this.directionRadii = explosion.directionRadii;
-        this.fluidFactor = explosion.temperature;
-        this.piercingFactor = explosion.piercing;
-        this.strengthFactor = explosion.strength;
+        AdditionStack stack = explosion.getAdditionStack();
+        this.radius = stack.getValue(AdditionType.RANGE);
+        this.strengthFactor = stack.getValue(AdditionType.STRENGTH);
+        this.piercingFactor = stack.getValue(AdditionType.PIERCING);
+        this.fluidFactor = stack.getValue(AdditionType.TEMPERATURE);
+        this.directionRadii[0] = stack.getValue(AdditionType.DOWN);
+        this.directionRadii[1] = stack.getValue(AdditionType.UP);
+        this.directionRadii[2] = stack.getValue(AdditionType.NORTH);
+        this.directionRadii[3] = stack.getValue(AdditionType.SOUTH);
+        this.directionRadii[4] = stack.getValue(AdditionType.WEST);
+        this.directionRadii[5] = stack.getValue(AdditionType.EAST);
     }
 
     protected abstract Set<BlockPos> getEdge();

@@ -2,9 +2,11 @@ package modist.artoftnt.core.addition;
 
 import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.common.item.ItemLoader;
+import modist.artoftnt.core.addition.data.AdditionManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 
@@ -20,15 +22,13 @@ public class Addition {
     //not for shape!
     public final Item item;
     public final ResourceLocation texture;
-    public static final List<Addition> LIST = new ArrayList<>();
     private static final Map<Item, Addition> ITEM_MAP = new HashMap<>(); //item 2 addition
-    public static final Set<ResourceLocation> TEXTURES = new HashSet<>();
 
-    private static final String ADDITION = "addition/";
+    private static final String ADDITION = "tnt_frame_additions/";
 
-    private Addition(AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
+    public Addition(String name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
         this.item = item;
-        this.name = this.item.asItem().getRegistryName().getPath();
+        this.name = name;
         this.type = type;
         this.increment = increment;
         this.minTier = minTier;
@@ -39,17 +39,24 @@ public class Addition {
         this.texture = createResourceLocation(name);
     }
 
+    public static void register(String name, AdditionManager.AdditionWrapper wrapper){
+        register(name, AdditionType.fromString(wrapper.type), wrapper.increment, wrapper.minTier, wrapper.maxCount, wrapper.weight,
+                wrapper.instability, wrapper.specialRenderer, ForgeRegistries.ITEMS.getValue(new ResourceLocation(wrapper.item)));
+    }
+
+    public static void register(String name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
+        Addition addition = new Addition(name, type, increment, minTier, maxCount, weight, instability, specialRenderer, item);
+        ITEM_MAP.put(addition.item, addition);
+    }
+
     public static ResourceLocation createResourceLocation(String name) {
         return new ResourceLocation(ArtofTnt.MODID, ADDITION+name);
     }
 
+    @Deprecated
     public static void register(AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
-        Addition addition = new Addition(type, increment, minTier, maxCount, weight, instability, specialRenderer, item);
-        LIST.add(addition);
+        Addition addition = new Addition(item.getRegistryName().getPath(), type, increment, minTier, maxCount, weight, instability, specialRenderer, item);
         ITEM_MAP.put(addition.item, addition);
-        if(!specialRenderer) {
-            TEXTURES.add(addition.texture);
-        }
     }
 
     public static boolean contains(Item item) {

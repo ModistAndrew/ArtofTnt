@@ -85,7 +85,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
         if(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT)) {
             int i = 0;
             int j = 0;
-            for (AdditionType type : AdditionType.values()) {
+            for (AdditionType type : AdditionType.getTypes()) {
                 if (type != AdditionType.INSTABILITY && additions.getValue(type) > 0) { //TODO: what to show
                     ++j;
                     if (i <= 4) {

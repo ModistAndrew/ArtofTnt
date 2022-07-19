@@ -40,7 +40,7 @@ public class ExplodePacket extends ClientboundExplodePacket {
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
-                DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> () -> doExplode()
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> doExplode()
                 ));
         ctx.get().setPacketHandled(true);
     }

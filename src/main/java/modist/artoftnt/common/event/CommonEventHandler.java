@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.Mod;
 public class CommonEventHandler {
 
     @SubscribeEvent
-    public static void registerDispenser(AttackEntityEvent event) {
+    public static void defuse(AttackEntityEvent event) {
         if(!event.getPlayer().level.isClientSide &&
                 event.getPlayer().getMainHandItem().getItem() instanceof TntDefuserItem) {
             if(event.getTarget() instanceof PrimedTntFrame tntFrame) {

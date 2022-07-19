@@ -1,5 +1,6 @@
 package modist.artoftnt.client.event;
 
+import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.client.block.model.AdditionSpecialRenderer;
 import modist.artoftnt.client.block.model.RemoteExploderBlockBakedModel;
 import modist.artoftnt.client.block.model.TntFrameBlockBakedModel;
@@ -26,6 +27,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -80,8 +82,9 @@ public class ClientRegistryEventHandler {
     @SubscribeEvent
     public static void textureStitch(TextureStitchEvent.Pre event) {
         if (event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS)) {
-            Addition.TEXTURES.forEach(event::addSprite);
-            AdditionSpecialRenderer.TEXTURES.forEach(event::addSprite);
+            Minecraft.getInstance().getResourceManager().listResources("textures/tnt_frame_additions",
+                    (f)->f.endsWith(".png")).stream().map(r -> new ResourceLocation(r.getNamespace(),
+                    r.getPath().replace(".png","").replace("textures/", ""))).forEach(event::addSprite); //force add all
         }
     }
 

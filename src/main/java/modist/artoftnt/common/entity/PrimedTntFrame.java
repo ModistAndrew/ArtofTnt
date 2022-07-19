@@ -134,15 +134,16 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
             doPunch(punch);
         }
         //super.tick();
-        HitResult hitresult = ProjectileUtil.getHitResult(this, this::canHitEntity);
-        if (hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
-            this.onHit(hitresult);
-        }
 
         if (!this.isNoGravity()) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0D,
                     -0.04D * (1 - data.getValue(AdditionType.LIGHTNESS)),
                     0.0D));
+        }
+
+        HitResult hitresult = ProjectileUtil.getHitResult(this, this::canHitEntity);
+        if (hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
+            this.onHit(hitresult);
         }
 
         this.move(MoverType.SELF, this.getDeltaMovement());
@@ -236,7 +237,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     }
 
     @Override
-    protected void onHitBlock(BlockHitResult pResult) {
+    protected void onHitBlock(BlockHitResult pResult) { //TODO sometimes not available, combine with super.tick?
         if(this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_BLOCK_MIN_INSTABILITY) {
             this.doExplosion();
         }
