@@ -1,4 +1,4 @@
-package modist.artoftnt.common.event;
+package modist.artoftnt.core.explosion.handler;
 
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -53,7 +53,7 @@ public class CommonExplosionEventHandler {
     public static void damageEvent(CustomExplosionEntityEvent event) {
         CustomExplosion explosion = event.explosion;
         float percentage = event.percentage;
-        float damage = explosion.getAdditionStack().getValue(AdditionType.DAMAGE);
+        float damage = event.data.getValue(AdditionType.DAMAGE);
         if (damage > 0) {
             event.entity.hurt(explosion.getDamageSource(), damage * ((int) ((percentage * percentage + percentage) / 2.0D * 7.0D + 1.0D)));
         }
@@ -63,7 +63,7 @@ public class CommonExplosionEventHandler {
     public static void potionEvent(CustomExplosionEntityEvent event) {
         CustomExplosion explosion = event.explosion;
         if (event.entity instanceof LivingEntity le) {
-            for (ItemStack stack : explosion.getAdditionStack().getItems(AdditionType.POTION)) {
+            for (ItemStack stack : event.data.getItems(AdditionType.POTION)) {
                 Potion potion = PotionUtils.getPotion(stack);
                 if (potion != Potions.EMPTY) {
                     if (le.isAffectedByPotions()) {
@@ -86,8 +86,8 @@ public class CommonExplosionEventHandler {
     @SubscribeEvent
     public static void punchEvent(CustomExplosionEntityEvent event) {
         CustomExplosion explosion = event.explosion;
-        float punch = explosion.getAdditionStack().getValue(AdditionType.PUNCH) -
-                explosion.getAdditionStack().getValue(AdditionType.DRAW);
+        float punch = event.data.getValue(AdditionType.PUNCH) -
+                event.data.getValue(AdditionType.DRAW);
         Entity entity = event.entity;
         float percentage = event.percentage;
         if (punch != 0) {
@@ -118,7 +118,7 @@ public class CommonExplosionEventHandler {
 
     @SubscribeEvent
     public static void flameEvent(CustomExplosionEntityEvent event) {
-        float flame = event.explosion.getAdditionStack().getValue(AdditionType.FLAME);
+        float flame = event.data.getValue(AdditionType.FLAME);
         if (flame > 0) {
             if (!event.entity.fireImmune()) {
                 event.entity.setRemainingFireTicks((int) (flame * 200 * event.percentage));
@@ -129,7 +129,7 @@ public class CommonExplosionEventHandler {
     @SubscribeEvent
     public static void lightningEvent(CustomExplosionEntityEvent event) {
         CustomExplosion explosion = event.explosion;
-        float lightning = explosion.getAdditionStack().getValue(AdditionType.LIGHTNING);
+        float lightning = event.data.getValue(AdditionType.LIGHTNING);
         if (lightning > 0) {
             BlockPos pos = event.entity.blockPosition();
             if (event.entity instanceof LivingEntity && explosion.level.canSeeSky(pos) && explosion.random.nextInt(4) < lightning * event.percentage) {
@@ -138,7 +138,7 @@ public class CommonExplosionEventHandler {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOW)
     public static void blockDropEvent(CustomExplosionBlockDropEvent event) {
         BlockPos blockPos = event.pos;
         CustomExplosion explosion = event.explosion;
@@ -161,22 +161,31 @@ public class CommonExplosionEventHandler {
         BlockPos blockPos = event.pos;
         CustomExplosion explosion = event.explosion;
         BlockState blockstate = explosion.level.getBlockState(blockPos);
-        float temperature = explosion.getAdditionStack().getValue(AdditionType.TEMPERATURE);
-        float strength = explosion.getAdditionStack().getValue(AdditionType.STRENGTH);
+        float temperature = event.data.getValue(AdditionType.TEMPERATURE);
+        float strength = event.data.getValue(AdditionType.STRENGTH);
         if (!blockstate.isAir()) {
             if (blockstate.canDropFromExplosion(explosion.level, blockPos, explosion)) {
                 ItemStack specialDrop = ExplosionSpecialBlockDrops.getSpecialDrop(blockstate.getBlock(), event.percentage, temperature, strength);
                 if (!specialDrop.isEmpty()) {
                     CustomExplosion.addBlockDrops(event.objectArrayList, specialDrop, blockPos);
+                    event.setCanceled(true); //skip
                 }
             }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void setBlockDropChance(CustomExplosionBlockDropEvent event) {
+        float drop = event.data.getValue(AdditionType.DROP);
+        if(event.explosion.random.nextFloat() > drop){
+            event.setCanceled(true); //skip
         }
     }
 
     @SubscribeEvent
     public static void lightningBlockEvent(CustomExplosionBlockBreakEvent.Post event) {
         CustomExplosion explosion = event.explosion;
-        float lightning = explosion.getAdditionStack().getValue(AdditionType.LIGHTNING);
+        float lightning = event.data.getValue(AdditionType.LIGHTNING);
         if (lightning > 4F) {
             if (explosion.random.nextInt(10) < lightning * event.percentage &&
                     explosion.level.getBlockState(event.pos).isAir() &&
@@ -189,7 +198,7 @@ public class CommonExplosionEventHandler {
     @SubscribeEvent
     public static void flameBlockEvent(CustomExplosionBlockBreakEvent.Post event) {
         CustomExplosion explosion = event.explosion;
-        float flame = explosion.getAdditionStack().getValue(AdditionType.FLAME);
+        float flame = event.data.getValue(AdditionType.FLAME);
         if (flame > 0F) {
             if (explosion.random.nextInt(10) < flame * event.percentage &&
                     explosion.level.getBlockState(event.pos).isAir() &&
@@ -202,7 +211,7 @@ public class CommonExplosionEventHandler {
     @SubscribeEvent
     public static void temperatureBlockEvent(CustomExplosionBlockBreakEvent.Pre event) {
         CustomExplosion explosion = event.explosion;
-        float temperature = explosion.getAdditionStack().getValue(AdditionType.TEMPERATURE);
+        float temperature = event.data.getValue(AdditionType.TEMPERATURE);
         if (temperature > 4F) {
             BlockState state = explosion.level.getBlockState(event.pos);
             if (explosion.random.nextInt(10) < temperature * event.percentage && state.is(BlockTags.BASE_STONE_OVERWORLD)) {
@@ -219,22 +228,13 @@ public class CommonExplosionEventHandler {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void setBlockDropChance(CustomExplosionDoBlockDropEvent event) {
-        float drop = event.explosion.getAdditionStack().getValue(AdditionType.DROP);
-        List<Pair<ItemStack, BlockPos>> stacks = event.objectArrayList.stream().filter(o -> event.explosion.random.nextFloat() <= drop)
-                .collect(Collectors.toList());
-        event.objectArrayList.clear();
-        event.objectArrayList.addAll(stacks);
-    }
-
     @SubscribeEvent(priority=EventPriority.HIGH)
     public static void specialDoBlockDropEvent(CustomExplosionDoBlockDropEvent event) {
         CustomExplosion explosion = event.explosion;
         BlockPos containerPos = null;
         AtomicReference<IItemHandler> container = new AtomicReference<>();
-        ItemStack marker = explosion.getAdditionStack().getItems(AdditionType.CONTAINER).isEmpty() ?
-                null : explosion.getAdditionStack().getItems(AdditionType.CONTAINER).peek();
+        ItemStack marker = event.data.getItems(AdditionType.CONTAINER).isEmpty() ?
+                null : event.data.getItems(AdditionType.CONTAINER).peek();
         if (marker != null && marker.getItem() instanceof PositionMarkerItem item) {
             if (item.isContainer) {
                 BlockPos pos = item.getPos(marker);

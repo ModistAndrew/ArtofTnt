@@ -27,9 +27,8 @@ public class TntDispenserItem extends ProjectileWeaponItem {
             ItemStack itemStack1 = pPlayer.getInventory().getItem(i);
             if (predicate.test(itemStack1)) {
                 itemstack = net.minecraftforge.common.ForgeHooks.getProjectile(pPlayer, dispenser, itemStack1);
-                break;
             }
-        }
+        } //from bottom to top
         pPlayer.getCooldowns().addCooldown(this, 1);
         if (!itemstack.isEmpty() && itemstack.getItem() instanceof TntFrameItem item) {
             if(!pLevel.isClientSide) {

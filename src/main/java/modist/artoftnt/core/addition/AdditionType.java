@@ -7,8 +7,8 @@ import java.util.function.BiFunction;
 public class AdditionType {
     private static final HashMap<String, AdditionType> TYPES = new HashMap<>();
     public static final AdditionType EMPTY = new Builder("empty", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO dead bush
-    public static final AdditionType LOUDNESS = new Builder("loudness", AdditionSlot.EXPLOSION_SOUND).build(); //TODO
-    public static final AdditionType SOUND_TYPE = new Builder("sound_type", AdditionSlot.EXPLOSION_SOUND).build(); //TODO
+    public static final AdditionType LOUDNESS = new Builder("loudness", AdditionSlot.EXPLOSION_SOUND).build();
+    public static final AdditionType SOUND_TYPE = new Builder("sound_type", AdditionSlot.EXPLOSION_SOUND).build();
     public static final AdditionType VELOCITY = new Builder("velocity", AdditionSlot.TNT_MOTION).important().withInitialValue(0.2F).build();
     public static final AdditionType ELASTICITY = new Builder("elasticity", AdditionSlot.TNT_MOTION).build();
     public static final AdditionType STICKINESS = new Builder("stickiness", AdditionSlot.TNT_MOTION).build();
@@ -42,7 +42,7 @@ public class AdditionType {
     public static final AdditionType TNT_PARTICLE = new Builder("tnt_particle", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
     public static final AdditionType FUSE = new Builder("fuse", AdditionSlot.TNT_FUSE).important().build();
     public static final AdditionType SHAPE = new Builder("explosion_shape", AdditionSlot.EXPLOSION_SHAPE).single().build();
-//TODO light and directional push
+//TODO light and directional push and direct and royalty and real weight and transfer entity and shape
     public final String id;
     public final int maxCount;
     public final AdditionSlot slot;

@@ -5,7 +5,8 @@ import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.addition.InstabilityHelper;
 import modist.artoftnt.core.explosion.ExplosionHelper;
-import net.minecraft.core.particles.ParticleTypes;
+import modist.artoftnt.core.explosion.ExplosionParticles;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -14,13 +15,16 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't event
     public final int tier;
@@ -134,25 +138,27 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
             doPunch(punch);
         }
         //super.tick();
-
         if (!this.isNoGravity()) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0D,
                     -0.04D * (1 - data.getValue(AdditionType.LIGHTNESS)),
                     0.0D));
         }
-
-        HitResult hitresult = ProjectileUtil.getHitResult(this, this::canHitEntity);
-        if (hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
+        HitResult hitresult = getHitResult(this::canHitEntity);
+        if (hitresult != null && hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
             this.onHit(hitresult);
         }
-
         this.move(MoverType.SELF, this.getDeltaMovement());
         this.setDeltaMovement(this.getDeltaMovement().scale(0.98D));
-        if (this.onGround) {
+        if (this.onGround) {//TODO friction
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.7D, -0.5D, 0.7D));
         }
-
         this.updateInWaterStateAndDoFluidPushing();
+        if (this.level.isClientSide) {
+            int particle = (int) data.getValue(AdditionType.TNT_PARTICLE);
+            ExplosionParticles.getTNTParticles(particle).forEach(p ->
+                    level.addParticle(p, this.getX(), this.getY(), this.getZ(),
+                            1.0D, 0.0D, 0.0D));
+        }
 
         int coolDown = this.getCoolDown() - 1;
         if (coolDown >= 0) {
@@ -163,13 +169,50 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         this.setFuse(i);
         if (i <= 0) {
             doExplosion();
-        } else {
-            if (this.level.isClientSide) {
-                this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
-            }
         }
     }
 
+    @Nullable
+    private HitResult getHitResult(Predicate<Entity> pFilter) {
+        Vec3 velocity = this.getDeltaMovement();
+        HitResult hitresult = null;
+        if(!collide(velocity).equals(velocity)) { //simply use collide
+            hitresult = new BlockHitResult(this.position(), Direction.getNearest(velocity.x, velocity.y, velocity.z).getOpposite(),
+                    this.blockPosition(), true);
+        }
+        for (Entity entity1 : level.getEntities(this, this.getBoundingBox(), pFilter)) {
+            AABB aabb = entity1.getBoundingBox();
+            if (aabb.intersects(this.getBoundingBox())) {
+                return new EntityHitResult(entity1); //entity first
+            }
+        }
+        return hitresult;
+    }
+
+    private Vec3 collide(Vec3 pVec) {
+        AABB aabb = this.getBoundingBox();
+        List<VoxelShape> list = this.level.getEntityCollisions(this, aabb.expandTowards(pVec));
+        Vec3 vec3 = pVec.lengthSqr() == 0.0D ? pVec : collideBoundingBox(this, pVec, aabb, this.level, list);
+        boolean flag = pVec.x != vec3.x;
+        boolean flag1 = pVec.y != vec3.y;
+        boolean flag2 = pVec.z != vec3.z;
+        boolean flag3 = this.onGround || flag1 && pVec.y < 0.0D;
+        if (this.maxUpStep > 0.0F && flag3 && (flag || flag2)) {
+            Vec3 vec31 = collideBoundingBox(this, new Vec3(pVec.x, (double)this.maxUpStep, pVec.z), aabb, this.level, list);
+            Vec3 vec32 = collideBoundingBox(this, new Vec3(0.0D, (double)this.maxUpStep, 0.0D), aabb.expandTowards(pVec.x, 0.0D, pVec.z), this.level, list);
+            if (vec32.y < (double)this.maxUpStep) {
+                Vec3 vec33 = collideBoundingBox(this, new Vec3(pVec.x, 0.0D, pVec.z), aabb.move(vec32), this.level, list).add(vec32);
+                if (vec33.horizontalDistanceSqr() > vec31.horizontalDistanceSqr()) {
+                    vec31 = vec33;
+                }
+            }
+
+            if (vec31.horizontalDistanceSqr() > vec3.horizontalDistanceSqr()) {
+                return vec31.add(collideBoundingBox(this, new Vec3(0.0D, -vec31.y + pVec.y, 0.0D), aabb.move(vec31), this.level, list));
+            }
+        }
+        return vec3;
+    }
 
     private void doExplosion() {
         if (this.getCoolDown() > 0) {
@@ -230,15 +273,15 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
     }
 
     @Override
-    protected void onHitEntity(EntityHitResult pResult) { //TODO can hit entity
-        if(this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_ENTITY_MIN_INSTABILITY) {
+    protected void onHitEntity(EntityHitResult pResult) { //TODO can hit entity? strange!
+        if (this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_ENTITY_MIN_INSTABILITY) {
             this.doExplosion();
         }
     }
 
     @Override
     protected void onHitBlock(BlockHitResult pResult) { //TODO sometimes not available, combine with super.tick?
-        if(this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_BLOCK_MIN_INSTABILITY) {
+        if (this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_BLOCK_MIN_INSTABILITY) {
             this.doExplosion();
         }
         float elasticity = data.getValue(AdditionType.ELASTICITY);

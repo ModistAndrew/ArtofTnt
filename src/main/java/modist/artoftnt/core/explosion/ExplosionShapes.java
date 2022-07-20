@@ -1,7 +1,6 @@
 package modist.artoftnt.core.explosion;
 
-import modist.artoftnt.core.explosion.AbstractExplosionShape;
-import modist.artoftnt.core.explosion.CustomExplosion;
+import modist.artoftnt.core.explosion.shape.AbstractExplosionShape;
 import modist.artoftnt.core.explosion.shape.CubeExplosionShape;
 import modist.artoftnt.core.explosion.shape.SphereExplosionShape;
 import net.minecraft.world.item.Item;

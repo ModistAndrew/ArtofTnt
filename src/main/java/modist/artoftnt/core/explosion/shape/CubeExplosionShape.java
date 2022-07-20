@@ -2,10 +2,8 @@ package modist.artoftnt.core.explosion.shape;
 
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
-import modist.artoftnt.core.explosion.AbstractExplosionShape;
 import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 
@@ -50,7 +48,7 @@ public class CubeExplosionShape extends AbstractExplosionShape {
     }
 
     @Override
-    protected Object2FloatMap<Entity> getEntities() {
+    public Object2FloatMap<Entity> getEntities() {
         Object2FloatMap<Entity> ret = new Object2FloatOpenHashMap<>();
         int r = (int) radius;
         List<Entity> list = this.level.getEntities(this.explosion.getSource(),

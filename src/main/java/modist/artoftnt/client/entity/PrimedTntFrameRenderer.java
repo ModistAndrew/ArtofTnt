@@ -39,7 +39,7 @@ public class PrimedTntFrameRenderer extends EntityRenderer<PrimedTntFrame> {
 
     public PrimedTntFrameRenderer(EntityRendererProvider.Context pContext) {
         super(pContext);
-        this.shadowRadius = 0.5F;
+        this.shadowRadius = 0;
     }
 
     @Override

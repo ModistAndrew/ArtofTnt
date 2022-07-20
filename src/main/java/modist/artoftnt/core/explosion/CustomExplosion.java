@@ -4,10 +4,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.*;
-import modist.artoftnt.common.item.PositionMarkerItem;
 import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.event.*;
+import modist.artoftnt.core.explosion.shape.AbstractExplosionShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
@@ -21,16 +21,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
-import net.minecraft.world.level.block.BaseFireBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -115,19 +109,11 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     @Override
     public void finalizeExplosion(boolean pSpawnParticles) {
         if (this.level.isClientSide) {
-            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.ARROW_HIT, SoundSource.BLOCKS, random.nextFloat() * 10F, (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F, false);
+            MinecraftForge.EVENT_BUS.post(new CustomExplosionClientEvent(this));
             //TODO
         }
 
         boolean flag = this.blockInteraction != net.minecraft.world.level.Explosion.BlockInteraction.NONE; //explosion type
-        if (pSpawnParticles) {
-            if (!(this.radius < 2.0F) && flag) {
-                this.level.addParticle(ParticleTypes.ANGRY_VILLAGER, this.x, this.y, this.z, 1.0D, 0.0D, 0.0D);
-            } else {
-                this.level.addParticle(ParticleTypes.BUBBLE, this.x, this.y, this.z, 1.0D, 0.0D, 0.0D);
-            }
-            //TODO
-        }
 
         if (flag && !this.level.isClientSide) { //fill blocks with air
             ObjectArrayList<Pair<ItemStack, BlockPos>> objectArrayList = new ObjectArrayList<>();
@@ -150,11 +136,11 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     public static void addBlockDrops(ObjectArrayList<Pair<ItemStack, BlockPos>> pDropPositionArray, ItemStack pStack, BlockPos pPos) {
         //TODO
         int i = pDropPositionArray.size();
-        for (int j = 0; j < i; ++j) { //try to merge items into groups with size of 16
+        for (int j = 0; j < i; ++j) { //try to merge items into groups with size of 16(64?)
             Pair<ItemStack, BlockPos> pair = pDropPositionArray.get(j);
             ItemStack itemstack = pair.getFirst();
             if (ItemEntity.areMergable(itemstack, pStack)) {
-                ItemStack itemStack1 = ItemEntity.merge(itemstack, pStack, 16);
+                ItemStack itemStack1 = ItemEntity.merge(itemstack, pStack, 64);
                 pDropPositionArray.set(j, Pair.of(itemStack1, pair.getSecond()));
                 if (pStack.isEmpty()) {
                     return;

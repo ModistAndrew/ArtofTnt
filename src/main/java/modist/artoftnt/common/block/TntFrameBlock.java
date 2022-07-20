@@ -18,8 +18,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -57,17 +59,13 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @Override
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
         if (!pOldState.is(pState.getBlock())) {
-            if (pLevel.hasNeighborSignal(pPos)) {
-                explode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
-            }
+                tryExplode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
         }
     }
 
     @Override
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
-        if (pLevel.hasNeighborSignal(pPos)) {
-            explode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
-        }
+            tryExplode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
     }
 
     @Nullable
@@ -78,10 +76,23 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
 
     @Override
     public void onCaughtFire(BlockState state, Level pLevel, BlockPos pPos, @Nullable net.minecraft.core.Direction face, @Nullable LivingEntity pEntity) {
-        explode(InstabilityHelper.FIRE_MIN_INSTABILITY, pLevel, pPos, pEntity);
+        tryExplode(InstabilityHelper.FIRE_MIN_INSTABILITY, pLevel, pPos, pEntity);
     } //TODO:not available
 
-    public boolean explode(float minInstability, Level pLevel, BlockPos pPos, @Nullable LivingEntity pEntity) {
+    @Override
+    public void stepOn(Level pLevel, BlockPos pPos, BlockState pState, Entity pEntity) {
+        tryExplode(InstabilityHelper.ENTITY_ON_BLOCK_MIN_INSTABILITY, pLevel, pPos,
+                pEntity instanceof LivingEntity le ? le : null);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onProjectileHit(Level pLevel, BlockState pState, BlockHitResult pHit, Projectile pProjectile) {
+        tryExplode(InstabilityHelper.PROJECTILE_HIT_BLOCK_MIN_INSTABILITY, pLevel, pHit.getBlockPos(),
+                pProjectile.getOwner() instanceof LivingEntity le ? le : null);
+    }
+
+    public boolean tryExplode(float minInstability, Level pLevel, BlockPos pPos, @Nullable LivingEntity pEntity) {
         if (!pLevel.isClientSide && pLevel.getBlockEntity(pPos) instanceof TntFrameBlockEntity be) {
             if (be.getInstability() >= minInstability) {
                 PrimedTntFrame tnt = new PrimedTntFrame(be.getDataTag(), pLevel, pPos.getX(), pPos.getY() + be.getDeflation(), pPos.getZ(), pEntity, tier);
@@ -103,13 +114,17 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
 
     @Override
     public void wasExploded(Level pLevel, BlockPos pPos, Explosion pExplosion) {
-        explode(InstabilityHelper.EXPLODED_MIN_INSTABILITY, pLevel, pPos, pExplosion.getSourceMob());
+        tryExplode(InstabilityHelper.EXPLODED_MIN_INSTABILITY, pLevel, pPos, pExplosion.getSourceMob());
     }
 
     //TODO drop is strange!
     //deal with creative player block drop
     @Override
     public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
+        if(tryExplode(InstabilityHelper.BREAK_BLOCK_INSTABILITY, pLevel, pPos, pPlayer)){
+            super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
+            return;
+        }
         BlockEntity blockentity = pLevel.getBlockEntity(pPos);
         if (blockentity instanceof TntFrameBlockEntity tntFrameBlockEntity) {
             if (!pLevel.isClientSide && pPlayer.isCreative()) {

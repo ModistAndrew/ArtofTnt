@@ -1,9 +1,10 @@
-package modist.artoftnt.core.explosion;
+package modist.artoftnt.core.explosion.shape;
 
 import com.mojang.math.Vector3f;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
+import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -56,7 +57,7 @@ public abstract class AbstractExplosionShape {
 
     protected abstract Set<BlockPos> getEdge();
 
-    protected abstract Object2FloatMap<Entity> getEntities();
+    public abstract Object2FloatMap<Entity> getEntities();
 
     public HashMap<BlockPos, ExplosionData> getToBlowData(){
         return toBlowData;
