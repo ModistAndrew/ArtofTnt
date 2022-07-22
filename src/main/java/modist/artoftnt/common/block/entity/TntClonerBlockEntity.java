@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.block.TntFrameBlock;
-import modist.artoftnt.common.item.TntFrameItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Containers;
@@ -26,7 +25,7 @@ public class TntClonerBlockEntity extends SuckItemBlockEntity {
 
     @Override
     protected void doDispense() {
-        ItemStack stack = TntFrameBlock.getDrop(true, tntFrame);
+        ItemStack stack = TntFrameBlock.dropFrame(true, tntFrame);
         Containers.dropItemStack(this.level, this.getBlockPos().getX()
                 , this.getBlockPos().getY(), this.getBlockPos().getZ(), stack);
         this.tntFrame = null;
@@ -53,7 +52,7 @@ public class TntClonerBlockEntity extends SuckItemBlockEntity {
     @Override
     protected void setCoolDown() {
         if (this.level.getBlockEntity(this.getBlockPos().below()) instanceof TntFrameBlockEntity blockEntity) {
-            this.coolDown = (int) blockEntity.getData().getWeight() + INITIAL;
+            this.coolDown = blockEntity.getData().getCoolDown() + RENDER_TICK;
         }
     }
 

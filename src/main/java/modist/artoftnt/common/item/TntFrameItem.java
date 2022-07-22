@@ -5,6 +5,7 @@ import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +19,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.IItemRenderProperties;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class TntFrameItem extends BlockItem {
@@ -40,7 +42,20 @@ public class TntFrameItem extends BlockItem {
     }
 
     public TntFrameData getTntFrameData(ItemStack stack){
-        return new TntFrameData(tier, stack.getTagElement("tntFrameData"));
+        return new TntFrameData(tier, getTntFrameDataTag(stack));
+    }
+
+    @Nullable
+    public CompoundTag getTntFrameDataTag(ItemStack stack){ //mostly for primed tnt frame
+        return stack.getTagElement("tntFrameData");
+    }
+
+    //notice that when data is empty, should put no tag instead of an empty tag with name "tntFrameData" to avoid
+    //mismatch between item stacks with no tag and those with empty tag
+    public static void putTntFrameData(ItemStack stack, TntFrameData data){
+        if(!data.isEmpty()) {
+            stack.addTagElement("tntFrameData", data.serializeNBT());
+        }
     }
 
     @Override

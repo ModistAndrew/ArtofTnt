@@ -6,13 +6,12 @@ import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
 
 @Cancelable
-public class CustomExplosionEvent extends Event {
+public class CustomExplosionEvent extends TntFrameEvent {
     public final CustomExplosion explosion;
-    public final AdditionStack data;
 
-    public CustomExplosionEvent(CustomExplosion explosion) {
+    public CustomExplosionEvent(CustomExplosion explosion){
+        super(explosion.getAdditionStack());
         this.explosion = explosion;
-        this.data = explosion.getAdditionStack();
     }
 
 }

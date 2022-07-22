@@ -15,6 +15,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
@@ -113,7 +114,7 @@ public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
                 ItemStack stack = markers[j];
                 if(stack.getItem() instanceof PositionMarkerItem item && !item.isContainer) {
                     strength += item.tier+1;
-                    BlockPos pos = item.getPos(stack);
+                    BlockPos pos = new BlockPos(item.getPos(Vec3.atCenterOf(this.getBlockPos()), stack));
                     if (pos != null) {
                         BlockState state = this.level.getBlockState(pos);
                         if (state.getBlock() instanceof TntFrameBlock tfb && item.tier >= tfb.tier) { //tier

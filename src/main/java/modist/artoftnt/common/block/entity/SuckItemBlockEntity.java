@@ -25,7 +25,8 @@ public abstract class SuckItemBlockEntity extends BlockEntity {
     protected final List<ItemStack> stacks = new ArrayList<>();
     //when <= finishTime, dispense() is called
     protected final int finishTime;
-    protected static final int INITIAL = 20;
+    //at least render_tick time should be set for cool down or render can not be completed
+    protected static final int RENDER_TICK = 20;
 
     public SuckItemBlockEntity(int finishTime, BlockEntityType<?> pType, BlockPos pWorldPosition, BlockState pBlockState) {
         super(pType, pWorldPosition, pBlockState);

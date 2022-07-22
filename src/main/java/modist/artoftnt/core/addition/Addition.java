@@ -1,11 +1,8 @@
 package modist.artoftnt.core.addition;
 
 import modist.artoftnt.ArtofTnt;
-import modist.artoftnt.common.item.ItemLoader;
-import modist.artoftnt.core.addition.data.AdditionManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;

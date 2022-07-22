@@ -1,5 +1,6 @@
 package modist.artoftnt.common.item;
 
+import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -29,10 +30,11 @@ public class TntDispenserItem extends ProjectileWeaponItem {
                 itemstack = net.minecraftforge.common.ForgeHooks.getProjectile(pPlayer, dispenser, itemStack1);
             }
         } //from bottom to top
-        pPlayer.getCooldowns().addCooldown(this, 1);
         if (!itemstack.isEmpty() && itemstack.getItem() instanceof TntFrameItem item) {
+            TntFrameData data = item.getTntFrameData(itemstack);
+            int coolDown = data.getCoolDown();
             if(!pLevel.isClientSide) {
-                PrimedTntFrame entity = new PrimedTntFrame(itemstack.getTagElement("tntFrameData"),
+                PrimedTntFrame entity = new PrimedTntFrame(item.getTntFrameDataTag(itemstack),
                         pLevel, pPlayer.getX(), pPlayer.getEyeY() - (double) 0.1F, pPlayer.getZ(), pPlayer, item.tier);
                 entity.shootFromRotation(pPlayer, pPlayer.getXRot(), pPlayer.getYRot(), 0.0F, 1.0F, 1.0F);
                 pLevel.addFreshEntity(entity);
@@ -40,6 +42,7 @@ public class TntDispenserItem extends ProjectileWeaponItem {
             }
             if (!pPlayer.getAbilities().instabuild) {
                 itemstack.shrink(1);
+                pPlayer.getCooldowns().addCooldown(this, coolDown);
             }
             return InteractionResultHolder.sidedSuccess(dispenser, pLevel.isClientSide());
         }

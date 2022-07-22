@@ -17,14 +17,16 @@ public class ItemLoader {
 
     public static final RegistryObject<Item>[] TNT_FRAMES = new RegistryObject[4];
     public static final RegistryObject<Item> TNT_DISPENSER = ITEMS.register("tnt_dispenser", TntDispenserItem::new);
-    public static final RegistryObject<Item> TNT_SHAPER = ITEMS.register("tnt_shaper", TntShaperItem::new);
+    public static final RegistryObject<Item> TNT_SHAPER = ITEMS.register("tnt_shaper", TntShaperItem::new); //TODO block color
     public static final RegistryObject<Item> TNT_RESIZER = ITEMS.register("tnt_resizer", TntResizerItem::new);
-    public static final RegistryObject<Item> TNT_DEFUSER = ITEMS.register("tnt_defuser", TntDefuserItem::new);
+    public static final RegistryObject<Item> TNT_DEFUSER = ITEMS.register("tnt_defuser", TntDefuserItem::new); //TODO creative, drop bug, silk touch
+    public static final RegistryObject<Item> TNT_FIREWORK_STAR = ITEMS.register("tnt_firework_star", TntFireworkStarItem::new);
     public static final RegistryObject<Item> REMOTE_EXPLODER = fromBlock(BlockLoader.REMOTE_EXPLODER);
     public static final RegistryObject<Item> TNT_TURRET = fromBlock(BlockLoader.TNT_TURRET);
     public static final RegistryObject<Item> TNT_CLONER = fromBlock(BlockLoader.TNT_CLONER);
     public static final RegistryObject<Item>[] POSITION_MARKERS = new RegistryObject[4];
     public static final RegistryObject<Item>[] POSITION_CONTAINER_MARKERS = new RegistryObject[4];
+    public static final RegistryObject<Item>[] TARGET_MARKERS = new RegistryObject[4];
 
 
     static {
@@ -33,7 +35,9 @@ public class ItemLoader {
             TNT_FRAMES[i] = ITEMS.register("tnt_frame_"+i, () -> new TntFrameItem(finalI));
             POSITION_MARKERS[i] = ITEMS.register("position_marker_"+i, () ->new PositionMarkerItem(finalI, false));
             POSITION_CONTAINER_MARKERS[i] = ITEMS.register("position_container_marker_"+i,
-                    () ->new PositionMarkerItem(finalI, true));
+                    () -> new PositionMarkerItem(finalI, true));
+            TARGET_MARKERS[i] = ITEMS.register("target_marker_"+i,
+                    () -> new TargetMarkerItem(finalI));
         }
     }
 

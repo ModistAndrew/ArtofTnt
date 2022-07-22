@@ -7,11 +7,9 @@ import it.unimi.dsi.fastutil.objects.*;
 import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.event.*;
+import modist.artoftnt.core.explosion.manager.ExplosionShapes;
 import modist.artoftnt.core.explosion.shape.AbstractExplosionShape;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -49,15 +47,17 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     private final Map<Player, Vec3> hitPlayers = Maps.newHashMap();
     private final Vec3 position;
     private final AdditionStack stack;
+    private final Vec3 vec; //the vec of tnt, for firework and blow up
 
-    public CustomExplosion(AdditionStack stack, Level pLevel, @Nullable Entity pSource, double pToBlowX, double pToBlowY, double pToBlowZ, float pRadius, List<BlockPos> pPositions) {
-        this(stack, pLevel, pSource, null, null, pToBlowX, pToBlowY, pToBlowZ, pRadius, false, Explosion.BlockInteraction.DESTROY);
+    public CustomExplosion(Vec3 vec, AdditionStack stack, Level pLevel, @Nullable Entity pSource, double pToBlowX, double pToBlowY, double pToBlowZ, float pRadius, List<BlockPos> pPositions) {
+        this(vec, stack, pLevel, pSource, null, null, pToBlowX, pToBlowY, pToBlowZ, pRadius, false, Explosion.BlockInteraction.DESTROY);
         this.toBlow.addAll(pPositions);
     }
 
     //TODO: client no shape
-    public CustomExplosion(AdditionStack stack, Level pLevel, @Nullable Entity pSource, @Nullable DamageSource pDamageSource, @Nullable ExplosionDamageCalculator pDamageCalculator, double pToBlowX, double pToBlowY, double pToBlowZ, float pRadius, boolean pFire, net.minecraft.world.level.Explosion.BlockInteraction pBlockInteraction) {
+    public CustomExplosion(Vec3 vec, AdditionStack stack, Level pLevel, @Nullable Entity pSource, @Nullable DamageSource pDamageSource, @Nullable ExplosionDamageCalculator pDamageCalculator, double pToBlowX, double pToBlowY, double pToBlowZ, float pRadius, boolean pFire, net.minecraft.world.level.Explosion.BlockInteraction pBlockInteraction) {
         super(pLevel, pSource, pDamageSource, pDamageCalculator, pToBlowX, pToBlowY, pToBlowZ, pRadius, pFire, pBlockInteraction);
+        this.vec = vec;
         this.stack = stack;
         this.level = pLevel;
         this.source = pSource;
@@ -69,7 +69,11 @@ public class CustomExplosion extends Explosion { //have to override private fiel
         this.blockInteraction = pBlockInteraction;
         this.damageSource = pDamageSource == null ? DamageSource.explosion(this) : pDamageSource;
         this.position = new Vec3(this.x, this.y, this.z);
-        this.explosionShape = ExplosionShapes.get(stack.getItems(AdditionType.SHAPE), this);
+        this.explosionShape = ExplosionShapes.get((int)stack.getValue(AdditionType.SHAPE), this);
+    }
+
+    public Vec3 getVec(){
+        return this.vec;
     }
 
     public AdditionStack getAdditionStack(){
@@ -84,22 +88,21 @@ public class CustomExplosion extends Explosion { //have to override private fiel
      * Does the first part of the explosion (destroy blocks)
      */
     @Override
-    public void explode() {
+    public void explode() { //only on server?
         this.level.gameEvent(this.source, GameEvent.EXPLODE, new BlockPos(this.x, this.y, this.z));
-        if (this.strength > 0) {
-            explosionShape.generateData();
-        }
-        this.toBlow.addAll(explosionShape.getToBlow());
-        Object2FloatMap<Entity> list = explosionShape.getEntities();
+        this.toBlow.addAll(explosionShape.getToBlowBlocks().keySet());
+        Object2FloatMap<Entity> list = explosionShape.getToBlowEntities();
         net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(this.level, this, list.keySet().stream().toList(), radius * 2);
         for (Entity entity : list.keySet()) {
-            float percentage = list.getFloat(entity); //percentage of explosion the entity get
-            MinecraftForge.EVENT_BUS.post(new CustomExplosionEntityEvent(this, entity, percentage));
+            if(!entity.ignoreExplosion()) {
+                float percentage = list.getFloat(entity); //percentage of explosion the entity get
+                MinecraftForge.EVENT_BUS.post(new CustomExplosionEntityEvent(this, entity, percentage));
+            }
         }
     }
 
     private float getBlockPercentage(BlockPos pos) {
-        float percentage = explosionShape.getToBlowData().get(pos).strength() / strength;
+        float percentage = explosionShape.getToBlowBlocks().getFloat(pos) / strength;
         return percentage;
     }
 
@@ -108,10 +111,7 @@ public class CustomExplosion extends Explosion { //have to override private fiel
      */
     @Override
     public void finalizeExplosion(boolean pSpawnParticles) {
-        if (this.level.isClientSide) {
-            MinecraftForge.EVENT_BUS.post(new CustomExplosionClientEvent(this));
-            //TODO
-        }
+        MinecraftForge.EVENT_BUS.post(new CustomExplosionFinishingEvent(this));
 
         boolean flag = this.blockInteraction != net.minecraft.world.level.Explosion.BlockInteraction.NONE; //explosion type
 
@@ -128,8 +128,7 @@ public class CustomExplosion extends Explosion { //have to override private fiel
                     MinecraftForge.EVENT_BUS.post(new CustomExplosionBlockBreakEvent.Post(this, pos1, getBlockPercentage(pos1)));
                 }
             }
-
-            MinecraftForge.EVENT_BUS.post(new CustomExplosionDoBlockDropEvent(this, objectArrayList));
+            MinecraftForge.EVENT_BUS.post(new CustomExplosionFinishedEvent(this, objectArrayList));
         }
     }
 

@@ -2,8 +2,6 @@ package modist.artoftnt.client.block.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import modist.artoftnt.client.entity.PrimedTntFrameRenderer;
-import modist.artoftnt.common.block.entity.TntFrameData;
-import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntFrameItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;

@@ -1,143 +1,46 @@
 package modist.artoftnt.core.explosion.handler;
 
 import com.mojang.datafixers.util.Pair;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import modist.artoftnt.common.block.BlockLoader;
+import modist.artoftnt.common.block.DiminishingLightBlock;
 import modist.artoftnt.common.item.PositionMarkerItem;
+import modist.artoftnt.common.item.TntFireworkStarItem;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
-import modist.artoftnt.core.explosion.ExplosionSpecialBlockDrops;
 import modist.artoftnt.core.explosion.event.*;
+import modist.artoftnt.core.explosion.manager.ExplosionSpecialDrops;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import org.apache.logging.log4j.core.net.Priority;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class CommonExplosionEventHandler {
-
-    @SubscribeEvent
-    public static void damageEvent(CustomExplosionEntityEvent event) {
-        CustomExplosion explosion = event.explosion;
-        float percentage = event.percentage;
-        float damage = event.data.getValue(AdditionType.DAMAGE);
-        if (damage > 0) {
-            event.entity.hurt(explosion.getDamageSource(), damage * ((int) ((percentage * percentage + percentage) / 2.0D * 7.0D + 1.0D)));
-        }
-    }
-
-    @SubscribeEvent
-    public static void potionEvent(CustomExplosionEntityEvent event) {
-        CustomExplosion explosion = event.explosion;
-        if (event.entity instanceof LivingEntity le) {
-            for (ItemStack stack : event.data.getItems(AdditionType.POTION)) {
-                Potion potion = PotionUtils.getPotion(stack);
-                if (potion != Potions.EMPTY) {
-                    if (le.isAffectedByPotions()) {
-                        for (MobEffectInstance mobeffectinstance : potion.getEffects()) {
-                            mobeffectinstance = new MobEffectInstance(mobeffectinstance.getEffect(), (int) (mobeffectinstance.getDuration() * event.percentage),
-                                    mobeffectinstance.getAmplifier(), mobeffectinstance.isAmbient(), mobeffectinstance.isVisible());
-                            if (mobeffectinstance.getEffect().isInstantenous()) {
-                                mobeffectinstance.getEffect().applyInstantenousEffect(explosion.getSource(), explosion.getSourceMob(),
-                                        le, mobeffectinstance.getAmplifier(), 0.5D);
-                            } else {
-                                le.addEffect(new MobEffectInstance(mobeffectinstance), explosion.getSource());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void punchEvent(CustomExplosionEntityEvent event) {
-        CustomExplosion explosion = event.explosion;
-        float punch = event.data.getValue(AdditionType.PUNCH) -
-                event.data.getValue(AdditionType.DRAW);
-        Entity entity = event.entity;
-        float percentage = event.percentage;
-        if (punch != 0) {
-            double d5 = entity.getX() - explosion.x;
-            double d7 = (entity instanceof PrimedTnt ? entity.getY() : entity.getEyeY()) - explosion.y;
-            //tnt can be blown higher
-            double d9 = entity.getZ() - explosion.z;
-            double d13 = Math.sqrt(d5 * d5 + d7 * d7 + d9 * d9); //distance
-            if (d13 != 0.0D) {
-                d5 /= d13;
-                d7 /= d13;
-                d9 /= d13; //normalize
-                double d11 = percentage;
-                if (entity instanceof LivingEntity) {
-                    d11 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity) entity, percentage);
-                    //enchantment
-                }
-                entity.setDeltaMovement(entity.getDeltaMovement().add(d5 * d11 * punch, d7 * d11 * punch, d9 * d11 * punch));
-                if (entity instanceof Player player) {
-                    if (!player.isSpectator() && (!player.isCreative() || !player.getAbilities().flying)) {
-                        explosion.getHitPlayers().put(player, new Vec3(d5 * percentage * punch, d7 * percentage * punch, d9 * percentage * punch));
-                        //for players, also do on the client side
-                    }
-                }
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void flameEvent(CustomExplosionEntityEvent event) {
-        float flame = event.data.getValue(AdditionType.FLAME);
-        if (flame > 0) {
-            if (!event.entity.fireImmune()) {
-                event.entity.setRemainingFireTicks((int) (flame * 200 * event.percentage));
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void lightningEvent(CustomExplosionEntityEvent event) {
-        CustomExplosion explosion = event.explosion;
-        float lightning = event.data.getValue(AdditionType.LIGHTNING);
-        if (lightning > 0) {
-            BlockPos pos = event.entity.blockPosition();
-            if (event.entity instanceof LivingEntity && explosion.level.canSeeSky(pos) && explosion.random.nextInt(4) < lightning * event.percentage) {
-                summonLightningBolt(explosion, pos);
-            }
-        }
-    }
-
+public class CommonExplosionBlockEventHandler {
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void blockDropEvent(CustomExplosionBlockDropEvent event) {
         BlockPos blockPos = event.pos;
@@ -165,9 +68,9 @@ public class CommonExplosionEventHandler {
         float strength = event.data.getValue(AdditionType.STRENGTH);
         if (!blockstate.isAir()) {
             if (blockstate.canDropFromExplosion(explosion.level, blockPos, explosion)) {
-                ItemStack specialDrop = ExplosionSpecialBlockDrops.getSpecialDrop(blockstate.getBlock(), event.percentage, temperature, strength);
-                if (!specialDrop.isEmpty()) {
-                    CustomExplosion.addBlockDrops(event.objectArrayList, specialDrop, blockPos);
+                ItemStack specialDrop = ExplosionSpecialDrops.ITEMS.getSpecialDrop(blockstate, event);
+                if (specialDrop != null) {
+                    CustomExplosion.addBlockDrops(event.objectArrayList, specialDrop.copy(), blockPos);
                     event.setCanceled(true); //skip
                 }
             }
@@ -177,13 +80,13 @@ public class CommonExplosionEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void setBlockDropChance(CustomExplosionBlockDropEvent event) {
         float drop = event.data.getValue(AdditionType.DROP);
-        if(event.explosion.random.nextFloat() > drop){
+        if (event.explosion.random.nextFloat() > drop) {
             event.setCanceled(true); //skip
         }
     }
 
     @SubscribeEvent
-    public static void lightningBlockEvent(CustomExplosionBlockBreakEvent.Post event) {
+    public static void lightningEvent(CustomExplosionBlockBreakEvent.Post event) {
         CustomExplosion explosion = event.explosion;
         float lightning = event.data.getValue(AdditionType.LIGHTNING);
         if (lightning > 4F) {
@@ -196,7 +99,7 @@ public class CommonExplosionEventHandler {
     }
 
     @SubscribeEvent
-    public static void flameBlockEvent(CustomExplosionBlockBreakEvent.Post event) {
+    public static void flameEvent(CustomExplosionBlockBreakEvent.Post event) {
         CustomExplosion explosion = event.explosion;
         float flame = event.data.getValue(AdditionType.FLAME);
         if (flame > 0F) {
@@ -204,32 +107,59 @@ public class CommonExplosionEventHandler {
                     explosion.level.getBlockState(event.pos).isAir() &&
                     explosion.level.getBlockState(event.pos.below()).isSolidRender(explosion.level, event.pos.below())) {
                 explosion.level.setBlockAndUpdate(event.pos, BaseFireBlock.getState(explosion.level, event.pos));
+                if (explosion.random.nextInt(20) < flame * event.percentage){
+                    BlockState under = explosion.level.getBlockState(event.pos.below());
+                    if(under.is(BlockTags.BASE_STONE_OVERWORLD)){
+                        explosion.level.setBlockAndUpdate(event.pos.below(), Blocks.NETHERRACK.defaultBlockState()); //under
+                    }
+                }
             }
         }
     }
 
-    @SubscribeEvent
-    public static void temperatureBlockEvent(CustomExplosionBlockBreakEvent.Pre event) {
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void lightEvent(CustomExplosionBlockBreakEvent.Post event) {
         CustomExplosion explosion = event.explosion;
-        float temperature = event.data.getValue(AdditionType.TEMPERATURE);
-        if (temperature > 4F) {
-            BlockState state = explosion.level.getBlockState(event.pos);
-            if (explosion.random.nextInt(10) < temperature * event.percentage && state.is(BlockTags.BASE_STONE_OVERWORLD)) {
-                explosion.level.setBlockAndUpdate(event.pos, Fluids.LAVA.defaultFluidState().createLegacyBlock());
-                event.setCanceled(true); //prevent block drop
+        float light = event.data.getValue(AdditionType.LIGHT);
+        if (light * event.percentage >= 1F) {
+            if (explosion.level.getBlockState(event.pos).isAir()) {
+                explosion.level.setBlockAndUpdate(event.pos, BlockLoader.DIMINISHING_LIGHT.get().defaultBlockState().
+                        setValue(DiminishingLightBlock.LEVEL, (int) (light * event.percentage)));
             }
         }
     }
 
     @SubscribeEvent
-    public static void doBlockDropEvent(CustomExplosionDoBlockDropEvent event) {
-        for (Pair<ItemStack, BlockPos> pair : event.objectArrayList) {
-                Block.popResource(event.explosion.level, pair.getSecond(), pair.getFirst());
+    public static void blowUpEvent(CustomExplosionBlockBreakEvent.Pre event) {
+        CustomExplosion explosion = event.explosion;
+        float blowUp = event.data.getValue(AdditionType.BLOW_UP);
+        if (blowUp > 0 && !explosion.level.getBlockState(event.pos).isAir()) {
+            FallingBlockEntity entity = FallingBlockEntity.fall(explosion.level, event.pos, explosion.level.getBlockState(event.pos));
+            entity.setDeltaMovement(explosion.getVec().scale(-blowUp));
+            event.setCanceled(true);
         }
     }
 
-    @SubscribeEvent(priority=EventPriority.HIGH)
-    public static void specialDoBlockDropEvent(CustomExplosionDoBlockDropEvent event) {
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void replaceBlockEvent(CustomExplosionBlockBreakEvent.Pre event) {
+        CustomExplosion explosion = event.explosion;
+        BlockState state = explosion.level.getBlockState(event.pos);
+        BlockState newState = ExplosionSpecialDrops.BLOCKS.getSpecialDrop(state, event);
+        if (newState != null) {
+            explosion.level.setBlockAndUpdate(event.pos, newState);
+            event.setCanceled(true); //prevent block drop
+        }
+    }
+
+    @SubscribeEvent
+    public static void doBlockDropEvent(CustomExplosionFinishedEvent event) {
+        for (Pair<ItemStack, BlockPos> pair : event.objectArrayList) {
+            Block.popResource(event.explosion.level, pair.getSecond(), pair.getFirst());
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void specialDoBlockDropEvent(CustomExplosionFinishedEvent event) {
         CustomExplosion explosion = event.explosion;
         BlockPos containerPos = null;
         AtomicReference<IItemHandler> container = new AtomicReference<>();
@@ -237,7 +167,7 @@ public class CommonExplosionEventHandler {
                 null : event.data.getItems(AdditionType.CONTAINER).peek();
         if (marker != null && marker.getItem() instanceof PositionMarkerItem item) {
             if (item.isContainer) {
-                BlockPos pos = item.getPos(marker);
+                BlockPos pos = new BlockPos(item.getPos(explosion.getPosition(), marker));
                 if (pos != null) {
                     containerPos = pos;
                     BlockEntity be = explosion.level.getBlockEntity(pos);
@@ -248,7 +178,7 @@ public class CommonExplosionEventHandler {
                 }
             }
         }
-        if(containerPos != null) { //has pos
+        if (containerPos != null) { //has pos
             for (Pair<ItemStack, BlockPos> pair : event.objectArrayList) {
                 ItemStack remain = pair.getFirst();
                 if (container.get() != null) {
@@ -267,7 +197,7 @@ public class CommonExplosionEventHandler {
         }
     }
 
-    private static void summonLightningBolt(CustomExplosion explosion, BlockPos pos) {
+    static void summonLightningBolt(CustomExplosion explosion, BlockPos pos) {
         Level level = explosion.level;
         LightningBolt lightningbolt = EntityType.LIGHTNING_BOLT.create(level);
         lightningbolt.moveTo(Vec3.atBottomCenterOf(pos));
@@ -275,5 +205,15 @@ public class CommonExplosionEventHandler {
         lightningbolt.setCause(source instanceof ServerPlayer ? (ServerPlayer) source : null);
         level.addFreshEntity(lightningbolt);
         level.playSound(null, pos, SoundEvents.TRIDENT_THUNDER, SoundSource.WEATHER, 5.0F, 1.0F);
+    }
+
+    @SubscribeEvent
+    public static void fireworkEvent(CustomExplosionFinishingEvent event) {
+        CustomExplosion explosion = event.explosion;
+        event.data.getItems(AdditionType.FIREWORK).forEach(itemStack -> {
+            if (itemStack.getItem() instanceof TntFireworkStarItem) {
+                TntFireworkStarItem.shoot(explosion.level, itemStack, explosion);
+            }
+        });
     }
 }

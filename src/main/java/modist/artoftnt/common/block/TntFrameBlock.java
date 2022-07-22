@@ -6,8 +6,11 @@ import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntDefuserItem;
+import modist.artoftnt.common.item.TntFrameItem;
 import modist.artoftnt.core.addition.Addition;
+import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.addition.InstabilityHelper;
+import modist.artoftnt.core.explosion.manager.ExplosionSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -98,7 +101,13 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
                 PrimedTntFrame tnt = new PrimedTntFrame(be.getDataTag(), pLevel, pPos.getX(), pPos.getY() + be.getDeflation(), pPos.getZ(), pEntity, tier);
                 tnt.shoot(0, 1, 0, 1.0F, 1.0F); //default:up
                 pLevel.addFreshEntity(tnt);
-                pLevel.playSound(null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+                float loudness = be.getData().getValue(AdditionType.LOUDNESS);
+                int soundType = (int) be.getData().getValue(AdditionType.TNT_SOUND_TYPE);
+                ExplosionSounds.getSoundEvents(soundType).forEach(t -> //TODO client; tnt
+                        pLevel.playLocalSound(tnt.getX(), tnt.getY(), tnt.getZ(), t,
+                                SoundSource.BLOCKS, pLevel.getRandom().nextFloat() * loudness,
+                                (1.0F + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.2F) * 0.7F,
+                                false));
                 pLevel.gameEvent(pEntity, GameEvent.PRIME_FUSE, pPos);
                 pLevel.setBlock(pPos, Blocks.AIR.defaultBlockState(), 3);
             }
@@ -141,25 +150,27 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     public List<ItemStack> getDrops(BlockState pState, LootContext.Builder pBuilder) {
         if (pBuilder.getParameter(LootContextParams.BLOCK_ENTITY) instanceof TntFrameBlockEntity be) {
             return pBuilder.getParameter(LootContextParams.TOOL).getItem() instanceof TntDefuserItem ?
-                    Lists.newArrayList(getDrop(true, be.getData())) : be.getDrops();
+                    Lists.newArrayList(dropFrame(true, be.getData())) : be.getDrops();
         }
         return super.getDrops(pState, pBuilder);
     }
 
-    public static ItemStack getDrop(boolean shouldFix, TntFrameData data){
+    public static ItemStack dropFrame(boolean shouldFix, TntFrameData data){
         if(shouldFix) {
             data.fixed = true;
         }
         ItemStack is = new ItemStack(ItemLoader.TNT_FRAMES[data.tier].get());
-        is.addTagElement("tntFrameData", data.serializeNBT());
+        TntFrameItem.putTntFrameData(is, data);
         return is;
     }
 
     @Override
     public void setPlacedBy(Level pLevel, BlockPos pPos, BlockState pState, LivingEntity pPlacer, ItemStack pStack) {
-        CompoundTag compoundtag = pStack.getTagElement("tntFrameData");
-        if (pLevel.getBlockEntity(pPos) instanceof TntFrameBlockEntity be) {
-            be.readDataTag(compoundtag);
+        if(pStack.getItem() instanceof TntFrameItem item) {
+            CompoundTag compoundtag = item.getTntFrameDataTag(pStack);
+            if (pLevel.getBlockEntity(pPos) instanceof TntFrameBlockEntity be) {
+                be.readDataTag(compoundtag);
+            }
         }
     }
 
@@ -222,7 +233,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @Override
     public void fillItemCategory(CreativeModeTab pTab, NonNullList<ItemStack> pItems) {
         ItemStack stack = new ItemStack(this);
-        stack.addTagElement("tntFrameData", (new TntFrameData(tier)).serializeNBT());
+        TntFrameItem.putTntFrameData(stack, new TntFrameData(tier));
         pItems.add(stack);
         //TODO more demo
         //TODO set tag? how? new ItemStack breakpoint
@@ -233,10 +244,11 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(ItemStack pStack, @Nullable BlockGetter pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
-        CompoundTag compoundtag = pStack.getTagElement("tntFrameData");
-        TntFrameData data = new TntFrameData(tier, compoundtag);
-        if(pLevel!=null) {
-            data.addText(pTooltip);
+        if(pStack.getItem() instanceof TntFrameItem item) {
+            TntFrameData data = item.getTntFrameData(pStack);
+            if (pLevel != null) {
+                data.addText(pTooltip);
+            }
         }
     }
 

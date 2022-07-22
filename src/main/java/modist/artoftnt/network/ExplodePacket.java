@@ -19,23 +19,29 @@ import java.util.function.Supplier;
 public class ExplodePacket extends ClientboundExplodePacket {
     private final AdditionStack stack;
     private final int tier;
+    private final Vec3 vec;
 
-    public ExplodePacket(int tier, double pX, double pY, double pZ, float pPower, List<BlockPos> pToBlow, @Nullable Vec3 pKnockback, AdditionStack stack) {
+    public ExplodePacket(Vec3 vec, int tier, double pX, double pY, double pZ, float pPower, List<BlockPos> pToBlow, @Nullable Vec3 pKnockback, AdditionStack stack) {
         super(pX, pY, pZ, pPower, pToBlow, pKnockback);
         this.stack = stack;
         this.tier = tier;
+        this.vec = vec;
     }
 
     public ExplodePacket(FriendlyByteBuf pBuffer) {
         super(pBuffer);
         this.tier = pBuffer.readInt();
         this.stack = new AdditionStack(tier, pBuffer.readNbt());
+        this.vec = new Vec3(pBuffer.readDouble(), pBuffer.readDouble(), pBuffer.readDouble());
     }
 
     public void write(FriendlyByteBuf pBuffer) {
         super.write(pBuffer);
         pBuffer.writeInt(tier);
         pBuffer.writeNbt(stack.serializeNBT());
+        pBuffer.writeDouble(vec.x);
+        pBuffer.writeDouble(vec.y);
+        pBuffer.writeDouble(vec.z);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
@@ -48,7 +54,7 @@ public class ExplodePacket extends ClientboundExplodePacket {
     @OnlyIn(Dist.CLIENT)
     private void doExplode(){
         Minecraft minecraft = Minecraft.getInstance();
-        CustomExplosion exp = new CustomExplosion(stack, minecraft.level, null, this.getX(), this.getY(), this.getZ(), this.getPower(), this.getToBlow());
+        CustomExplosion exp = new CustomExplosion(vec, stack, minecraft.level, null, this.getX(), this.getY(), this.getZ(), this.getPower(), this.getToBlow());
         exp.finalizeExplosion(true);
         minecraft.player.setDeltaMovement(minecraft.player.getDeltaMovement().add(this.getKnockbackX(), this.getKnockbackY(), this.getKnockbackZ()));
     }

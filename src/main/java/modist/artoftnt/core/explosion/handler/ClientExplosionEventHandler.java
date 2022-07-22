@@ -2,10 +2,9 @@ package modist.artoftnt.core.explosion.handler;
 
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
-import modist.artoftnt.core.explosion.ExplosionParticles;
-import modist.artoftnt.core.explosion.ExplosionSounds;
-import modist.artoftnt.core.explosion.event.CustomExplosionClientEvent;
-import net.minecraft.core.particles.ParticleTypes;
+import modist.artoftnt.core.explosion.manager.ExplosionParticles;
+import modist.artoftnt.core.explosion.manager.ExplosionSounds;
+import modist.artoftnt.core.explosion.event.CustomExplosionFinishingEvent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.sounds.SoundSource;
@@ -17,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientExplosionEventHandler {
     @SubscribeEvent
-    public static void soundEvent(CustomExplosionClientEvent event) {
+    public static void soundEvent(CustomExplosionFinishingEvent event) {
         CustomExplosion explosion = event.explosion;
         float loudness = event.data.getValue(AdditionType.LOUDNESS);
         int soundType = (int) event.data.getValue(AdditionType.SOUND_TYPE);
@@ -29,7 +28,7 @@ public class ClientExplosionEventHandler {
     }
 
     @SubscribeEvent
-    public static void particleEvent(CustomExplosionClientEvent event) {
+    public static void particleEvent(CustomExplosionFinishingEvent event) {
         CustomExplosion explosion = event.explosion;
         int particle = (int) event.data.getValue(AdditionType.PARTICLE);
         ExplosionParticles.getParticles(particle).forEach(p ->
@@ -38,7 +37,7 @@ public class ClientExplosionEventHandler {
     }
 
     @SubscribeEvent
-    public static void fireworkEvent(CustomExplosionClientEvent event) {
+    public static void fireworkEvent(CustomExplosionFinishingEvent event) {
         CustomExplosion explosion = event.explosion;
         event.data.getItems(AdditionType.FIREWORK).forEach(itemStack -> {
             CompoundTag compoundtag = itemStack.isEmpty() ? null : itemStack.getTag();

@@ -12,6 +12,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -43,12 +45,30 @@ public final boolean isContainer;
     public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
         CompoundTag tag = pStack.getTagElement("position");
         if(tag!=null){
-            TntFrameData.addTooltip("position", NbtUtils.readBlockPos(tag), pTooltipComponents);
+            if(tag.contains("entityClass")){
+                TntFrameData.addTooltip("entityClass", tag.getString("entityClass"), pTooltipComponents);
+                TntFrameData.addTooltip("UUID", tag.getString("UUID"), pTooltipComponents);
+            } else {
+                TntFrameData.addTooltip("position", NbtUtils.readBlockPos(tag), pTooltipComponents);
+            }
         }
     }
 
-    public BlockPos getPos(ItemStack stack){
+    @Nullable
+    public Vec3 getPos(Vec3 posFrom, ItemStack stack){
         CompoundTag tag = stack.getTagElement("position");
-        return tag==null ? null : NbtUtils.readBlockPos(tag);
+        if(tag==null){
+            return null;
+        }
+        Vec3 posTo = Vec3.atCenterOf(NbtUtils.readBlockPos(tag));
+        return checkDistance(posFrom, posTo) ? posTo : null;
+    }
+
+    public boolean checkDistance(Vec3 pos1, Vec3 pos2){
+        return true;
+    }
+
+    public AABB getRange(){
+        return new AABB(-64, -64, -64, 64, 64, 64);
     }
 }

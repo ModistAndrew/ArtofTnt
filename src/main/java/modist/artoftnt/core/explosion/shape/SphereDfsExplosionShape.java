@@ -10,10 +10,11 @@ import net.minecraft.world.phys.AABB;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class SphereExplosionShape extends AbstractExplosionShape {
+public class SphereDfsExplosionShape extends AbstractDfsExplosionShape {
 
-    public SphereExplosionShape(CustomExplosion explosion) {
+    public SphereDfsExplosionShape(CustomExplosion explosion) {
         super(explosion);
     }
 
@@ -34,19 +35,14 @@ public class SphereExplosionShape extends AbstractExplosionShape {
     }
 
     @Override
-    public Object2FloatMap<Entity> getEntities() {
-        Object2FloatMap<Entity> ret = new Object2FloatOpenHashMap<>();
+    protected List<Entity> getEntities() {
         int r = (int) radius;
-        List<Entity> list = this.level.getEntities(this.explosion.getSource(),
-                new AABB(p(-r, -r, -r), p(r, r, r)));
-        for(Entity e : list){
-            float distancePercentage = (float) (Math.sqrt(e.distanceToSqr(this.centerVec)) / r);
-            if(!e.ignoreExplosion() && distancePercentage<=1F){ //in
-                float seenPercentage = getSeenPercent(this.centerVec, e);
-                ret.put(e, (1-distancePercentage)*toOne(seenPercentage));
-            }
-        }
-        return ret;
+        return level.getEntities(explosion.getSource(), new AABB(pc(-r, -r, -r), pc(r, r, r))).stream()
+                .filter(e -> centerVec.distanceTo(e.position()) <= r).collect(Collectors.toList());
+    }
+
+    @Override
+    protected int getActualRadius() {
+        return (int) radius;
     }
 }
-

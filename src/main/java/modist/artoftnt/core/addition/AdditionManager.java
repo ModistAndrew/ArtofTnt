@@ -1,20 +1,14 @@
-package modist.artoftnt.core.addition.data;
+package modist.artoftnt.core.addition;
 
 import com.google.gson.*;
-import modist.artoftnt.ArtofTnt;
-import modist.artoftnt.core.addition.Addition;
-import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.item.Item;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.lang.reflect.Type;
 import java.util.Map;
 
 @Mod.EventBusSubscriber

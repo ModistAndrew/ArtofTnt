@@ -45,6 +45,10 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
         this.deserializeNBT(tag);
     }
 
+    public boolean isEmpty() {
+        return !fixed && size==1F && disguise==null && additions.isEmpty();
+    }
+
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("fixed", fixed);
@@ -128,5 +132,9 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
             return Minecraft.getInstance().getBlockColors().getColor(disguise, pLevel, pPos, pTintIndex);
         }
         return -1;
+    }
+
+    public int getCoolDown() {
+        return this.additions.getCoolDown();
     }
 }

@@ -2,23 +2,15 @@ package modist.artoftnt.common.block.entity;
 
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.entity.PrimedTntFrame;
-import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntFrameItem;
 import modist.artoftnt.core.turret.TurretActivators;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Random;
 
 public class TntTurretBlockEntity extends SuckItemBlockEntity {
     private static final BlockPos[] FIRE_OFFSETS = BlockPos.betweenClosedStream(-2, -2, -2, 2, 2, 2).filter((p) -> {
@@ -48,7 +40,7 @@ public class TntTurretBlockEntity extends SuckItemBlockEntity {
             updateDirection();
             Vec3 direction = vec.normalize();
             double strength = vec.length();
-            PrimedTntFrame entity = new PrimedTntFrame(getTop().getTagElement("tntFrameData"),
+            PrimedTntFrame entity = new PrimedTntFrame(item.getTntFrameDataTag(getTop()),
                     this.level, this.getBlockPos().getX(), this.getBlockPos().getY(),
                     this.getBlockPos().getZ(), null, item.tier);
             entity.shoot( (float)direction.x, (float)direction.y, (float)direction.z,
@@ -74,7 +66,7 @@ public class TntTurretBlockEntity extends SuckItemBlockEntity {
     @Override
     protected void setCoolDown() {
         if(data!=null){
-            this.coolDown = (int)data.getWeight() + INITIAL;
+            this.coolDown = data.getCoolDown() + RENDER_TICK;
         }
     }
 

@@ -28,6 +28,9 @@ public class BlockLoader {
     public static final RegistryObject<Block> TNT_CLONER = BLOCKS.register("tnt_cloner", TntClonerBlock::new);
     public static final RegistryObject<BlockEntityType<TntClonerBlockEntity>> TNT_CLONER_BLOCK_ENTITY =
             fromBlock(TNT_CLONER, TntClonerBlockEntity::new);
+    public static final RegistryObject<Block> DIMINISHING_LIGHT = BLOCKS.register("diminishing_light",
+            DiminishingLightBlock::new);
+
 
     static {
         for(int i=0; i<4; i++){

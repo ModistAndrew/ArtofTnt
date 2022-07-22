@@ -1,4 +1,4 @@
-package modist.artoftnt.core.explosion;
+package modist.artoftnt.core.explosion.manager;
 
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -12,4 +12,9 @@ public class ExplosionSounds {
     public static Set<SoundEvent> getSoundEvents(int value){
         return Collections.singleton(SoundEvents.CHICKEN_DEATH);
     }
+
+    public static Set<SoundEvent> getTntSoundEvents(int value){
+        return Collections.singleton(SoundEvents.TNT_PRIMED);
+    }
+
 }

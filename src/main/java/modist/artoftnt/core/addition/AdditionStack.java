@@ -4,10 +4,12 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class AdditionStack implements INBTSerializable<CompoundTag> {
@@ -154,11 +156,36 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
     }
 
     public Stack<ItemStack> getItems(AdditionType type) {
-        return typeStorage.containsKey(type) ? typeStorage.get(type).itemStacks : new Stack<>();
+        return typeStorage.containsKey(type) ? typeStorage.get(type).getSplit() : new Stack<>();
     }
 
     public float getWeight() {
         return this.weight;
+    }
+
+    public int getCoolDown() {
+        return (int)Math.max(1, this.weight - this.getValue(AdditionType.QUICK_CHARGE));
+    }
+
+    public boolean shouldAttack(@Nullable Entity owner, Entity target){
+        float royalty = getValue(AdditionType.ROYALTY);
+        if(owner==null){
+            return royalty >= 0;
+        }
+        if(royalty<0){
+            return owner==target || owner.isAlliedTo(target);
+        } else if (royalty > 0) {
+            return owner!=target && !owner.isAlliedTo(target);
+        }
+        return true;
+    }
+    public boolean isEmpty() {
+        for(int i=0; i<additions.length; i++){
+            if(!additions[i].isEmpty()){
+                return false;
+            }
+        }
+        return true;
     }
 
     public static class AdditionTypeStorage {
@@ -172,6 +199,18 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
                 itemStacks.push(stack.copy());
             }
             value += Addition.fromItem(stack.getItem()).increment;
+        }
+
+        public Stack<ItemStack> getSplit() { //split into 1
+            Stack<ItemStack> ret = new Stack<>();
+            for(ItemStack stack : itemStacks){
+                for(int i=0; i<stack.getCount(); i++){
+                    ItemStack stack1 = stack.copy();
+                    stack1.setCount(1);
+                    ret.push(stack1);
+                }
+            }
+            return ret;
         }
     }
 }
