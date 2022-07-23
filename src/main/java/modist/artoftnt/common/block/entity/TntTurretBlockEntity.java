@@ -17,19 +17,22 @@ public class TntTurretBlockEntity extends SuckItemBlockEntity {
         return Math.abs(p.getX()) == 2 || Math.abs(p.getY()) == 2 || Math.abs(p.getZ()) == 2;
     }).map(BlockPos::immutable).toArray(BlockPos[]::new);
     private TntFrameData data;
-    private Vec3 vec;
+    private Vec3 vec = Vec3.ZERO;
 
     public TntTurretBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
         super(10, BlockLoader.TNT_TURRET_BLOCK_ENTITY.get(), pWorldPosition, pBlockState);
     }
 
+    public Vec3 getVec(){
+        updateDirection();
+        return vec;
+    }
+
     private void updateDirection(){
         Vec3 ret = Vec3.ZERO;
         for(BlockPos pos : FIRE_OFFSETS){
-            Block block = level.getBlockState(this.getBlockPos().offset(pos)).getBlock();
-            if(TurretActivators.accept(block)) {
-                ret = ret.add(TurretActivators.getDirection(block, pos));
-            }
+            BlockState state = level.getBlockState(this.getBlockPos().offset(pos));
+                ret = ret.add(TurretActivators.getDirection(state, pos));
         }
         this.vec = ret;
     }

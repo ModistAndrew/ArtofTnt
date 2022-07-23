@@ -18,7 +18,7 @@ public class Addition {
     public final boolean specialRenderer; //for potion, firework, fuse...will ignore texture
     //not for shape!
     public final Item item;
-    public final ResourceLocation texture;
+    public final ResourceLocation resourceLocation;
     private static final Map<Item, Addition> ITEM_MAP = new HashMap<>(); //item 2 addition
     private static final String ADDITION = "tnt_frame_additions/";
     private static Addition EMPTY;
@@ -33,7 +33,11 @@ public class Addition {
         this.weight = weight;
         this.instability = instability;
         this.specialRenderer = specialRenderer;
-        this.texture = new ResourceLocation(name.getNamespace(), ADDITION+name.getPath());
+        this.resourceLocation = new ResourceLocation(name.getNamespace(), ADDITION+name.getPath());
+    }
+
+    public ResourceLocation appendIndex(int index){
+        return new ResourceLocation(resourceLocation.getNamespace(), resourceLocation.getPath()+"_"+index);
     }
 
     public static void register(ResourceLocation name, AdditionManager.AdditionWrapper wrapper){
@@ -49,7 +53,7 @@ public class Addition {
         if(!ITEM_MAP.containsKey(addition.item)) {
             ITEM_MAP.put(addition.item, addition);
         } else {
-            ArtofTnt.LOGGER.warn("duplicate item {} for tnt frame addition json {} and {}, you may overwrite by creating a same file",
+            ArtofTnt.LOGGER.warn("duplicate item {} for tnt frame addition json {} and {}, you may want to overwrite by creating a same file",
                     addition.item.getRegistryName().toString(), ITEM_MAP.get(addition.item).name, name);
         }
     }

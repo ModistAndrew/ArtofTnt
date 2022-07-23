@@ -6,6 +6,8 @@ import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameHitBlockEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameTickEvent;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -93,7 +95,10 @@ public class CommonTntFrameEventHandler {
         float monsterFactor = event.data.getValue(AdditionType.MOB_TARGET);
         if (monsterFactor > 0) {
             final float[] minDistance = {Float.MAX_VALUE};
-            List<Monster> list = tnt.level.getEntitiesOfClass(Monster.class, event.tnt.getBoundingBox().inflate(monsterFactor), e -> {
+            List<Mob> list = tnt.level.getEntitiesOfClass(Mob.class, event.tnt.getBoundingBox().inflate(monsterFactor), e -> {
+                if(!(e instanceof Enemy)){
+                    return false;
+                }
                 float distance = e.distanceTo(tnt);
                 if (distance < minDistance[0]) {
                     minDistance[0] = distance;

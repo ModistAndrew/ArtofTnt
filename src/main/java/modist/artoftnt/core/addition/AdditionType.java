@@ -61,7 +61,7 @@ public class AdditionType {
     //TODO factor
     public static final AdditionType LIGHT = new Builder("light", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
     public static final AdditionType FUSE = new Builder("fuse", AdditionSlot.TNT_FUSE).important().build();
-    public static final AdditionType SHAPE = new Builder("explosion_shape", AdditionSlot.EXPLOSION_SHAPE).single().build();
+    public static final AdditionType SHAPE = new Builder("shape", AdditionSlot.EXPLOSION_SHAPE).single().build();
 //TODO extremes and
 // tao wa(firework?) and blow up and target (surrounding mob) and light(change daylight?)
 

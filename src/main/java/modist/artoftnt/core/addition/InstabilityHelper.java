@@ -13,4 +13,8 @@ public class InstabilityHelper {
     public static float signalToMinInstability(int signal) {
         return 16-signal;
     }
+
+    public static float tntHitEntityMinInstability(boolean isOwner) {
+        return isOwner ? 12F : 4F;
+    }
 }

@@ -156,7 +156,7 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
     }
 
     public Stack<ItemStack> getItems(AdditionType type) {
-        return typeStorage.containsKey(type) ? typeStorage.get(type).getSplit() : new Stack<>();
+        return typeStorage.containsKey(type) ? AdditionTypeStorage.getSplit(typeStorage.get(type).itemStacks) : new Stack<>();
     }
 
     public float getWeight() {
@@ -201,7 +201,7 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
             value += Addition.fromItem(stack.getItem()).increment;
         }
 
-        public Stack<ItemStack> getSplit() { //split into 1
+        public static Stack<ItemStack> getSplit(Stack<ItemStack> itemStacks) { //split into 1
             Stack<ItemStack> ret = new Stack<>();
             for(ItemStack stack : itemStacks){
                 for(int i=0; i<stack.getCount(); i++){

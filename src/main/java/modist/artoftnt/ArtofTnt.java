@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.entity.EntityLoader;
 import modist.artoftnt.common.item.ItemLoader;
+import modist.artoftnt.common.recipe.RecipeLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.item.CreativeModeTab;
@@ -28,7 +29,7 @@ public class ArtofTnt {
         public Component getDisplayName() {
             MutableComponent mutablecomponent = (new TextComponent("")).append(super.getDisplayName());
             MutableComponent mutablecomponent1 = new TextComponent("[WIP!]");
-                mutablecomponent1.withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.RED);
+                mutablecomponent1.withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_AQUA);
                 mutablecomponent.append(mutablecomponent1);
             return mutablecomponent;
         }
@@ -39,6 +40,7 @@ public class ArtofTnt {
         BlockLoader.BLOCK_ENTITIES.register(ArtofTnt.BUS);
         ItemLoader.ITEMS.register(ArtofTnt.BUS);
         EntityLoader.ENTITY_TYPES.register(ArtofTnt.BUS);
+        RecipeLoader.RECIPES.register(ArtofTnt.BUS);
     }
 }
 

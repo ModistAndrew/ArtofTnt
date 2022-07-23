@@ -7,6 +7,7 @@ import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.Addition;
 import modist.artoftnt.core.addition.AdditionSlot;
+import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -43,18 +44,18 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
         TntFrameData data = extraData.getData(TntFrameBlockEntity.ADDITIONS_MODEL_PROPERTY);
-        RenderUtil renderer = getRenderUtil(state, data); //initialize
+        BakeModelRenderer renderer = getRenderUtil(state, data); //initialize
         if (side != null) { //deal with cull face
             if (data == null) { //default
                 putDefaultQuads(renderer, side, 0);
                 return renderer.getQuads();
             }
             if (data.disguise != null) { //disguise
-                if(data.size == 1F) {
-                    if (data.disguise.getBlock() == Blocks.AIR||data.disguise.getBlock() instanceof TntFrameBlock) { //no recursion
+                if (data.size == 1F) {
+                    if (data.disguise.getBlock() == Blocks.AIR || data.disguise.getBlock() instanceof TntFrameBlock) { //no recursion
                         putDefaultQuads(renderer, side, data.tier);
                     } else {
-                        renderer.transform(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(data.disguise).
+                        renderer.transformBlock(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(data.disguise).
                                 getQuads(data.disguise, side, rand, EmptyModelData.INSTANCE), data.disguise);
                     }
                 }
@@ -65,16 +66,16 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
         Direction[] directions = new Direction[]{
                 Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.NORTH, null
         };
-        if(data==null){ //ignore
+        if (data == null) { //ignore
             return renderer.getQuads();
         }
         if (data.disguise != null) { //disguise
-            if(data.size < 1F) {
+            if (data.size < 1F) {
                 Arrays.stream(directions).forEach(d -> {
                     if (data.disguise.getBlock() == Blocks.AIR) {
                         putDefaultQuads(renderer, d, data.tier);
                     } else {
-                        renderer.transform(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(data.disguise).
+                        renderer.transformBlock(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(data.disguise).
                                 getQuads(data.disguise, d, rand, EmptyModelData.INSTANCE), data.disguise);
                     }
                 });
@@ -84,7 +85,7 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
         Arrays.stream(directions).forEach(d -> {
             renderer.transform(existingModel.getQuads(state, d, rand, extraData)); //frame
         });
-        for (int i = 0; i < 17; i++) { //16 bottoms and one top
+        for (int i = 0; i < 18; i++) {
             putItemStackQuads(renderer, data.getItemStacks(i), i);
         }
         putSideQuads(data.fixed, renderer, data.getItems(AdditionType.SHAPE).isEmpty() ? null : Addition.fromItem(data.getItems(AdditionType.SHAPE).peek().getItem()),
@@ -92,22 +93,23 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
         return renderer.getQuads();
     }
 
-    private void putDefaultQuads(RenderUtil renderer, Direction side, int tier) {
+    private void putDefaultQuads(BakeModelRenderer renderer, Direction side, int tier) {
         if (side != null) {
             switch (side) {
-                case UP -> renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_TOP[tier], side);
-                case DOWN -> renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_BOTTOM[tier], side);
-                default -> renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_SIDE[tier], side);
+                case UP ->
+                        renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_TOP[tier], side);
+                case DOWN ->
+                        renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_BOTTOM[tier], side);
+                default ->
+                        renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_SIDE[tier], side);
             }
         }
     }
 
-    private void putSideQuads(boolean fixed, RenderUtil renderer, Addition shape, float weight, float instability) {
-        renderer.putCube16(0, 0, 0, 16, 16, 16, shape == null ?
-                AdditionSpecialRenderer.DEFAULT_SHAPE : shape.texture, false, false);
+    private void putSideQuads(boolean fixed, BakeModelRenderer renderer, Addition shape, float weight, float instability) {
         renderer.putCube16(0, 0, 0, 16, 16, 16, getWeightTexture(weight), false, false);
         renderer.putCube16(0, 0, 0, 16, 16, 16, getInstabilityTexture(instability), false, false);
-        renderer.putCubeFace16(0, 16-DELTA, 0, 16, 16-DELTA, 16,
+        renderer.putCubeFace16(0, 16 - DELTA, 0, 16, 16 - DELTA, 16,
                 fixed ? AdditionSpecialRenderer.FIXED_TOP : AdditionSpecialRenderer.TOP, Direction.UP);
     }
 
@@ -120,53 +122,53 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
     }
 
     public static int getInstabilityTextureId(float instability) {
-        return instability > 7F ? 7 : (int)instability;
+        return instability > 7F ? 7 : (int) instability;
     }
 
     public static int getWeightTextureId(float weight) {
-        return weight > 7F ? 7 : (int)weight;
+        return weight > 7F ? 7 : (int) weight;
     }
 
-    private void putItemStackQuads(RenderUtil renderer, Stack<ItemStack> stacks, int slot) {
-        Stack<ItemStack> stacks1 = new Stack<>();
-        for (ItemStack stack : stacks) {
-            ItemStack stack1 = stack.copy();
-            stack1.setCount(1);
-            for (int j = 0; j < stack.getCount(); j++) {
-                stacks1.push(stack1);
-            }
-        }
+    private void putItemStackQuads(BakeModelRenderer renderer, Stack<ItemStack> stacks, int slot) {
+        Stack<ItemStack> stacks1 = AdditionStack.AdditionTypeStorage.getSplit(stacks);
         for (int i = 0; i < stacks1.size(); i++) {
             putSingleItemStackQuads(renderer, stacks1.get(i), i, slot,
                     i == stacks1.size() - 1 || Addition.fromItem(stacks1.get(i + 1).getItem()).specialRenderer,
                     i != 0 && Addition.fromItem(stacks1.get(i - 1).getItem()).specialRenderer);
         }
+        if (slot == 17 && stacks.isEmpty()) { //empty shape special
+            putSingleItemStackQuads(renderer, null, 0, slot, true, true);
+        }
     }
 
-    private void putSingleItemStackQuads(RenderUtil renderer, ItemStack stack, int index, int slot, boolean up, boolean down) {
+    private void putSingleItemStackQuads(BakeModelRenderer renderer, @Nullable ItemStack stack, int index, int slot, boolean up, boolean down) {
+        if (stack == null) {
+            renderer.putSpecialItemStackQuads(null, null, index, slot, up, down);
+            return;
+        }
         Addition addition = Addition.fromItem(stack.getItem());
-        if (!addition.specialRenderer) {
+        if (!addition.specialRenderer && addition.type.slot.index < 16) {
             renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                    AdditionSlot.getU(slot) + 2, index * 2 + 2 - (index == 7 ? 2 * DELTA : 0),AdditionSlot.getV(slot) + 2,
-                    addition.texture, up, down);
+                    AdditionSlot.getU(slot) + 2, index * 2 + 2 - (index == 7 ? 2 * DELTA : 0), AdditionSlot.getV(slot) + 2,
+                    addition.resourceLocation, up, down);
         } else {
             renderer.putSpecialItemStackQuads(stack, addition, index, slot, up, down);
         }
     }
 
-    private RenderUtil getRenderUtil(BlockState state, TntFrameData data) {
+    private BakeModelRenderer getRenderUtil(BlockState state, TntFrameData data) {
         if (data == null) {
             if (state != null && state.getBlock() instanceof TntFrameBlock tfb) {
-                return new RenderUtil(Transformation.identity());
+                return new BakeModelRenderer(Transformation.identity());
             } else {
-                return new RenderUtil(Transformation.identity());
+                return new BakeModelRenderer(Transformation.identity());
             }
         }
         float d = data.getDeflation();
         float scale = data.size;
         Matrix4f mtx = Matrix4f.createTranslateMatrix(d, d, d);
         mtx.multiply(Matrix4f.createScaleMatrix(scale, scale, scale));
-        return new RenderUtil(new Transformation(mtx));
+        return new BakeModelRenderer(new Transformation(mtx));
     }
 
     @Override

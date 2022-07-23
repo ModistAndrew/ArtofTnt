@@ -1,6 +1,7 @@
 package modist.artoftnt.client.event;
 
 import modist.artoftnt.ArtofTnt;
+import modist.artoftnt.client.block.entity.TntTurretRenderer;
 import modist.artoftnt.client.block.model.AdditionSpecialRenderer;
 import modist.artoftnt.client.block.model.RemoteExploderBlockBakedModel;
 import modist.artoftnt.client.block.model.TntFrameBlockBakedModel;
@@ -15,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockModelShaper;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
@@ -41,6 +43,7 @@ public class ClientRegistryEventHandler {
 
     @SubscribeEvent
     public static void registerBlocks(FMLClientSetupEvent event) {
+        BlockEntityRenderers.register(BlockLoader.TNT_TURRET_BLOCK_ENTITY.get(), TntTurretRenderer::new);
         Arrays.stream(BlockLoader.TNT_FRAMES).forEach(b ->
                 ItemBlockRenderTypes.setRenderLayer(b.get(), RenderType.cutout()));
         ItemBlockRenderTypes.setRenderLayer(BlockLoader.REMOTE_EXPLODER.get(), RenderType.cutout());
@@ -49,8 +52,11 @@ public class ClientRegistryEventHandler {
     }
 
     @SubscribeEvent
-    public static void addMarkerModels(ModelRegistryEvent event) {
-        Arrays.stream(RemoteExploderBlockBakedModel.MARKER_MODEL_LOCATIONS).forEach(rl -> ForgeModelBakery.addSpecialModel(rl));
+    public static void addSpecialModels(ModelRegistryEvent event) {
+        Arrays.stream(RemoteExploderBlockBakedModel.MARKER_MODEL_LOCATIONS).forEach(ForgeModelBakery::addSpecialModel);
+        Minecraft.getInstance().getResourceManager().listResources("models/tnt_frame_additions",
+                (f)->f.endsWith(".json")).stream().map(r -> new ResourceLocation(r.getNamespace(),
+                r.getPath().replace(".json","").replace("models/", ""))).forEach(ForgeModelBakery::addSpecialModel);
     }
 
     @SubscribeEvent

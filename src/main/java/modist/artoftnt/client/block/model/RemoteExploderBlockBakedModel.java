@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -46,7 +45,7 @@ public class RemoteExploderBlockBakedModel implements IDynamicBakedModel {
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
         ItemStack[] stacks = extraData.getData(RemoteExploderBlockEntity.MARKERS_MODEL_PROPERTY);
-        RenderUtil renderer = new RenderUtil(Transformation.identity());
+        BakeModelRenderer renderer = new BakeModelRenderer(Transformation.identity());
         renderer.transform(existingModel.getQuads(state, side, rand, extraData));
         if(stacks!=null && side==null) {
             for (int i = 0; i < stacks.length; i++) {

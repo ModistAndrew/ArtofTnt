@@ -76,18 +76,6 @@ public class CommonExplosionEntityEventHandler {
     }
 
     @SubscribeEvent
-    public static void lightEvent(CustomExplosionEntityEvent event) {
-        CustomExplosion explosion = event.explosion;
-        float light = event.data.getValue(AdditionType.LIGHT);
-        if (event.entity instanceof LivingEntity le) {
-            if (le.isAffectedByPotions()) {
-                MobEffectInstance mobeffectinstance = new MobEffectInstance(MobEffects.GLOWING, (int) (light * event.percentage), 0);
-                le.addEffect(new MobEffectInstance(mobeffectinstance), explosion.getSource());
-            }
-        }
-    }
-
-    @SubscribeEvent
     public static void punchEvent(CustomExplosionEntityEvent event) {
         CustomExplosion explosion = event.explosion;
         float punch = event.data.getValue(AdditionType.PUNCH) -

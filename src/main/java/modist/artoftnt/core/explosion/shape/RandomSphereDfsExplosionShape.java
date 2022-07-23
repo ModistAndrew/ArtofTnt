@@ -18,18 +18,11 @@ public class RandomSphereDfsExplosionShape extends SphereDfsExplosionShape {
 
     @Override
     public Set<BlockPos> getEdge() {
-        Set<BlockPos> ret = new HashSet<>();
         int r = (int) radius;
         int rm = r + r/4;
-        for (int dx = -rm; dx <= rm; dx++) {
-            for(int dy = -rm; dy <= rm; dy++){
-                for(int dz = -rm; dz <= rm; dz++){
-                    if((int)Math.sqrt(dx*dx+dy*dy+dz*dz)-r<=explosion.random.nextInt(1 + r / 4)){
-                        ret.add(p(dx, dy, dz));
-                    }
-                }
-            }
-        }
-        return ret;
+        return BlockPos.betweenClosedStream(p(-rm, -rm, -rm), p(rm, rm, rm))
+                .filter(bp -> r<=(int)Math.sqrt(center.distSqr(bp)) &&
+                        (int)Math.sqrt(center.distSqr(bp))<=r+explosion.random.nextInt(1 + r / 4))
+                .map(bp->bp.immutable()).collect(Collectors.toSet());
     }
 }

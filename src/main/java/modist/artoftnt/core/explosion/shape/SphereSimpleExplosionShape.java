@@ -19,10 +19,11 @@ public class SphereSimpleExplosionShape extends AbstractSimpleExplosionShape {
     public Set<BlockPos> getBlockPoses() {
         Set<BlockPos> ret = new HashSet<>();
         int r = (int) radius;
+        int r2 = r*r;
         for (int dx = -r; dx <= r; dx++) {
             for(int dy = -r; dy <= r; dy++){
                 for(int dz = -r; dz <= r; dz++){
-                    if(Math.sqrt(dx*dx+dy*dy+dz*dz) < r){
+                    if(dx*dx+dy*dy+dz*dz < r2){
                         ret.add(p(dx, dy, dz));
                     }
                 }

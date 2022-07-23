@@ -22,17 +22,15 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @OnlyIn(Dist.CLIENT)
-public class RenderUtil {
-    private Transformation globalTransform;
+public class BakeModelRenderer {
+    Transformation globalTransform;
+    public final Random random = new Random();
     private final List<BakedQuad> quads = new ArrayList<>();
 
-    public RenderUtil(Transformation transformation) {
+    public BakeModelRenderer(Transformation transformation) {
         this.globalTransform = transformation;
     }
 
@@ -40,8 +38,8 @@ public class RenderUtil {
         this.globalTransform = transform;
     }
 
-    public void putSpecialItemStackQuads(ItemStack stack, Addition addition, int index, int slot, boolean up, boolean down) {
-        AdditionSpecialRenderer.putSpecialItemStackQuads(this, stack, addition, index, slot, up, down);
+    public void putSpecialItemStackQuads(@Nullable ItemStack stack, @Nullable Addition addition, int index, int slot, boolean up, boolean down) {
+        AdditionSpecialRenderer.putSpecialItemStackQuads(this, random, stack, addition, index, slot, up, down);
     }
 
     public List<BakedQuad> getQuads() {
@@ -145,13 +143,18 @@ public class RenderUtil {
         quads.addAll(createCube(v(x1 / 16F, y1 / 16F, z1 / 16F), v(x2 / 16F, y2 / 16F, z2 / 16F), r, up, down, -1));
     }
 
-    public void transform(List<BakedQuad> quads, BlockState state) {
+    public void transform(List<BakedQuad> quads) {
         ColorQuadTransformer transformer = new ColorQuadTransformer(globalTransform);
-        this.quads.addAll(transformer.processMany(quads, state));
+        this.quads.addAll(transformer.processMany(false, quads, null, null));
     }
 
-    public void transform(List<BakedQuad> quads) {
-        this.transform(quads, null);
+    public void transformBlock(List<BakedQuad> quads, BlockState state) {
+        ColorQuadTransformer transformer = new ColorQuadTransformer(globalTransform);
+        this.quads.addAll(transformer.processMany(true, quads, state, null));
+    }
+    public void transformItem(List<BakedQuad> quads, ItemStack stack) {
+        ColorQuadTransformer transformer = new ColorQuadTransformer(globalTransform);
+        this.quads.addAll(transformer.processMany(false, quads, null, stack));
     }
 
     private Vector3f v(float x, float y, float z) {
@@ -173,7 +176,7 @@ public class RenderUtil {
             this.transform = transform;
         }
 
-        private void processVertices(int[] inData, int[] outData, int color) {
+        private void processVertices(int[] inData, int[] outData, int color, boolean changeColor) {
             int stride = DefaultVertexFormat.BLOCK.getVertexSize();
             int count = (inData.length * 4) / stride;
             for (int i = 0; i < count; i++) {
@@ -213,10 +216,14 @@ public class RenderUtil {
                 }
             }
 
-            int color1 = color >> 16 & 255;
-            int color2 = color >> 8 & 255;
-            int color3 = color & 255;
-            color = (color3 << 16) + (color2 << 8) + color1;
+            int colorR = color >> 16 & 255;
+            int colorG = color >> 8 & 255;
+            int colorB = color & 255;
+            if(changeColor) {
+                colorB = colorB * 15 >> 4;
+                colorG = colorG * 15 >> 4;
+            }
+            color = (colorB << 16) + (colorG << 8) + colorR;
             for (int i = 0; i < count; i++) {
                 int offset = COLOR + i * stride;
                 putAtByteOffset(outData, offset, color);
@@ -316,19 +323,23 @@ public class RenderUtil {
          * @param inputs The list of quads to transform
          * @return A new array of new BakedQuad objects.
          */
-        public List<BakedQuad> processMany(List<BakedQuad> inputs, @Nullable BlockState state) {
+        public List<BakedQuad> processMany(boolean changeColor, List<BakedQuad> inputs, @Nullable BlockState state, @Nullable ItemStack stack) {
             if (inputs.size() == 0)
                 return Collections.emptyList();
 
             List<BakedQuad> outputs = Lists.newArrayList();
             for (BakedQuad input : inputs) {
                 int color = -1;
-                if(input.isTinted() && state !=null) {
-                    color = Minecraft.getInstance().getBlockColors().getColor(state, null, null, input.getTintIndex());
+                if(input.isTinted()) {
+                    if(state !=null) {
+                        color = Minecraft.getInstance().getBlockColors().getColor(state, null, null, input.getTintIndex());
+                    } else if(stack!=null){
+                        color = Minecraft.getInstance().getItemColors().getColor(stack, input.getTintIndex());
+                    }
                 }
                 int[] inData = input.getVertices();
                 int[] outData = Arrays.copyOf(inData, inData.length);
-                processVertices(inData, outData, color);
+                processVertices(inData, outData, color, changeColor);
 
                 outputs.add(new BakedQuad(outData, input.getTintIndex(), input.getDirection(), input.getSprite(), input.isShade()));
             }

@@ -1,8 +1,14 @@
 package modist.artoftnt.core.turret;
 
+import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
@@ -11,30 +17,30 @@ import java.util.function.Function;
 
 //TODO:direction not correct (or see: TileEntity?)
 public class TurretActivators {
-    private static final HashMap<Block, Function<BlockPos, Vec3>> ACTIVATORS =
+    private static final HashMap<TagKey<Block>, Function<BlockPos, Vec3>> ACTIVATORS =
             new HashMap<>();
+    private static final Object2FloatMap<TagKey<Block>> ACTIVATORS_INACCURACY =
+            new Object2FloatOpenHashMap<>();
     private static final Random RANDOM = new Random();
-    
-    public static boolean accept(Block block){
-        return ACTIVATORS.containsKey(block);
+
+    public static Vec3 getDirection(BlockState state, BlockPos pos){
+        for(TagKey<Block> tag : ACTIVATORS.keySet()){
+            if(state.is(tag)){
+                return ACTIVATORS.get(tag).apply(pos);
+            }
+        }
+        return Vec3.ZERO;
     }
 
-    public static Vec3 getDirection(Block block, BlockPos pos){
-        return accept(block) ? ACTIVATORS.get(block).apply(pos) : Vec3.ZERO;
-    }
-
-    public static void register(Block block, Function<BlockPos, Vec3> function){
-        ACTIVATORS.put(block, function);
+    public static void register(TagKey<Block> tag, Function<BlockPos, Vec3> function){
+        ACTIVATORS.put(tag, function);
     }
     
-    private static Function<BlockPos, Vec3> create(float strength, float inAccuracy){
-        return p -> new Vec3(p.getX(), p.getY(), p.getZ()).normalize().add
-                (RANDOM.nextGaussian() * (double)0.0075F * (double)inAccuracy,
-                        RANDOM.nextGaussian() * (double)0.0075F * (double)inAccuracy,
-                        RANDOM.nextGaussian() * (double)0.0075F * (double)inAccuracy).scale((double)strength);
+    private static Function<BlockPos, Vec3> create(float strength){
+        return p -> new Vec3(p.getX(), p.getY(), p.getZ()).normalize();
     }
 
     static{
-        register(Blocks.MAGMA_BLOCK, create(1, 1));
+        register(BlockTags.FIRE, create(1));
     }
 }

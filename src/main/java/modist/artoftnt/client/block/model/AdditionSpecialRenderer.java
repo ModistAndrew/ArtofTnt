@@ -1,5 +1,8 @@
 package modist.artoftnt.client.block.model;
 
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Transformation;
+import com.mojang.math.Vector3f;
 import modist.artoftnt.core.addition.Addition;
 import modist.artoftnt.core.addition.AdditionSlot;
 import net.minecraft.client.Minecraft;
@@ -8,8 +11,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.model.data.EmptyModelData;
 
+import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
@@ -55,42 +62,26 @@ public class AdditionSpecialRenderer {
     }
 
 
-    public static void putSpecialItemStackQuads(RenderUtil renderer, ItemStack stack, Addition addition, int index, int slot, boolean up, boolean down) {
-        float top = index * 2 + 2 - (index == 7 ? 2 * DELTA : 0F);
-        switch (addition.name.toString()) {
-            case "artoftnt:slime_block" -> {
-                renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
-                        SLIME_OUTER, up, down);
-                renderer.putCube16(AdditionSlot.getU(slot) + 0.5F, index * 2 + 0.5F, AdditionSlot.getV(slot) + 0.5F,
-                        AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
-                        SLIME_INNER, true, true);
-            }
-            case "artoftnt:honey_block" -> {
-                renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
-                        HONEY_OUTER, up, down);
-                renderer.putCube16(AdditionSlot.getU(slot) + 0.5F, index * 2 + 0.5F, AdditionSlot.getV(slot) + 0.5F,
-                        AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
-                        HONEY_INNER, true, true);
-            }
-            case "artoftnt:lingering_potion" -> {
-                renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
-                        POTION_OUTER, up, down);
-                renderer.putCube16(AdditionSlot.getU(slot) + 0.5F, index * 2 + 0.5F, AdditionSlot.getV(slot) + 0.5F,
-                        AdditionSlot.getU(slot) + 1.5F, index * 2 + 1.5F, AdditionSlot.getV(slot) + 1.5F,
-                        POTION_INNER, true, true, Minecraft.getInstance().getItemColors().getColor(stack, 0));
-            }
-            case "artoftnt:firework_star" -> {
-                renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
-                        FIREWORK_OUTER, up, down);
-                renderer.putCube16(AdditionSlot.getU(slot), index * 2, AdditionSlot.getV(slot),
-                        AdditionSlot.getU(slot) + 2, top, AdditionSlot.getV(slot) + 2,
-                        FIREWORK_INNER, true, true, Minecraft.getInstance().getItemColors().getColor(stack, 1));
-            }
-            case "artoftnt:string" -> renderer.putCubeFace16(0, 16, 0, 16, 16, 16, STRINGS[index], Direction.UP);
+    public static void putSpecialItemStackQuads(BakeModelRenderer renderer, Random random, @Nullable ItemStack stack, @Nullable Addition addition, int index, int slot, boolean up, boolean down) {
+        if (stack == null || addition == null) { //default side
+            renderer.putCube16(0, 0, 0, 16, 16, 16, DEFAULT_SHAPE, false, false);
+            return;
+        }
+        if (addition.type.slot.index < 16) {
+            Matrix4f mtx = Matrix4f.createScaleMatrix(0.125F, 0.125F-DELTA, 0.125F);
+            mtx.translate(new Vector3f(AdditionSlot.getU(slot)/16F, (index * 2+DELTA)/16F, AdditionSlot.getV(slot)/16F));
+            Transformation temp = renderer.globalTransform;
+            renderer.setTransform(temp.compose(new Transformation(mtx)));
+            renderer.transformItem(Minecraft.getInstance().getModelManager().getModel(addition.resourceLocation).getQuads(
+                    null, null, random, EmptyModelData.INSTANCE), stack);
+            Arrays.stream(Direction.values()).forEach(d -> renderer.transformItem(Minecraft.getInstance().getModelManager().getModel(addition.resourceLocation).getQuads(
+                    null, d, random, EmptyModelData.INSTANCE), stack)); //all faces
+            renderer.setTransform(temp); //pop
+        } else if (addition.type.slot.index == 16) {
+            renderer.putCubeFace16(0, 16, 0, 16, 16, 16,
+                    addition.appendIndex(index), Direction.UP);
+        } else if (addition.type.slot.index == 17) {
+            renderer.putCube16(0, 0, 0, 16, 16, 16, addition.resourceLocation, false, false);
         }
     }
 

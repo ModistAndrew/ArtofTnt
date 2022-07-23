@@ -20,18 +20,10 @@ public class SphereDfsExplosionShape extends AbstractDfsExplosionShape {
 
     @Override
     public Set<BlockPos> getEdge() {
-        Set<BlockPos> ret = new HashSet<>();
         int r = (int) radius;
-        for (int dx = -r; dx <= r; dx++) {
-            for(int dy = -r; dy <= r; dy++){
-                for(int dz = -r; dz <= r; dz++){
-                    if(r==(int)Math.sqrt(dx*dx+dy*dy+dz*dz)){
-                        ret.add(p(dx, dy, dz));
-                    }
-                }
-            }
-        }
-        return ret;
+        return BlockPos.betweenClosedStream(p(-r, -r, -r), p(r, r, r))
+                .filter(bp -> (int)Math.sqrt(center.distSqr(bp)) == r)
+                .map(bp -> bp.immutable()).collect(Collectors.toSet());
     }
 
     @Override

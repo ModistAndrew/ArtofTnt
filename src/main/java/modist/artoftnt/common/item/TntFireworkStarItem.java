@@ -28,7 +28,7 @@ public class TntFireworkStarItem extends FireworkStarItem { //see CommonEventHan
         }
     }
 
-    public static void shoot(Level level, ItemStack stack, CustomExplosion explosion){
+    public static void shoot(Level level, ItemStack stack, CustomExplosion explosion){ //TODO shoot stuck; large star
         CompoundTag tag = stack.getTagElement("tntFrameData");
         if(tag!=null){
             for(int i=0; i<8; i++){

@@ -15,9 +15,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -29,6 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -37,6 +41,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -64,8 +70,6 @@ public class CommonExplosionBlockEventHandler {
         BlockPos blockPos = event.pos;
         CustomExplosion explosion = event.explosion;
         BlockState blockstate = explosion.level.getBlockState(blockPos);
-        float temperature = event.data.getValue(AdditionType.TEMPERATURE);
-        float strength = event.data.getValue(AdditionType.STRENGTH);
         if (!blockstate.isAir()) {
             if (blockstate.canDropFromExplosion(explosion.level, blockPos, explosion)) {
                 ItemStack specialDrop = ExplosionSpecialDrops.ITEMS.getSpecialDrop(blockstate, event);
@@ -107,9 +111,9 @@ public class CommonExplosionBlockEventHandler {
                     explosion.level.getBlockState(event.pos).isAir() &&
                     explosion.level.getBlockState(event.pos.below()).isSolidRender(explosion.level, event.pos.below())) {
                 explosion.level.setBlockAndUpdate(event.pos, BaseFireBlock.getState(explosion.level, event.pos));
-                if (explosion.random.nextInt(20) < flame * event.percentage){
+                if (explosion.random.nextInt(20) < flame * event.percentage) {
                     BlockState under = explosion.level.getBlockState(event.pos.below());
-                    if(under.is(BlockTags.BASE_STONE_OVERWORLD)){
+                    if (under.is(BlockTags.BASE_STONE_OVERWORLD)) {
                         explosion.level.setBlockAndUpdate(event.pos.below(), Blocks.NETHERRACK.defaultBlockState()); //under
                     }
                 }
@@ -117,26 +121,45 @@ public class CommonExplosionBlockEventHandler {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void lightEvent(CustomExplosionBlockBreakEvent.Post event) {
+    @SubscribeEvent
+    public static void lightEvent(CustomExplosionFinishedEvent event) {
         CustomExplosion explosion = event.explosion;
         float light = event.data.getValue(AdditionType.LIGHT);
-        if (light * event.percentage >= 1F) {
-            if (explosion.level.getBlockState(event.pos).isAir()) {
-                explosion.level.setBlockAndUpdate(event.pos, BlockLoader.DIMINISHING_LIGHT.get().defaultBlockState().
-                        setValue(DiminishingLightBlock.LEVEL, (int) (light * event.percentage)));
-            }
+        if (light > 0) {
+            AABB aabb = new AABB(new BlockPos(explosion.getPosition().add(-light, -light, -light)),
+                    new BlockPos(explosion.getPosition().add(light, light, light)));
+            explosion.level.getEntities(explosion.getSource(), aabb).stream().filter(e ->
+                    e.distanceToSqr(explosion.getPosition()) < light * light).forEach(e -> {
+                if (e instanceof LivingEntity le) {
+                    if (le.isAffectedByPotions()) {
+                        MobEffectInstance mobeffectinstance = new MobEffectInstance(MobEffects.GLOWING, (int) (light * 20), 0); //ignore percentage
+                        le.addEffect(new MobEffectInstance(mobeffectinstance), explosion.getSource());
+                    }
+                }
+            });
+            BlockPos.betweenClosedStream(aabb).filter(bp ->
+                    explosion.level.getBlockState(bp).isAir() &&
+                            explosion.getPosition().distanceToSqr(Vec3.atCenterOf(bp)) < light * light).map(bp -> bp.immutable()).forEach(bp -> {
+                explosion.level.setBlockAndUpdate(bp, BlockLoader.DIMINISHING_LIGHT.get().defaultBlockState().
+                        setValue(DiminishingLightBlock.LEVEL, 15)); //simply use 15 ad ignore strength
+            });
         }
     }
 
     @SubscribeEvent
-    public static void blowUpEvent(CustomExplosionBlockBreakEvent.Pre event) {
+    public static void blowUpEvent(CustomExplosionFinishingEvent event) { //TODO air wall?
         CustomExplosion explosion = event.explosion;
         float blowUp = event.data.getValue(AdditionType.BLOW_UP);
-        if (blowUp > 0 && !explosion.level.getBlockState(event.pos).isAir()) {
-            FallingBlockEntity entity = FallingBlockEntity.fall(explosion.level, event.pos, explosion.level.getBlockState(event.pos));
-            entity.setDeltaMovement(explosion.getVec().scale(-blowUp));
-            event.setCanceled(true);
+        if(blowUp > 0) {
+            List<BlockPos> remove = new ArrayList<>();
+            for (BlockPos pos : explosion.getToBlow()) {
+                if (blowUp > 0 && !explosion.level.getBlockState(pos).isAir()) {
+                    FallingBlockEntity entity = FallingBlockEntity.fall(explosion.level, pos, explosion.level.getBlockState(pos));
+                    entity.setDeltaMovement(explosion.getVec().scale(-blowUp));
+                    remove.add(pos);
+                }
+            }
+            explosion.getToBlow().removeAll(remove);
         }
     }
 

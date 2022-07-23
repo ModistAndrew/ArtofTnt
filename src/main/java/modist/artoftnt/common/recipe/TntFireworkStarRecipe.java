@@ -51,7 +51,9 @@ public class TntFireworkStarRecipe extends CustomRecipe {
             return ItemStack.EMPTY;
         } else {
             ItemStack ret = new ItemStack(ItemLoader.TNT_FIREWORK_STAR.get());
-            ret.addTagElement("Explosion", fireworkStar.getTagElement("Explosion"));
+            if(fireworkStar.getTagElement("Explosion")!=null) {
+                ret.addTagElement("Explosion", fireworkStar.getTagElement("Explosion"));
+            }
             for(int i=0; i<ID_MAP.length; i++){
                 if(pInv.getItem(ID_MAP[i]).getItem() instanceof TntFrameItem item){
                     TntFireworkStarItem.putData(ret, i, item.getTntFrameDataTag(pInv.getItem(ID_MAP[i])), item.tier);

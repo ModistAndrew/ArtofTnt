@@ -137,6 +137,11 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
      */
     @Override
     public void tick() {
+        HitResult hitresult = getHitResult(this::canHitEntity); //TODO ?
+        if (hitresult != null && hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
+            this.onHit(hitresult);
+        }
+        this.move(MoverType.SELF, this.getDeltaMovement());
         HitResult eventHitResult = ProjectileUtil.getHitResult(this, this::canHitEntity);
         HitResult.Type type = eventHitResult.getType();
         if (type == HitResult.Type.ENTITY) {
@@ -144,12 +149,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         } else if (type == HitResult.Type.BLOCK) {
             MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitBlockEvent(this, (BlockHitResult)eventHitResult));
         } //use different system for explosion and event, or move will be strange
-        HitResult hitresult = getHitResult(this::canHitEntity);
-        if (hitresult != null && hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
-            this.onHit(hitresult);
-        }
         MinecraftForge.EVENT_BUS.post(new PrimedTntFrameTickEvent(this));
-        this.move(MoverType.SELF, this.getDeltaMovement());
         this.updateInWaterStateAndDoFluidPushing();
         int coolDown = this.getCoolDown() - 1;
         if (coolDown >= 0) {
@@ -258,7 +258,8 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
 
     @Override
     protected void onHitEntity(EntityHitResult pResult) {
-        if (this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_ENTITY_MIN_INSTABILITY) {
+        if (this.data.getValue(AdditionType.INSTABILITY) >=
+                InstabilityHelper.tntHitEntityMinInstability(pResult.getEntity()==this.getOwner())) {
             this.doExplosion();
         }
     }

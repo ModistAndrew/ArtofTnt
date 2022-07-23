@@ -68,7 +68,7 @@ public class TntFrameItem extends BlockItem {
         CollisionContext collisioncontext = player == null ? CollisionContext.empty() : CollisionContext.of(player);
         return (!this.mustSurvive() || pState.canSurvive(pContext.getLevel(), pContext.getClickedPos())) &&
                 isUnobstructed(shape, pContext.getLevel(), pState, pContext.getClickedPos(), collisioncontext);
-    }
+    } //TODO no
 
     private boolean isUnobstructed(VoxelShape voxelshape, Level level, BlockState pState, BlockPos pPos, CollisionContext pContext) {
         return voxelshape.isEmpty() ||

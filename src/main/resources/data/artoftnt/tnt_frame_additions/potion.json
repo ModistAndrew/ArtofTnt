@@ -1,6 +1,6 @@
 {
-  "type": "range",
-  "item": "minecraft:gunpowder",
+  "type": "potion",
+  "item": "minecraft:lingering_potion",
   "increment": 1.0,
   "minTier": 0,
   "maxCount": 8,

@@ -25,13 +25,9 @@ public class DiminishingLightBlock extends LightBlock {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void randomTick(BlockState pState, ServerLevel pLevel, BlockPos pPos, Random pRandom) {
+    public void tick(BlockState pState, ServerLevel pLevel, BlockPos pPos, Random pRandom) {
         if (!pLevel.isClientSide) {
-            if(pState.getValue(LEVEL)>1) {
-                pLevel.setBlockAndUpdate(pPos, pState.setValue(LEVEL, pState.getValue(LEVEL) - 1));
-            } else {
-                pLevel.setBlockAndUpdate(pPos, Blocks.AIR.defaultBlockState());
-            }
+            pLevel.setBlockAndUpdate(pPos, Blocks.AIR.defaultBlockState());
         }
     }
 }
