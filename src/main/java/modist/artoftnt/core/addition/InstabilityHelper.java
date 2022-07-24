@@ -7,7 +7,7 @@ public class InstabilityHelper {
     public static float TNT_HIT_BLOCK_MIN_INSTABILITY = 6F;
     public static float ENTITY_ON_BLOCK_MIN_INSTABILITY = 8F;
     public static final float PROJECTILE_HIT_BLOCK_MIN_INSTABILITY = 7F;
-    public static float BREAK_BLOCK_INSTABILITY = 10F;
+    public static float BREAK_BLOCK_INSTABILITY = 14F;
 
     //when signal == 0, may also self-explode
     public static float signalToMinInstability(int signal) {
@@ -15,6 +15,6 @@ public class InstabilityHelper {
     }
 
     public static float tntHitEntityMinInstability(boolean isOwner) {
-        return isOwner ? 12F : 4F;
-    }
+        return 4F;
+    } //TODO or shoot away?
 }

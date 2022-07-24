@@ -44,9 +44,10 @@ public class CommonTntFrameEventHandler {
     @SubscribeEvent
     public static void gravityEvent(PrimedTntFrameTickEvent event) {
         PrimedTntFrame tnt = event.tnt;
-        if (!tnt.isNoGravity()) {
+        float gravity = 1 - event.data.getValue(AdditionType.LIGHTNESS);
+        if (!tnt.isNoGravity() && (gravity < 0 || !tnt.isOnGround())) {
             tnt.setDeltaMovement(tnt.getDeltaMovement().add(0.0D,
-                    -0.04D * (1 - event.data.getValue(AdditionType.LIGHTNESS)),
+                    -0.04D * gravity,
                     0.0D));
         }
     }

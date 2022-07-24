@@ -5,9 +5,11 @@ import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.addition.InstabilityHelper;
 import modist.artoftnt.core.explosion.ExplosionHelper;
+import modist.artoftnt.core.explosion.event.CustomExplosionEntityEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameHitBlockEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameHitEntityEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameTickEvent;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -18,7 +20,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.MinecraftForge;
@@ -63,7 +67,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         setFuse((int) (data.getValue(AdditionType.FUSE)));
         setLeftCount((int) (data.getValue(AdditionType.EXPLOSION_COUNT)));
         setCoolDown(0); //may be overwritten when loaded
-        if(data.getValue(AdditionType.LIGHT)>0){
+        if (data.getValue(AdditionType.LIGHT) > 0) {
             this.setGlowingTag(true);
         }
     }
@@ -137,20 +141,15 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
      */
     @Override
     public void tick() {
-        HitResult hitresult = getHitResult(this::canHitEntity); //TODO ?
-        if (hitresult != null && hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
+        BlockHitResult hitresult1 = getBlockHitResult(); //TODO ?
+        EntityHitResult hitresult2 = getEntityHitResult(this::canHitEntity);
+        HitResult hitresult = hitresult1 == null ? hitresult2 : hitresult1;
+        if (hitresult != null && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
             this.onHit(hitresult);
         }
         this.move(MoverType.SELF, this.getDeltaMovement());
-        HitResult eventHitResult = ProjectileUtil.getHitResult(this, this::canHitEntity);
-        HitResult.Type type = eventHitResult.getType();
-        if (type == HitResult.Type.ENTITY) {
-            MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitEntityEvent(this, (EntityHitResult)eventHitResult));
-        } else if (type == HitResult.Type.BLOCK) {
-            MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitBlockEvent(this, (BlockHitResult)eventHitResult));
-        } //use different system for explosion and event, or move will be strange
-        MinecraftForge.EVENT_BUS.post(new PrimedTntFrameTickEvent(this));
         this.updateInWaterStateAndDoFluidPushing();
+        MinecraftForge.EVENT_BUS.post(new PrimedTntFrameTickEvent(this));
         int coolDown = this.getCoolDown() - 1;
         if (coolDown >= 0) {
             this.setCoolDown(coolDown); //simply set coolDown
@@ -158,26 +157,32 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         int i = this.getFuse() - 1;
         this.setFuse(i);
         if (i <= 0) {
-            doExplosion();
+            doExplosion(null);
         }
     }
 
     @Nullable
-    private HitResult getHitResult(Predicate<Entity> pFilter) {
+    private BlockHitResult getBlockHitResult() {
         Vec3 velocity = this.getDeltaMovement();
-        HitResult hitresult = null;
+        BlockHitResult hitresult = null;
         Vec3 c = collide(velocity);
-        if (!c.equals(velocity)) { //simply use collide
-            hitresult = new BlockHitResult(this.position(), Direction.getNearest(velocity.x, velocity.y, velocity.z).getOpposite(),
-                    this.blockPosition(), true);
-        }
-        for (Entity entity1 : level.getEntities(this, this.getBoundingBox(), pFilter)) {
-            AABB aabb = entity1.getBoundingBox();
-            if (aabb.intersects(this.getBoundingBox())) {
-                return new EntityHitResult(entity1); //entity first
+        if (!c.equals(Vec3.ZERO) && !c.equals(velocity)) { //simply use collide
+            Vec3 delta = c.subtract(velocity);
+            Vec3 position = this.position();
+            HitResult result1 = level.clip(new ClipContext(this.position(), this.position().add(this.getDeltaMovement()), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+            if(result1!=null){
+                position = result1.getLocation();
             }
+            hitresult = new BlockHitResult(position, Direction.getNearest(delta.x, delta.y, delta.z),
+                    new BlockPos(position), true);
         }
         return hitresult;
+    }
+
+    @Nullable
+    private EntityHitResult getEntityHitResult(Predicate<Entity> pFilter) {
+        return ProjectileUtil.getHitResult(this, this::canHitEntity) instanceof EntityHitResult ret ?
+                ret : null;
     }
 
     private Vec3 collide(Vec3 pVec) {
@@ -205,12 +210,12 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         return vec3;
     }
 
-    private void doExplosion() {
+    private void doExplosion(@Nullable Vec3 pos) {
         if (this.getCoolDown() > 0) {
             return;
         }
         if (!this.level.isClientSide) {
-            this.explode();
+            this.explode(pos);
         }
         int count = this.getLeftCount() - 1;
         this.setLeftCount(count);
@@ -221,16 +226,14 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         }
     }
 
-    protected boolean canHitEntity(Entity pTarget) {
-        if (!pTarget.isSpectator() && pTarget.isAlive() && pTarget.isPickable()) {
-            return data.additions.shouldAttack(getOwner(), pTarget);
+    protected void explode(@Nullable Vec3 pos) {
+        if (pos == null) {
+            ExplosionHelper.explode(this.getDeltaMovement(), this.data.additions, this.level, this, this.getX(),
+                    this.getY(0.0625D), this.getZ(), 4F, false);
+        } else {
+            ExplosionHelper.explode(this.getDeltaMovement(), this.data.additions, this.level, this, pos.x,
+                    pos.y, pos.z, 4F, false);
         }
-        return false;
-    }
-
-    protected void explode() {
-        ExplosionHelper.explode(this.getDeltaMovement(), this.data.additions, this.level, this, this.getX(), this.getY(0.0625D), this.getZ(),
-                4F, false);
     }
 
     @Override
@@ -259,16 +262,18 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
     @Override
     protected void onHitEntity(EntityHitResult pResult) {
         if (this.data.getValue(AdditionType.INSTABILITY) >=
-                InstabilityHelper.tntHitEntityMinInstability(pResult.getEntity()==this.getOwner())) {
-            this.doExplosion();
+                InstabilityHelper.tntHitEntityMinInstability(pResult.getEntity() == this.getOwner())) {
+            this.doExplosion(null);
         }
+        MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitEntityEvent(this, pResult));
     }
 
     @Override
     protected void onHitBlock(BlockHitResult pResult) {
         if (this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_BLOCK_MIN_INSTABILITY) {
-            this.doExplosion(); //TODO
+            this.doExplosion(pResult.getLocation()); //TODO
         }
+        MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitBlockEvent(this, pResult));
     }
 
     @Override

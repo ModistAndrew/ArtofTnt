@@ -10,6 +10,12 @@ import modist.artoftnt.core.explosion.CustomExplosion;
 import modist.artoftnt.core.explosion.event.*;
 import modist.artoftnt.core.explosion.manager.ExplosionSpecialDrops;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -146,21 +152,43 @@ public class CommonExplosionBlockEventHandler {
         }
     }
 
-    @SubscribeEvent
-    public static void blowUpEvent(CustomExplosionFinishingEvent event) { //TODO air wall?
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void blowUpEvent(CustomExplosionFinishingEvent event) {
         CustomExplosion explosion = event.explosion;
-        float blowUp = event.data.getValue(AdditionType.BLOW_UP);
-        if(blowUp > 0) {
-            List<BlockPos> remove = new ArrayList<>();
-            for (BlockPos pos : explosion.getToBlow()) {
-                if (blowUp > 0 && !explosion.level.getBlockState(pos).isAir()) {
-                    FallingBlockEntity entity = FallingBlockEntity.fall(explosion.level, pos, explosion.level.getBlockState(pos));
-                    entity.setDeltaMovement(explosion.getVec().scale(-blowUp));
-                    remove.add(pos);
-                }
+        Level l = explosion.level;
+        if(l instanceof ServerLevel level) {
+            float blowUp = event.data.getValue(AdditionType.BLOW_UP);
+            if (blowUp > 0) {
+                List<BlockPos> remove = new ArrayList<>();
+                explosion.getToBlow().forEach(pos -> {
+                    BlockState state = level.getBlockState(pos);
+                    if (!state.isAir()) {
+                        remove.add(pos);
+                        Entity entity = createFallingBlock(level, Vec3.atCenterOf(pos),
+                                explosion.getPosition().add(explosion.getVec().scale(blowUp))
+                                        .subtract(Vec3.atCenterOf(pos)).scale(-blowUp), state);
+                        level.setBlock(pos, state.getFluidState().createLegacyBlock(), 3);
+                        level.addFreshEntity(entity);
+                    }
+                });
+                explosion.getToBlow().removeAll(remove);
             }
-            explosion.getToBlow().removeAll(remove);
         }
+    }
+
+    private static Entity createFallingBlock(ServerLevel pLevel, Vec3 pPos, Vec3 movement, BlockState pState){
+        CompoundTag tag = new CompoundTag();
+        tag.put("BlockState", NbtUtils.writeBlockState(pState));
+        ListTag listtag = new ListTag();
+        listtag.add(DoubleTag.valueOf(movement.x));
+        listtag.add(DoubleTag.valueOf(movement.y));
+        listtag.add(DoubleTag.valueOf(movement.z));
+        tag.put("Motion", listtag);
+        tag.putString("id", "minecraft:falling_block");
+        return EntityType.loadEntityRecursive(tag, pLevel, (p_138828_) -> {
+            p_138828_.moveTo(pPos.x, pPos.y, pPos.z, p_138828_.getYRot(), p_138828_.getXRot());
+            return p_138828_;
+        });
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)

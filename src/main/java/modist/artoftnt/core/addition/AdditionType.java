@@ -14,7 +14,7 @@ public class AdditionType {
     public static final AdditionType TNT_SOUND_TYPE = new Builder("tnt_sound_type", AdditionSlot.EXPLOSION_SOUND).build();
 
     public static final AdditionType ELASTICITY = new Builder("elasticity", AdditionSlot.TNT_PROPERTIES).build();
-    public static final AdditionType SLIPPERINESS = new Builder("slipperiness", AdditionSlot.TNT_PROPERTIES).build();
+    public static final AdditionType SLIPPERINESS = new Builder("slipperiness", AdditionSlot.TNT_PROPERTIES).withInitialValue(0.1F).build();
     public static final AdditionType LIGHTNESS = new Builder("lightness", AdditionSlot.TNT_PROPERTIES).build();
     public static final AdditionType PUNCH = new Builder("punch", AdditionSlot.ENTITY_IMPACT).build();
     public static final AdditionType PUNCH_HORIZONTAL = new Builder("punch_horizontal", AdditionSlot.ENTITY_IMPACT).build();
