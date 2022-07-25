@@ -14,7 +14,7 @@ public class AdditionType {
     public static final AdditionType TNT_SOUND_TYPE = new Builder("tnt_sound_type", AdditionSlot.EXPLOSION_SOUND).build();
 
     public static final AdditionType ELASTICITY = new Builder("elasticity", AdditionSlot.TNT_PROPERTIES).build();
-    public static final AdditionType SLIPPERINESS = new Builder("slipperiness", AdditionSlot.TNT_PROPERTIES).withInitialValue(0.1F).build();
+    public static final AdditionType SLIPPERINESS = new Builder("slipperiness", AdditionSlot.TNT_PROPERTIES).build();
     public static final AdditionType LIGHTNESS = new Builder("lightness", AdditionSlot.TNT_PROPERTIES).build();
     public static final AdditionType PUNCH = new Builder("punch", AdditionSlot.ENTITY_IMPACT).build();
     public static final AdditionType PUNCH_HORIZONTAL = new Builder("punch_horizontal", AdditionSlot.ENTITY_IMPACT).build();
@@ -70,13 +70,16 @@ public class AdditionType {
     public final AdditionSlot slot;
     public final BiFunction<Float, Float, Float> weightEffect; //how value is affected by weight, also apply to original and max
     public final float maxValue;
+    public final float initialValue;
 
-    private AdditionType(String id, int maxCount, BiFunction<Float, Float, Float> weightEffect, AdditionSlot slot, float maxValue) {
+    private AdditionType(String id, int maxCount, BiFunction<Float, Float, Float> weightEffect, AdditionSlot slot,
+                         float maxValue, float initialValue) {
         this.id = id;
         this.maxCount = maxCount;
         this.slot = slot;
         this.weightEffect = weightEffect;
         this.maxValue = maxValue;
+        this.initialValue = initialValue;
     }
 
     @Override
@@ -130,7 +133,8 @@ public class AdditionType {
         }
 
         public AdditionType build(){
-            AdditionType ret = new AdditionType(id, maxCount, (value, weight)->Math.min(maxValue, value+initialValue), slot, maxValue);
+            AdditionType ret = new AdditionType(id, maxCount, (value, weight)->Math.min(maxValue, value+initialValue),
+                    slot, maxValue, initialValue);
             if(!TYPES.containsKey(id)) {
                 TYPES.put(id, ret);
             } else {

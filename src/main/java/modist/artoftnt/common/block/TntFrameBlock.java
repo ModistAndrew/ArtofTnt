@@ -28,6 +28,9 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -130,16 +133,14 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     //deal with creative player block drop
     @Override
     public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
-        if(tryExplode(InstabilityHelper.BREAK_BLOCK_INSTABILITY, pLevel, pPos, pPlayer)){
-            super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
-            return;
-        }
         BlockEntity blockentity = pLevel.getBlockEntity(pPos);
         if (blockentity instanceof TntFrameBlockEntity tntFrameBlockEntity) {
-            if (!pLevel.isClientSide && pPlayer.isCreative()) {
-                Containers.dropContents(pLevel, pPos, NonNullList.of(ItemStack.EMPTY, getDrops(pState, new LootContext.Builder((ServerLevel) pLevel)
-                        .withParameter(LootContextParams.BLOCK_ENTITY, tntFrameBlockEntity)
-                        .withParameter(LootContextParams.TOOL, pPlayer.getMainHandItem())).toArray(new ItemStack[0])));
+            if (!pLevel.isClientSide) {
+                if (pPlayer.isCreative()) {
+                    Block.popResource(pLevel, pPos, dropFrame(false, tntFrameBlockEntity.getData()));
+                } else if (!(pPlayer.getMainHandItem().getItem() instanceof TntDefuserItem)) {
+                    tryExplode(InstabilityHelper.BREAK_BLOCK_INSTABILITY, pLevel, pPos, pPlayer);
+                }
             }
         }
         super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
@@ -150,11 +151,11 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     public List<ItemStack> getDrops(BlockState pState, LootContext.Builder pBuilder) {
         if (pBuilder.getParameter(LootContextParams.BLOCK_ENTITY) instanceof TntFrameBlockEntity be) {
             return pBuilder.getParameter(LootContextParams.TOOL).getItem() instanceof TntDefuserItem ?
-                    Lists.newArrayList(dropFrame(true, be.getData())) : be.getDrops();
+                    Lists.newArrayList(dropFrame(EnchantmentHelper.getItemEnchantmentLevel(
+                            Enchantments.SILK_TOUCH, pBuilder.getParameter(LootContextParams.TOOL)) <= 0, be.getData())) : be.getDrops();
         }
         return super.getDrops(pState, pBuilder);
     }
-
     public static ItemStack dropFrame(boolean shouldFix, TntFrameData data){
         if(shouldFix) {
             data.fixed = true;

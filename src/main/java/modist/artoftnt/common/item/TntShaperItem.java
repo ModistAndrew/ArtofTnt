@@ -27,7 +27,7 @@ import java.util.List;
 
 public class TntShaperItem extends Item {
     public TntShaperItem() {
-        super(ItemLoader.getProperty());
+        super(ItemLoader.getProperty().stacksTo(1));
     }
 
     @Override

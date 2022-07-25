@@ -55,21 +55,37 @@ public class CommonTntFrameEventHandler {
     @SubscribeEvent
     public static void slipperinessEvent(PrimedTntFrameTickEvent event) {
         PrimedTntFrame tnt = event.tnt;
-        float slipperiness = event.data.getValue(AdditionType.SLIPPERINESS);
+        float slipperiness = Math.min(1, event.data.getValue(AdditionType.SLIPPERINESS));
         if (tnt.isOnGround()) {
             tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -0.5D, slipperiness));
         }
     }
 
     @SubscribeEvent
-    public static void elasticityEvent(PrimedTntFrameHitBlockEvent event) {
+    public static void elasticityEvent(PrimedTntFrameHitBlockEvent.Pre event) {
         PrimedTntFrame tnt = event.tnt;
         float elasticity = event.data.getValue(AdditionType.ELASTICITY);
         float slipperiness = event.data.getValue(AdditionType.SLIPPERINESS);
-        switch (event.result.getDirection().getAxis()) {
-            case X -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
-            case Y -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -elasticity, slipperiness));
-            case Z -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, slipperiness, -elasticity));
+        if(elasticity>AdditionType.ELASTICITY.initialValue) {
+            switch (event.result.getDirection().getAxis()) {
+                case X -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
+                case Y -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -elasticity, slipperiness));
+                case Z -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, slipperiness, -elasticity));
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void elasticityEventPost(PrimedTntFrameHitBlockEvent.Post event) {
+        PrimedTntFrame tnt = event.tnt;
+        float elasticity = event.data.getValue(AdditionType.ELASTICITY);
+        float slipperiness = event.data.getValue(AdditionType.SLIPPERINESS);
+        if(elasticity<=AdditionType.ELASTICITY.initialValue) {
+            switch (event.result.getDirection().getAxis()) {
+                case X -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
+                case Y -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -elasticity, slipperiness));
+                case Z -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, slipperiness, -elasticity));
+            }
         }
     }
 
@@ -78,7 +94,7 @@ public class CommonTntFrameEventHandler {
         PrimedTntFrame tnt = event.tnt;
         event.data.getItems(AdditionType.TARGET).forEach(is -> {
             if (is.getItem() instanceof TargetMarkerItem item) {
-                Vec3 target = item.getTargetPos(tnt.level, tnt.position(), is);
+                Vec3 target = item.getPos(tnt.level, tnt.position(), is);
                 if (target == null && tnt.getOwner() != null) {
                     target = tnt.getOwner().position(); //self
                 }

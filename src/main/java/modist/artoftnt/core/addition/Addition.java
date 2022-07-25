@@ -53,6 +53,7 @@ public class Addition {
         if(!ITEM_MAP.containsKey(addition.item)) {
             ITEM_MAP.put(addition.item, addition);
         } else {
+            ITEM_MAP.put(addition.item, addition);
             ArtofTnt.LOGGER.warn("duplicate item {} for tnt frame addition json {} and {}, you may want to overwrite by creating a same file",
                     addition.item.getRegistryName().toString(), ITEM_MAP.get(addition.item).name, name);
         }

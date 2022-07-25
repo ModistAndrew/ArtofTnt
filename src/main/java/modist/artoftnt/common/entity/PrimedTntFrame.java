@@ -1,13 +1,12 @@
 package modist.artoftnt.common.entity;
 
 import modist.artoftnt.common.block.TntFrameBlock;
+import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.addition.InstabilityHelper;
 import modist.artoftnt.core.explosion.ExplosionHelper;
-import modist.artoftnt.core.explosion.event.CustomExplosionEntityEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameHitBlockEvent;
-import modist.artoftnt.core.explosion.event.PrimedTntFrameHitEntityEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameTickEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,7 +21,6 @@ import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.MinecraftForge;
@@ -144,10 +142,16 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         BlockHitResult hitresult1 = getBlockHitResult(); //TODO ?
         EntityHitResult hitresult2 = getEntityHitResult(this::canHitEntity);
         HitResult hitresult = hitresult1 == null ? hitresult2 : hitresult1;
+        if(hitresult1!=null) {
+            MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitBlockEvent.Pre(this, hitresult1));
+        }
+        this.move(MoverType.SELF, this.getDeltaMovement());
+        if(hitresult1!=null) {
+            MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitBlockEvent.Post(this, hitresult1));
+        }
         if (hitresult != null && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
             this.onHit(hitresult);
         }
-        this.move(MoverType.SELF, this.getDeltaMovement());
         this.updateInWaterStateAndDoFluidPushing();
         MinecraftForge.EVENT_BUS.post(new PrimedTntFrameTickEvent(this));
         int coolDown = this.getCoolDown() - 1;
@@ -183,6 +187,11 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
     private EntityHitResult getEntityHitResult(Predicate<Entity> pFilter) {
         return ProjectileUtil.getHitResult(this, this::canHitEntity) instanceof EntityHitResult ret ?
                 ret : null;
+    }
+
+    @Override
+    protected boolean canHitEntity(Entity pTarget) {
+        return super.canHitEntity(pTarget) && !(pTarget instanceof PrimedTntFrame);
     }
 
     private Vec3 collide(Vec3 pVec) {
@@ -265,7 +274,6 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
                 InstabilityHelper.tntHitEntityMinInstability(pResult.getEntity() == this.getOwner())) {
             this.doExplosion(null);
         }
-        MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitEntityEvent(this, pResult));
     }
 
     @Override
@@ -273,7 +281,6 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         if (this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_BLOCK_MIN_INSTABILITY) {
             this.doExplosion(pResult.getLocation()); //TODO
         }
-        MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitBlockEvent(this, pResult));
     }
 
     @Override
@@ -300,10 +307,23 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         return 0.0F;
     }
 
-    public void defuse() {
+    public void defuse(boolean shouldFix) {
         if (!this.level.isClientSide) {
-            this.spawnAtLocation(TntFrameBlock.dropFrame(true, data));
+            this.spawnAtLocation(TntFrameBlock.dropFrame(shouldFix, data));
         }
         this.discard();
+    }
+
+    public void knocked(Entity entity, int amount) {
+        this.markHurt();
+        if (entity != null) {
+            if (!this.level.isClientSide) {
+                Vec3 vec3 = entity.getLookAngle();
+                this.setDeltaMovement(vec3);
+                this.xPower = vec3.x * amount/10D;
+                this.yPower = vec3.y * amount/10D;
+                this.zPower = vec3.z * amount/10D;
+            }
+        }
     }
 }

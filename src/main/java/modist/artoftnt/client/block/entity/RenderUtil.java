@@ -18,6 +18,11 @@ public class RenderUtil {
         buffer.vertex(matrix, x2, y2, z2).color(a, b, c, alpha).normal(1, 0, 0).endVertex();
     }
 
+    public static void renderLine(MultiBufferSource bufferSource, PoseStack poseStack, Vec3 v1, Vec3 v2) { //TODO:more beautiful?
+        renderLine(bufferSource, poseStack, (float)v1.x, (float)v1.y, (float)v1.z, (float)v2.x,
+                (float)v2.y, (float)v2.z, 1F, 1F, 1F, 1F);
+    }
+
     public static void renderArrow(MultiBufferSource bufferSource, PoseStack poseStack, Vec3 from, Vec3 to) {
         poseStack.pushPose();
         poseStack.mulPoseMatrix(getTransform(from, to));

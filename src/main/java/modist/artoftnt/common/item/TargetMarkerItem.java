@@ -26,8 +26,12 @@ public class TargetMarkerItem extends PositionMarkerItem { //see CommonEventHand
         super(tier, false);
     }
 
+    @Override
     @Nullable
-    public Vec3 getTargetPos(Level level, Vec3 posFrom, ItemStack stack){
+    public Vec3 getPos(@Nullable Level level, Vec3 posFrom, ItemStack stack){
+        if(level==null){
+            return null;
+        }
         CompoundTag tag = stack.getTagElement("position");
         if(tag==null){
             return null;
@@ -47,13 +51,14 @@ public class TargetMarkerItem extends PositionMarkerItem { //see CommonEventHand
                 return null;
             }
         }
-        return super.getPos(posFrom, stack);
+        return super.getPos(level, posFrom, stack);
     }
 
     public void saveEntity(ItemStack stack, Entity target) {
         CompoundTag tag = new CompoundTag();
         tag.putString("entityClass", target.getClass().getName());
         tag.putString("UUID", target.getStringUUID());
+        tag.putString("entityName", target.getDisplayName().getString()); //for tooltip
         stack.addTagElement("position", tag);
     }
 }

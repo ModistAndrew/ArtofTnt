@@ -218,7 +218,7 @@ public class CommonExplosionBlockEventHandler {
                 null : event.data.getItems(AdditionType.CONTAINER).peek();
         if (marker != null && marker.getItem() instanceof PositionMarkerItem item) {
             if (item.isContainer) {
-                BlockPos pos = new BlockPos(item.getPos(explosion.getPosition(), marker));
+                BlockPos pos = new BlockPos(item.getPos(event.explosion.level, explosion.getPosition(), marker));
                 if (pos != null) {
                     containerPos = pos;
                     BlockEntity be = explosion.level.getBlockEntity(pos);

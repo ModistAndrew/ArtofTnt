@@ -1,5 +1,6 @@
 package modist.artoftnt.core.explosion.handler;
 
+import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
 import modist.artoftnt.core.explosion.event.CustomExplosionBlockEvent;
@@ -47,7 +48,8 @@ public class CommonExplosionEntityEventHandler {
         float percentage = event.percentage;
         float damage = event.data.getValue(AdditionType.DAMAGE);
         if (damage > 0) {
-            event.entity.hurt(explosion.getDamageSource(), damage * ((int) ((percentage * percentage + percentage) / 2.0D * 7.0D + 1.0D)));
+            event.entity.hurt(explosion.getDamageSource(),
+                    damage * ((int) ((percentage * percentage + percentage) / 2.0D * 7.0D + 1.0D)));
         }
     }
 
@@ -78,6 +80,7 @@ public class CommonExplosionEntityEventHandler {
     @SubscribeEvent
     public static void punchEvent(CustomExplosionEntityEvent event) {
         CustomExplosion explosion = event.explosion;
+        Vec3 pos = explosion.getPosition().subtract(explosion.getVec()); //fix punch
         float punch = event.data.getValue(AdditionType.PUNCH) -
                 event.data.getValue(AdditionType.DRAW);
         float punchH = punch + event.data.getValue(AdditionType.PUNCH_HORIZONTAL);
@@ -85,10 +88,10 @@ public class CommonExplosionEntityEventHandler {
         Entity entity = event.entity;
         float percentage = event.percentage;
         if (punchH != 0 || punchV != 0) {
-            double d5 = entity.getX() - explosion.x;
-            double d7 = (entity instanceof PrimedTnt ? entity.getY() : entity.getEyeY()) - explosion.y;
+            double d5 = entity.getX() - pos.x;
+            double d7 = (entity instanceof PrimedTnt || entity instanceof PrimedTntFrame ? entity.getY() : entity.getEyeY()) - pos.y;
             //tnt can be blown higher
-            double d9 = entity.getZ() - explosion.z;
+            double d9 = entity.getZ() - pos.z;
             double d13 = Math.sqrt(d5 * d5 + d7 * d7 + d9 * d9); //distance
             if (d13 != 0.0D) {
                 d5 /= d13;

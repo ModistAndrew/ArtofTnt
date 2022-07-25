@@ -14,21 +14,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class SuckItemBlockEntity extends BlockEntity {
+public abstract class CoolDownBlockEntity extends BlockEntity {
     //only when <=0(and tnt==null) can new items be stored
     protected int coolDown = 0;
-    //suck in and stored when activated, will be cleared when dropped or cleared
-    protected final List<ItemStack> stacks = new ArrayList<>();
     //when <= finishTime, dispense() is called
     protected final int finishTime;
     //at least render_tick time should be set for cool down or render can not be completed
     protected static final int RENDER_TICK = 20;
 
-    public SuckItemBlockEntity(int finishTime, BlockEntityType<?> pType, BlockPos pWorldPosition, BlockState pBlockState) {
+    public CoolDownBlockEntity(int finishTime, BlockEntityType<?> pType, BlockPos pWorldPosition, BlockState pBlockState) {
         super(pType, pWorldPosition, pBlockState);
         this.finishTime = finishTime;
     }
@@ -38,76 +34,40 @@ public abstract class SuckItemBlockEntity extends BlockEntity {
             coolDown--;
             if (!level.isClientSide) {
                 setChanged();
-                if (coolDown <= finishTime && !stacks.isEmpty()) {
-                    dispense();
+                if (coolDown == finishTime) {
+                    doDispense();
                 }
             }
         }
     }
 
     //called when activated on server, suck in item and set coolDown
-    public void activated() {
+    public void activated(int pLevel) {
         if (!level.isClientSide && coolDown <= 0) {
-            if (suckItem()) {
+            if (tryActivate(pLevel)) {
                 setCoolDown();
                 setChangedAndUpdate();
             }
         }
     }
-
-    //called on server when coolDown <= finishTime
-    protected void dispense() {
-        if (!level.isClientSide) {
-            doDispense();
-            stacks.clear();
-            setChangedAndUpdate();
-        }
-    }
-
     protected abstract void doDispense();
-
-    public boolean suckItem() {
-        AtomicBoolean ret = new AtomicBoolean(false);
-        BlockEntity be = this.level.getBlockEntity(this.getBlockPos().above());
-        if (be != null) {
-            be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(c -> {
-                ret.set(suckItemFrom(c));
-            });
-        }
-        return ret.get();
-    }
-
-    protected abstract boolean suckItemFrom(IItemHandler handler);
-
+    public abstract boolean tryActivate(int level);
     protected abstract void setCoolDown();
 
-    private void setChangedAndUpdate() {
+    public abstract NonNullList<ItemStack> getDrops();
+    protected void setChangedAndUpdate() {
         this.setChanged();
         this.getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
     }
-
-    public NonNullList<ItemStack> getDrops() {
-        return NonNullList.of(ItemStack.EMPTY, stacks.toArray(new ItemStack[0]));
-    }
-
     @Override
     protected void saveAdditional(CompoundTag pTag) {
         super.saveAdditional(pTag);
-        ListTag list = new ListTag();
-        for (int j = 0; j < stacks.size(); j++) {
-            list.add(j, stacks.get(j).serializeNBT());
-        }
-        pTag.put("stacks", list);
         pTag.putInt("coolDown", coolDown);
     }
 
     @Override
     public void load(CompoundTag pTag) {
         super.load(pTag);
-        ListTag list = pTag.getList("stacks", 10);
-        for (int j = 0; j < list.size(); j++) {
-            stacks.add(ItemStack.of(list.getCompound(j)));
-        }
         coolDown = pTag.getInt("coolDown");
     }
 

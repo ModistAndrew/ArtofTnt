@@ -114,7 +114,7 @@ public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
                 ItemStack stack = markers[j];
                 if(stack.getItem() instanceof PositionMarkerItem item && !item.isContainer) {
                     strength += item.tier+1;
-                    BlockPos pos = new BlockPos(item.getPos(Vec3.atCenterOf(this.getBlockPos()), stack));
+                    BlockPos pos = new BlockPos(item.getPos(this.level, Vec3.atCenterOf(this.getBlockPos()), stack));
                     if (pos != null) {
                         BlockState state = this.level.getBlockState(pos);
                         if (state.getBlock() instanceof TntFrameBlock tfb && item.tier >= tfb.tier) { //tier

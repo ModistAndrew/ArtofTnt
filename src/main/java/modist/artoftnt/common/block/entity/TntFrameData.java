@@ -35,25 +35,25 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
     public final AdditionStack additions;
     private static final String PREFIX = "container.artoftnt.";
 
-    public TntFrameData(int tier){
+    public TntFrameData(int tier) {
         this.tier = tier;
         this.additions = new AdditionStack(tier);
     }
 
-    public TntFrameData(int tier, @Nullable CompoundTag tag){
+    public TntFrameData(int tier, @Nullable CompoundTag tag) {
         this(tier);
         this.deserializeNBT(tag);
     }
 
     public boolean isEmpty() {
-        return !fixed && size==1F && disguise==null && additions.isEmpty();
+        return !fixed && size == 1F && disguise == null && additions.isEmpty();
     }
 
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("fixed", fixed);
         tag.putFloat("size", size);
-        if(disguise!=null) {
+        if (disguise != null) {
             tag.put("disguise", NbtUtils.writeBlockState(disguise));
         }
         tag.put("additions", additions.serializeNBT());
@@ -62,7 +62,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(@Nullable CompoundTag tag) {
-        if(tag!=null) {
+        if (tag != null) {
             this.fixed = tag.getBoolean("fixed");
             this.size = tag.getFloat("size");
             if (tag.contains("disguise")) {
@@ -81,44 +81,48 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
     }
 
     public float getDeflation() { //for creating bb easily
-        return (1-size)/2;
+        return (1 - size) / 2;
     }
 
     @OnlyIn(Dist.CLIENT)
     public void addText(List<Component> pTooltip) { //TODO shift?
-        if(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT)) {
-            int i = 0;
-            int j = 0;
+        addTooltip("weight", additions.getWeight(), pTooltip, ChatFormatting.AQUA);
+        addTooltip(AdditionType.INSTABILITY.toString(), additions.getValue(AdditionType.INSTABILITY), pTooltip, ChatFormatting.AQUA);
+        addTooltip("fixed", fixed, pTooltip, ChatFormatting.AQUA);
+        if (size < 1F) {
+            addTooltip("size", size, pTooltip, ChatFormatting.AQUA);
+        }
+        if (disguise != null) {
+            addTooltip("disguise", disguise.getBlock(), pTooltip, ChatFormatting.AQUA);
+        }
+        if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT)) {
+            addTooltip("type_values", null, pTooltip, ChatFormatting.BLACK);
             for (AdditionType type : AdditionType.getTypes()) {
-                if (type != AdditionType.INSTABILITY && additions.getValue(type) > 0) { //TODO: what to show
-                    ++j;
-                    if (i <= 4) {
-                        ++i;
-                        addTooltip(type.toString(), additions.getValue(type), pTooltip);
-                    }
+                if (type != AdditionType.INSTABILITY && additions.getValue(type) != type.initialValue) { //TODO: what to show
+                    addTooltip(type.toString(), additions.getValue(type), pTooltip);
                 }
             }
-            addTooltip("weight", additions.getWeight(), pTooltip);
-            addTooltip(AdditionType.INSTABILITY.toString(), additions.getValue(AdditionType.INSTABILITY), pTooltip);
-            if (size < 1F) {
-                addTooltip("size", size, pTooltip);
-            }
-            if (disguise != null) {
-                addTooltip("disguise", disguise.getBlock(), pTooltip);
-            }
-            addTooltip("fixed", fixed, pTooltip);
-            if (j - i > 0) {
-                pTooltip.add((new TranslatableComponent("container.shulkerBox.more", j - i)).withStyle(ChatFormatting.ITALIC));
+        } else {
+            addTooltip("press_shift", null, pTooltip, ChatFormatting.ITALIC,ChatFormatting.RED);
+            for(int i=0; i<18; i++){
+                for(ItemStack stack :additions.getItemStacks(i)){
+                    if(!stack.isEmpty()){
+                        MutableComponent mutablecomponent = stack.getHoverName().copy();
+                        mutablecomponent.append(" x").append(String.valueOf(stack.getCount()));
+                        pTooltip.add(mutablecomponent);
+                    }
+                }
             }
         }
     }
 
-    public static void addTooltip(String name, Object value, List<Component> pTooltip){
-        MutableComponent mutablecomponent = new TranslatableComponent(PREFIX+name);
-        mutablecomponent.append("=").append(String.valueOf(value));
-        pTooltip.add(mutablecomponent);
+    public static void addTooltip(String name, @Nullable Object value, List<Component> pTooltip, ChatFormatting... pFormats) {
+        MutableComponent mutablecomponent = new TranslatableComponent(PREFIX + name);
+        if(value!=null) {
+            mutablecomponent.append(": ").append(String.valueOf(value));
+        }
+        pTooltip.add(mutablecomponent.withStyle(pFormats));
     }
-
     public Stack<ItemStack> getItemStacks(int i) {
         return additions.getItemStacks(i);
     }
@@ -128,7 +132,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
     }
 
     public int getColorForDisguise(@Nullable BlockAndTintGetter pLevel, @Nullable BlockPos pPos, int pTintIndex) {
-        if(disguise!=null){
+        if (disguise != null) {
             return Minecraft.getInstance().getBlockColors().getColor(disguise, pLevel, pPos, pTintIndex);
         }
         return -1;

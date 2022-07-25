@@ -1,6 +1,7 @@
 package modist.artoftnt.common.block.entity;
 
 import modist.artoftnt.common.block.BlockLoader;
+import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.core.BlockPos;
@@ -145,6 +146,9 @@ public class TntFrameBlockEntity extends BlockEntity {
     }
 
     public List<ItemStack> getDrops() {
+        if(this.fixed()){
+            return List.of(TntFrameBlock.dropFrame(false, this.getData()));
+        }
         List<ItemStack> ret = new ArrayList<>();
         for(int i=0; i<18; i++){
             ret.addAll(data.additions.getItemStacks(i));
