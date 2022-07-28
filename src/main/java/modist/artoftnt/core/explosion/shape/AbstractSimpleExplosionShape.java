@@ -20,7 +20,7 @@ public abstract class AbstractSimpleExplosionShape extends AbstractExplosionShap
             float distancePercentage = toOne((float) (pos.distSqr(this.center)/getActualRadius()));
             Optional<Float> optional = EXPLOSION_DAMAGE_CALCULATOR.getBlockExplosionResistance(explosion, this.level, pos,
                     level.getBlockState(pos), level.getFluidState(pos));
-            float resistance = optional.isPresent() ? (optional.get() + 0.3F) * 0.3F : 0.09F;
+            float resistance = optional.map(aFloat -> (aFloat + 0.3F) * 0.3F).orElse(0.09F);
             if (!this.level.getFluidState(pos).isEmpty()) {
                 resistance = interpolate(resistance, 0.09F, fluidFactor / AdditionType.TEMPERATURE.maxValue);
             }

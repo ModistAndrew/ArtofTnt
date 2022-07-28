@@ -1,19 +1,22 @@
 package modist.artoftnt.common.entity;
 
+import modist.artoftnt.common.advancements.critereon.IgniteTntFrameTrigger;
 import modist.artoftnt.common.block.TntFrameBlock;
-import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.addition.InstabilityHelper;
 import modist.artoftnt.core.explosion.ExplosionHelper;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameHitBlockEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameTickEvent;
+import modist.artoftnt.core.explosion.manager.ExplosionResources;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
@@ -47,7 +50,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
     @Override
     protected void defineSynchedData() {
         this.entityData.define(DATA_TNT_FRAME, new CompoundTag());
-        this.entityData.define(DATA_FUSE, 0);
+        this.entityData.define(DATA_FUSE, 1);
         this.entityData.define(DATA_LEFT_COUNT, 1);
         this.entityData.define(DATA_COOL_DOWN, 0);
     }
@@ -62,11 +65,14 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
 
     private void setDataTagAndInit(CompoundTag tag) {
         setDataTag(tag);
-        setFuse((int) (data.getValue(AdditionType.FUSE)));
+        setFuse((int) (data.getValue(AdditionType.FUSE))+1);
         setLeftCount((int) (data.getValue(AdditionType.EXPLOSION_COUNT)));
         setCoolDown(0); //may be overwritten when loaded
         if (data.getValue(AdditionType.LIGHT) > 0) {
             this.setGlowingTag(true);
+        }
+        if(data.getValue(AdditionType.NO_PHYSICS) > 0){
+            this.noPhysics = true; //also client!
         }
     }
 
@@ -108,6 +114,9 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         this.zo = z;
         this.setOwner(owner);
         setDataTagAndInit(tag);
+        if(owner instanceof ServerPlayer player){
+            IgniteTntFrameTrigger.TRIGGER.trigger(player, this.data);
+        }
     }
 
     @Override
@@ -116,6 +125,9 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         if (DATA_TNT_FRAME.equals(pKey)) {
             this.data.deserializeNBT(getDataTag());
             this.refreshDimensions();
+            if(data.getValue(AdditionType.NO_PHYSICS) > 0){
+                this.noPhysics = true; //also client!
+            }
         }
         super.onSyncedDataUpdated(pKey);
     }
@@ -139,6 +151,18 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
      */
     @Override
     public void tick() {
+        this.checkOutOfWorld();
+        if(this.getFuse()==(int)(data.getValue(AdditionType.FUSE))+1){ //first tick, play sound
+            this.setFuse(this.getFuse()-1);
+            if(this.level.isClientSide){
+                float loudness = data.getValue(AdditionType.LOUDNESS);
+                int soundType = (int) data.getValue(AdditionType.TNT_SOUND_TYPE);
+                ExplosionResources.TNT_SOUNDS.get(soundType).ifPresent(t -> level.playLocalSound(this.getX(), this.getY(), this.getZ(), t,
+                        SoundSource.BLOCKS, level.getRandom().nextFloat() * loudness,
+                        (1.0F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F,
+                        false));
+            }
+        }
         BlockHitResult hitresult1 = getBlockHitResult(); //TODO ?
         EntityHitResult hitresult2 = getEntityHitResult(this::canHitEntity);
         HitResult hitresult = hitresult1 == null ? hitresult2 : hitresult1;
@@ -158,10 +182,20 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         if (coolDown >= 0) {
             this.setCoolDown(coolDown); //simply set coolDown
         }
-        int i = this.getFuse() - 1;
-        this.setFuse(i);
-        if (i <= 0) {
-            doExplosion(null);
+        if(!data.additions.persistent()) {
+            int i = this.getFuse() - 1;
+            this.setFuse(i);
+            if (i <= 0) {
+                doExplosion(null);
+            }
+        }
+    }
+
+    @Override
+    public void checkOutOfWorld(){
+        if (this.getY() < (double)(this.level.getMinBuildHeight() - 64) ||
+                (this.data.getValue(AdditionType.LIGHTNESS)>=1 && this.getY() > (double)(this.level.getMaxBuildHeight() + 1024))) {
+            this.outOfWorld();
         }
     }
 
@@ -172,11 +206,8 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         Vec3 c = collide(velocity);
         if (!c.equals(Vec3.ZERO) && !c.equals(velocity)) { //simply use collide
             Vec3 delta = c.subtract(velocity);
-            Vec3 position = this.position();
             HitResult result1 = level.clip(new ClipContext(this.position(), this.position().add(this.getDeltaMovement()), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-            if(result1!=null){
-                position = result1.getLocation();
-            }
+            Vec3 position = result1.getLocation();
             hitresult = new BlockHitResult(position, Direction.getNearest(delta.x, delta.y, delta.z),
                     new BlockPos(position), true);
         }
@@ -191,7 +222,10 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
 
     @Override
     protected boolean canHitEntity(Entity pTarget) {
-        return super.canHitEntity(pTarget) && !(pTarget instanceof PrimedTntFrame);
+        if(pTarget instanceof PrimedTntFrame frame){
+            return this.getOwner()!=frame.getOwner(); //avoid multi shot
+        }
+        return super.canHitEntity(pTarget);
     }
 
     private Vec3 collide(Vec3 pVec) {
@@ -203,8 +237,8 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         boolean flag2 = pVec.z != vec3.z;
         boolean flag3 = this.onGround || flag1 && pVec.y < 0.0D;
         if (this.maxUpStep > 0.0F && flag3 && (flag || flag2)) {
-            Vec3 vec31 = collideBoundingBox(this, new Vec3(pVec.x, (double) this.maxUpStep, pVec.z), aabb, this.level, list);
-            Vec3 vec32 = collideBoundingBox(this, new Vec3(0.0D, (double) this.maxUpStep, 0.0D), aabb.expandTowards(pVec.x, 0.0D, pVec.z), this.level, list);
+            Vec3 vec31 = collideBoundingBox(this, new Vec3(pVec.x, this.maxUpStep, pVec.z), aabb, this.level, list);
+            Vec3 vec32 = collideBoundingBox(this, new Vec3(0.0D, this.maxUpStep, 0.0D), aabb.expandTowards(pVec.x, 0.0D, pVec.z), this.level, list);
             if (vec32.y < (double) this.maxUpStep) {
                 Vec3 vec33 = collideBoundingBox(this, new Vec3(pVec.x, 0.0D, pVec.z), aabb.move(vec32), this.level, list).add(vec32);
                 if (vec33.horizontalDistanceSqr() > vec31.horizontalDistanceSqr()) {
@@ -271,7 +305,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
     @Override
     protected void onHitEntity(EntityHitResult pResult) {
         if (this.data.getValue(AdditionType.INSTABILITY) >=
-                InstabilityHelper.tntHitEntityMinInstability(pResult.getEntity() == this.getOwner())) {
+                InstabilityHelper.TNT_HIT_ENTITY_MIN_INSTABILITY) {
             this.doExplosion(null);
         }
     }
@@ -283,12 +317,13 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         }
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     @Override
     public void shoot(double pX, double pY, double pZ, float pVelocity, float pInaccuracy) {
         float velocity = this.data.getValue(AdditionType.VELOCITY) * pVelocity; //multiply self
         Vec3 vec3 = (new Vec3(pX, pY, pZ)).normalize().add(this.random.nextGaussian() * (double) 0.0075F * (double) pInaccuracy,
                 this.random.nextGaussian() * (double) 0.0075F * (double) pInaccuracy,
-                this.random.nextGaussian() * (double) 0.0075F * (double) pInaccuracy).scale((double) velocity);
+                this.random.nextGaussian() * (double) 0.0075F * (double) pInaccuracy).scale(velocity);
         this.setDeltaMovement(vec3);
         double d0 = vec3.horizontalDistance();
         this.setYRot((float) (Mth.atan2(vec3.x, vec3.z) * (double) (180F / (float) Math.PI)));

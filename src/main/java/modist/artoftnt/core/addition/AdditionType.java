@@ -2,18 +2,18 @@ package modist.artoftnt.core.addition;
 
 import modist.artoftnt.ArtofTnt;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.function.BiFunction;
 
 public class AdditionType {
     private static final HashMap<String, AdditionType> TYPES = new HashMap<>();
+    public static final AdditionType FUSE = new Builder("fuse", AdditionSlot.TNT_FUSE).important().build();
     public static final AdditionType EMPTY = new Builder("empty", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO dead bush
     public static final AdditionType LOUDNESS = new Builder("loudness", AdditionSlot.EXPLOSION_SOUND).build();
-    public static final AdditionType SOUND_TYPE = new Builder("sound_type", AdditionSlot.EXPLOSION_SOUND).build();
-    public static final AdditionType TNT_SOUND_TYPE = new Builder("tnt_sound_type", AdditionSlot.EXPLOSION_SOUND).build();
+    public static final AdditionType SOUND_TYPE = new Builder("sound_type", AdditionSlot.EXPLOSION_SOUND).single().build();
+    public static final AdditionType TNT_SOUND_TYPE = new Builder("tnt_sound_type", AdditionSlot.EXPLOSION_SOUND).single().build();
 
-    public static final AdditionType ELASTICITY = new Builder("elasticity", AdditionSlot.TNT_PROPERTIES).build();
+    public static final AdditionType ELASTICITY = new Builder("elasticity", AdditionSlot.TNT_PROPERTIES).require(FUSE).build();
     public static final AdditionType SLIPPERINESS = new Builder("slipperiness", AdditionSlot.TNT_PROPERTIES).build();
     public static final AdditionType LIGHTNESS = new Builder("lightness", AdditionSlot.TNT_PROPERTIES).build();
     public static final AdditionType PUNCH = new Builder("punch", AdditionSlot.ENTITY_IMPACT).build();
@@ -37,9 +37,9 @@ public class AdditionType {
     public static final AdditionType TARGET = new Builder("target", AdditionSlot.TNT_MOTION).build();
     //TODO
     public static final AdditionType MOB_TARGET = new Builder("mob_target", AdditionSlot.TNT_MOTION).build();
-
-    public static final AdditionType ROYALTY = new Builder("royalty", AdditionSlot.TNT_MOTION).single().build();
+    public static final AdditionType LOYALTY = new Builder("loyalty", AdditionSlot.TNT_MOTION).single().build();
     public static final AdditionType VELOCITY = new Builder("velocity", AdditionSlot.TNT_MOTION).important().withInitialValue(0.2F).build();
+    public static final AdditionType NO_PHYSICS = new Builder("no_physics", AdditionSlot.TNT_MOTION).single().build();
     public static final AdditionType PIERCING = new Builder("piercing", AdditionSlot.EXPLOSION_STRENGTH).withMaxValue(8F).build();
     public static final AdditionType STRENGTH = new Builder("strength", AdditionSlot.EXPLOSION_STRENGTH).important().build();
     public static final AdditionType DAMAGE = new Builder("damage", AdditionSlot.ENTITY_EFFECT).important().build();
@@ -56,11 +56,10 @@ public class AdditionType {
     public static final AdditionType EXPLOSION_INTERVAL = new Builder("explosion_interval", AdditionSlot.EXPLOSION_DURATION).withInitialValue(1).build();
     //TODO recipe
     public static final AdditionType FIREWORK = new Builder("firework", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
-    public static final AdditionType PARTICLE = new Builder("particle", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
-    public static final AdditionType TNT_PARTICLE = new Builder("tnt_particle", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
+    public static final AdditionType PARTICLE = new Builder("particle", AdditionSlot.EXPLOSION_EFFECT).single().build(); //TODO
+    public static final AdditionType TNT_PARTICLE = new Builder("tnt_particle", AdditionSlot.EXPLOSION_EFFECT).single().build(); //TODO
     //TODO factor
     public static final AdditionType LIGHT = new Builder("light", AdditionSlot.EXPLOSION_EFFECT).build(); //TODO
-    public static final AdditionType FUSE = new Builder("fuse", AdditionSlot.TNT_FUSE).important().build();
     public static final AdditionType SHAPE = new Builder("shape", AdditionSlot.EXPLOSION_SHAPE).single().build();
 //TODO extremes and
 // tao wa(firework?) and blow up and target (surrounding mob) and light(change daylight?)
@@ -71,15 +70,17 @@ public class AdditionType {
     public final BiFunction<Float, Float, Float> weightEffect; //how value is affected by weight, also apply to original and max
     public final float maxValue;
     public final float initialValue;
+    public final Set<AdditionType> requirements = new HashSet<>();
 
     private AdditionType(String id, int maxCount, BiFunction<Float, Float, Float> weightEffect, AdditionSlot slot,
-                         float maxValue, float initialValue) {
+                         float maxValue, float initialValue, Set<AdditionType> requirements) {
         this.id = id;
         this.maxCount = maxCount;
         this.slot = slot;
         this.weightEffect = weightEffect;
         this.maxValue = maxValue;
         this.initialValue = initialValue;
+        this.requirements.addAll(requirements);
     }
 
     @Override
@@ -101,6 +102,7 @@ public class AdditionType {
         private int maxCount;
         private float initialValue;
         private float maxValue;
+        public final Set<AdditionType> requirements = new HashSet<>();
 
         public Builder(String id, AdditionSlot slot) {
             this.id = id;
@@ -132,9 +134,14 @@ public class AdditionType {
             return this;
         }
 
+        public Builder require(AdditionType type){
+            this.requirements.add(type);
+            return this;
+        }
+
         public AdditionType build(){
             AdditionType ret = new AdditionType(id, maxCount, (value, weight)->Math.min(maxValue, value+initialValue),
-                    slot, maxValue, initialValue);
+                    slot, maxValue, initialValue, requirements);
             if(!TYPES.containsKey(id)) {
                 TYPES.put(id, ret);
             } else {

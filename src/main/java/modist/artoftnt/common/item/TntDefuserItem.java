@@ -1,6 +1,5 @@
 package modist.artoftnt.common.item;
 
-import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -33,9 +32,7 @@ public class TntDefuserItem extends Item { //see CommonEventHandler
     @Override
     public boolean mineBlock(ItemStack pStack, Level pLevel, BlockState pState, BlockPos pPos, LivingEntity pEntityLiving) {
         if (!pLevel.isClientSide && pLevel.getBlockEntity(pPos) instanceof TntFrameBlockEntity be) {
-            pStack.hurtAndBreak((int)be.getData().getWeight(), pEntityLiving, (p_40992_) -> {
-                p_40992_.broadcastBreakEvent(EquipmentSlot.MAINHAND);
-            });
+            pStack.hurtAndBreak((int)be.getData().getWeight(), pEntityLiving, (p_40992_) -> p_40992_.broadcastBreakEvent(EquipmentSlot.MAINHAND));
         }
         return true;
     }

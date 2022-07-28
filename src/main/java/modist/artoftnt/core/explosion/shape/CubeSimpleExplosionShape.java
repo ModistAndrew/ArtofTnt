@@ -1,6 +1,5 @@
 package modist.artoftnt.core.explosion.shape;
 
-import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -8,7 +7,6 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public class CubeSimpleExplosionShape extends AbstractSimpleExplosionShape {

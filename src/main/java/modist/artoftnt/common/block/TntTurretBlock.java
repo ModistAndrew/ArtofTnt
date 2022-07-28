@@ -2,6 +2,7 @@ package modist.artoftnt.common.block;
 
 import modist.artoftnt.common.block.entity.CoolDownBlockEntity;
 import modist.artoftnt.common.block.entity.TntTurretBlockEntity;
+import modist.artoftnt.common.item.TntFrameItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -36,12 +38,25 @@ public class TntTurretBlock extends CoolDownBlock { //TODO bounding box
 
     @Override
     @SuppressWarnings("deprecation")
+    public VoxelShape getCollisionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+        return Shapes.empty();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        System.out.printf("pos:%s\n", pHit.getLocation());
-        if (pHand == InteractionHand.MAIN_HAND && pLevel.getBlockEntity(pPos) instanceof TntTurretBlockEntity blockEntity) {
-            ItemStack itemstack = pPlayer.getItemInHand(pHand);
-            blockEntity.tryPutTnt(pHit.getLocation(), itemstack);
-        } //TODO
-        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+        ItemStack itemstack = pPlayer.getItemInHand(pHand);
+        if (!pLevel.isClientSide && pHand == InteractionHand.MAIN_HAND && pLevel.getBlockEntity(pPos) instanceof TntTurretBlockEntity blockEntity) {
+            ItemStack ret = blockEntity.tryPutOrGetTnt(pHit.getLocation().subtract(Vec3.atLowerCornerOf(pPos)), itemstack.copy()).copy();
+            if(!ItemStack.matches(itemstack, ret)){
+                if(!pPlayer.getAbilities().instabuild){
+                    pPlayer.getInventory().setItem(pPlayer.getInventory().selected, ret);
+                    pPlayer.inventoryMenu.broadcastChanges();
+                }
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.CONSUME;
+        }
+        return itemstack.getItem() instanceof TntFrameItem ? InteractionResult.CONSUME : super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
     }
 }

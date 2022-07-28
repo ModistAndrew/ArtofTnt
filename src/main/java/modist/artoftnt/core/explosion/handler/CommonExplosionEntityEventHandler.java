@@ -3,22 +3,17 @@ package modist.artoftnt.core.explosion.handler;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
-import modist.artoftnt.core.explosion.event.CustomExplosionBlockEvent;
 import modist.artoftnt.core.explosion.event.CustomExplosionEntityEvent;
+import modist.artoftnt.core.explosion.event.CustomExplosionFinishingEvent;
+import modist.artoftnt.core.explosion.manager.ExplosionResources;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -54,27 +49,41 @@ public class CommonExplosionEntityEventHandler {
     }
 
     @SubscribeEvent
-    public static void potionEvent(CustomExplosionEntityEvent event) {
+    public static void potionEvent(CustomExplosionFinishingEvent event) {
         CustomExplosion explosion = event.explosion;
-        if (event.entity instanceof LivingEntity le) {
-            for (ItemStack stack : event.data.getItems(AdditionType.POTION)) {
-                Potion potion = PotionUtils.getPotion(stack);
-                if (potion != Potions.EMPTY) {
-                    if (le.isAffectedByPotions()) {
-                        for (MobEffectInstance mobeffectinstance : potion.getEffects()) {
-                            mobeffectinstance = new MobEffectInstance(mobeffectinstance.getEffect(), (int) (mobeffectinstance.getDuration() * event.percentage),
-                                    mobeffectinstance.getAmplifier(), mobeffectinstance.isAmbient(), mobeffectinstance.isVisible());
-                            if (mobeffectinstance.getEffect().isInstantenous()) {
-                                mobeffectinstance.getEffect().applyInstantenousEffect(explosion.getSource(), explosion.getSourceMob(),
-                                        le, mobeffectinstance.getAmplifier(), 0.5D);
-                            } else {
-                                le.addEffect(new MobEffectInstance(mobeffectinstance), explosion.getSource());
-                            }
-                        }
-                    }
-                }
+        if (explosion.level.isClientSide) {
+            return;
+        }
+        for (ItemStack stack : event.data.getItems(AdditionType.POTION)) {
+            Potion potion = PotionUtils.getPotion(stack);
+            if (potion != Potions.EMPTY) {
+                makeAreaOfEffectCloud(stack, potion, explosion);
             }
         }
+    }
+
+    private static void makeAreaOfEffectCloud(ItemStack pStack, Potion pPotion, CustomExplosion explosion) {
+        AreaEffectCloud areaeffectcloud = new AreaEffectCloud(explosion.level, explosion.x, explosion.y, explosion.z);
+        LivingEntity entity = explosion.getSourceMob();
+        if (entity != null) {
+            areaeffectcloud.setOwner(entity);
+        }
+
+        areaeffectcloud.setRadius(explosion.radius);
+        areaeffectcloud.setRadiusOnUse(-0.5F);
+        areaeffectcloud.setWaitTime(10);
+        areaeffectcloud.setRadiusPerTick(-areaeffectcloud.getRadius() / (float) areaeffectcloud.getDuration());
+        areaeffectcloud.setPotion(pPotion);
+
+        for (MobEffectInstance mobeffectinstance : PotionUtils.getCustomEffects(pStack)) {
+            areaeffectcloud.addEffect(new MobEffectInstance(mobeffectinstance));
+        }
+
+        CompoundTag compoundtag = pStack.getTag();
+        if (compoundtag != null && compoundtag.contains("CustomPotionColor", 99)) {
+            areaeffectcloud.setFixedColor(compoundtag.getInt("CustomPotionColor"));
+        }
+        explosion.level.addFreshEntity(areaeffectcloud);
     }
 
     @SubscribeEvent
@@ -153,6 +162,22 @@ public class CommonExplosionEntityEventHandler {
                     break;
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void globalSoundEvent(CustomExplosionFinishingEvent event) {
+        CustomExplosion explosion = event.explosion;
+        float loudness = event.data.getValue(AdditionType.LOUDNESS);
+        int soundType = (int) event.data.getValue(AdditionType.SOUND_TYPE);
+        if (event.data.globalSound() && explosion.level instanceof ServerLevel level) { //global
+            level.players().forEach(p -> ExplosionResources.SOUNDS.get(soundType).ifPresent(t ->
+                            p.connection.send
+                                    (new ClientboundSoundPacket(t, SoundSource.BLOCKS, p.position().x, p.position().y, p.position().z,
+                                            explosion.random.nextFloat() * loudness,
+                                            (1.0F + (explosion.level.random.nextFloat() - explosion.level.random.nextFloat()) * 0.2F) * 0.7F))
+                    )
+            );
         }
     }
 }

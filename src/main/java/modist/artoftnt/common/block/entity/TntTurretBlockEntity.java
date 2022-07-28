@@ -1,5 +1,7 @@
 package modist.artoftnt.common.block.entity;
 
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.TntFrameItem;
@@ -17,38 +19,37 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TntTurretBlockEntity extends CoolDownBlockEntity {
     private static final BlockPos[] FIRE_OFFSETS = BlockPos.betweenClosedStream(-2, -2, -2, 2, 2, 2)
             .filter((p) -> Math.abs(p.getX()) == 2 || Math.abs(p.getY()) == 2 || Math.abs(p.getZ()) == 2)
             .map(BlockPos::immutable).toArray(BlockPos[]::new);
-    @Nullable
-    private ItemStack presentTnt;
+    @NotNull
+    public ItemStack presentTnt = ItemStack.EMPTY;
     private Vec3 vec = Vec3.ZERO;
-    private int[] tiers = new int[16];
-    private ItemStackHandler handler = new ItemStackHandler(16) {
+    private final int[] renderData = new int[16]; //0 for EMPTY, 1-64 for tier 0...
+    private final ItemStackHandler handler = new ItemStackHandler(16) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             return accept(stack);
         }
 
         @Override
-        protected void onContentsChanged(int slot)
-        {
+        protected void onContentsChanged(int slot) {
             TntTurretBlockEntity.this.updateTiers();
             TntTurretBlockEntity.this.setChanged();
         }
     };
+
     public TntTurretBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
-        super(10, BlockLoader.TNT_TURRET_BLOCK_ENTITY.get(), pWorldPosition, pBlockState);
-        for (int i = 0; i < 16; i++) {
-            tiers[i] = -1;
-        }
+        super(5, BlockLoader.TNT_TURRET_BLOCK_ENTITY.get(), pWorldPosition, pBlockState);
     }
 
     @Override
@@ -61,8 +62,30 @@ public class TntTurretBlockEntity extends CoolDownBlockEntity {
         }
     }
 
+    public boolean contains(int slot) {
+        return renderData[slot] > 0;
+    }
+
+    public int getCount(int slot) {
+        return ((renderData[slot] - 1) % 64) + 1;
+    }
+
+    public int getTier(int slot) {
+        return (renderData[slot] - 1) / 64;
+    }
+
+    public float getOffset(float pPartialTick) {
+        return coolDown > minCoolDown ? (maxCoolDown - coolDown - pPartialTick) / (maxCoolDown - minCoolDown) :
+                (coolDown+pPartialTick) / minCoolDown;
+    }
+
+    public float getTntOffset(float pPartialTick) {
+        return coolDown > minCoolDown ? 0 :
+                1 - (coolDown+pPartialTick) / minCoolDown;
+    }
+
     public boolean accept(ItemStack stack) {
-        return stack.getItem() instanceof TntFrameItem item && item.getTntFrameDataTag(stack) != null;
+        return stack.getItem() instanceof TntFrameItem;
     }
 
     public ItemStack tryAddTnt(int slot, ItemStack stack) {
@@ -79,28 +102,33 @@ public class TntTurretBlockEntity extends CoolDownBlockEntity {
         return ret.get();
     }
 
-    public ItemStack tryPutTnt(Vec3 location, ItemStack itemstack) {
-        return tryAddTnt(15, itemstack); //TODO
+    public ItemStack tryPutOrGetTnt(Vec3 location, ItemStack itemstack) {
+        if (itemstack.isEmpty()) {
+            return tryExtractTnt(Vec32Slot(location), 64);
+        }
+        return tryAddTnt(Vec32Slot(location), itemstack);
     }
+
+    public int Vec32Slot(Vec3 location) {
+        int x = (int) (location.x * 4);
+        int y = (int) (location.z * 4);
+        if (x >= 4) x = 3;
+        if (y >= 4) y = 3;
+        return x + y * 4;
+    }
+
     private void updateTiers() {
-        AtomicBoolean changed = new AtomicBoolean(false);
         this.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).ifPresent(is -> {
             for (int i = 0; i < 16; i++) {
                 ItemStack stack = is.getStackInSlot(i);
-                int old = tiers[i];
                 if (stack.getItem() instanceof TntFrameItem item) {
-                    tiers[i] = item.tier;
+                    renderData[i] = item.tier * 64 + stack.getCount();
                 } else {
-                    tiers[i] = -1;
-                }
-                if(old!=tiers[i]) {
-                    changed.set(true);
+                    renderData[i] = 0;
                 }
             }
         });
-        if(changed.get()) {
-            setChangedAndUpdate();
-        }
+        setChangedAndUpdate();
     }
 
     public Vec3 getVec() {
@@ -109,55 +137,79 @@ public class TntTurretBlockEntity extends CoolDownBlockEntity {
     }
 
     private void updateDirection() {
-        Vec3 ret = Vec3.ZERO;
-        for (BlockPos pos : FIRE_OFFSETS) {
-            BlockState state = level.getBlockState(this.getBlockPos().offset(pos));
-            ret = ret.add(TurretActivators.getDirection(state, pos));
+        if(this.level!=null) {
+            Vec3 ret = Vec3.ZERO;
+            float rotation = 0;
+            for (BlockPos pos : FIRE_OFFSETS) {
+                BlockState state = level.getBlockState(this.getBlockPos().offset(pos));
+                ret = ret.add(TurretActivators.getDirection(state, pos));
+                rotation = Math.max(rotation, TurretActivators.getRotation(state));
+            }
+            long l = System.currentTimeMillis() / 10;
+            float s = (l % 360);
+            float radian = (float) Math.toRadians(s);
+            if (ret.equals(Vec3.ZERO)) {
+                this.vec = new Vec3(1, 0, 0).xRot(radian).yRot(2 * radian).zRot(3 * radian);
+            } else {
+                Vector3f v = new Vector3f(ret);
+                v.transform(new Quaternion(new Vector3f(getNormal(ret)), rotation, true));
+                v.transform(new Quaternion(new Vector3f(ret), s, true));
+                v.mul(-1F);
+                this.vec = new Vec3(v);
+            }
         }
-        this.vec = ret.scale(-1D);
     }
 
+    public static Vec3 getNormal(Vec3 vec){
+        return vec.cross(new Vec3(1, 0, 0)).equals(Vec3.ZERO) ?
+                vec.cross(new Vec3(0, 1, 0)) : vec.cross(new Vec3(1, 0, 0));
+    }
     @Override
     protected void doDispense() {
-        if (presentTnt.getItem() instanceof TntFrameItem item) {
+        if (this.level!=null && presentTnt.getItem() instanceof TntFrameItem item) {
             Vec3 vec = this.getVec();
             Vec3 direction = vec.normalize();
-            if(!direction.equals(Vec3.ZERO)) {
-                double strength = vec.length();
-                PrimedTntFrame entity = new PrimedTntFrame(item.getTntFrameDataTag(presentTnt),
-                        this.level, this.getBlockPos().getX(), this.getBlockPos().getY(),
-                        this.getBlockPos().getZ(), null, item.tier);
-                entity.shoot((float) direction.x, (float) direction.y, (float) direction.z,
-                        (float) strength, 0.0F);
-                level.addFreshEntity(entity);
-                presentTnt = ItemStack.EMPTY;
-                setChangedAndUpdate();
-            }
+            double strength = vec.length();
+            PrimedTntFrame entity = new PrimedTntFrame(item.getTntFrameDataTag(presentTnt),
+                    this.level, this.getBlockPos().getX() + direction.x, this.getBlockPos().getY() + direction.y,
+                    this.getBlockPos().getZ() + direction.z, null, item.tier);
+            entity.shoot((float) direction.x, (float) direction.y, (float) direction.z,
+                    (float) strength, 0.0F);
+            level.addFreshEntity(entity);
+            presentTnt = ItemStack.EMPTY;
+            setChangedAndUpdate();
         }
     }
 
     @Override
     public boolean tryActivate(int pLevel) {
-        int from = pLevel;
-        for(int i=0; i<16; i++) {
-            ItemStack ret = tryExtractTnt((from + i) % 16, 1);
-            if (!ret.isEmpty()) {
-                this.presentTnt = ret;
-                return true;
-            }
+        ItemStack ret = tryExtractTnt(pLevel, 1);
+        if (!ret.isEmpty()) {
+            this.presentTnt = ret;
+            return true;
+        }
+        ret = tryExtractTnt(0, 1); //try 0
+        if (!ret.isEmpty()) {
+            this.presentTnt = ret;
+            return true;
         }
         return false;
     }
+
     @Override
     protected void setCoolDown() {
-        if (presentTnt != null && presentTnt.getItem() instanceof TntFrameItem item) {
-            this.coolDown = item.getTntFrameData(presentTnt).getCoolDown() + RENDER_TICK;
+        if (presentTnt.getItem() instanceof TntFrameItem item) {
+            this.coolDown = item.getTntFrameData(presentTnt).getCoolDown() + minCoolDown * 2;
         }
     }
 
     @Override
     public NonNullList<ItemStack> getDrops() {
-        return NonNullList.create();
+        List<ItemStack> stacks = new ArrayList<>();
+        for(int i=0; i<handler.getSlots(); i++){
+            stacks.add(handler.getStackInSlot(i).copy());
+        }
+        return NonNullList.of(ItemStack.EMPTY, stacks.toArray(new ItemStack[0]));
     }
 
     @Override
@@ -165,9 +217,9 @@ public class TntTurretBlockEntity extends CoolDownBlockEntity {
         super.load(pTag);
         ListTag list = pTag.getList("tiers", 3);
         for (int j = 0; j < 16; j++) {
-            tiers[j] = list.getInt(j);
+            renderData[j] = list.getInt(j);
         }
-        if(pTag.contains("presentTnt")){
+        if (pTag.contains("presentTnt")) {
             presentTnt = ItemStack.of(pTag.getCompound("presentTnt"));
         }
         this.handler.deserializeNBT(pTag.getCompound("items"));
@@ -178,12 +230,35 @@ public class TntTurretBlockEntity extends CoolDownBlockEntity {
         super.saveAdditional(pTag);
         ListTag list = new ListTag();
         for (int j = 0; j < 16; j++) {
-            list.add(IntTag.valueOf(tiers[j]));
+            list.add(IntTag.valueOf(renderData[j]));
         }
         pTag.put("tiers", list);
-        if(presentTnt!=null){
-            pTag.put("presentTnt", presentTnt.serializeNBT());
-        }
+        pTag.put("presentTnt", presentTnt.serializeNBT());
         pTag.put("items", handler.serializeNBT());
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        super.saveAdditional(tag);
+        ListTag list = new ListTag();
+        for (int j = 0; j < 16; j++) {
+            list.add(IntTag.valueOf(renderData[j]));
+        }
+        tag.put("tiers", list);
+        tag.put("presentTnt", presentTnt.serializeNBT());
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        super.load(tag);
+        ListTag list = tag.getList("tiers", 3);
+        for (int j = 0; j < 16; j++) {
+            renderData[j] = list.getInt(j);
+        }
+        if (tag.contains("presentTnt")) {
+            presentTnt = ItemStack.of(tag.getCompound("presentTnt"));
+        }
     }
 }

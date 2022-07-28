@@ -1,17 +1,11 @@
 package modist.artoftnt.common.item;
 
-import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.FireworkStarItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
-
-import javax.annotation.Nullable;
 
 public class TntFireworkStarItem extends FireworkStarItem { //see CommonEventHandler
     private static final double[] X_MOTIONS = new double[]{1, 1, 0, -1, -1, -1, 0, 1};

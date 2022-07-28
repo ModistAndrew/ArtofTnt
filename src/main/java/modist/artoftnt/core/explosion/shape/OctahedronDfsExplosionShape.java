@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,7 +18,7 @@ public class OctahedronDfsExplosionShape extends AbstractDfsExplosionShape {
     public Set<BlockPos> getEdge() {
         int r = (int) radius;
         return BlockPos.betweenClosedStream(p(-r, -r, -r), p(r, r, r)).filter(bp -> center.distManhattan(bp)==r)
-                .map(bp->bp.immutable()).collect(Collectors.toSet());
+                .map(BlockPos::immutable).collect(Collectors.toSet());
     }
 
     @Override

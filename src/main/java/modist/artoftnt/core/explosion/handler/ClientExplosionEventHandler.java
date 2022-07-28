@@ -2,8 +2,7 @@ package modist.artoftnt.core.explosion.handler;
 
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
-import modist.artoftnt.core.explosion.manager.ExplosionParticles;
-import modist.artoftnt.core.explosion.manager.ExplosionSounds;
+import modist.artoftnt.core.explosion.manager.ExplosionResources;
 import modist.artoftnt.core.explosion.event.CustomExplosionFinishingEvent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -20,20 +19,20 @@ public class ClientExplosionEventHandler {
         CustomExplosion explosion = event.explosion;
         float loudness = event.data.getValue(AdditionType.LOUDNESS);
         int soundType = (int) event.data.getValue(AdditionType.SOUND_TYPE);
-        ExplosionSounds.getSoundEvents(soundType).forEach(t ->
-                explosion.level.playLocalSound(explosion.x, explosion.y, explosion.z, t,
-                        SoundSource.BLOCKS, explosion.random.nextFloat() * loudness,
-                        (1.0F + (explosion.level.random.nextFloat() - explosion.level.random.nextFloat()) * 0.2F) * 0.7F,
-                        false));
+        if (!event.data.globalSound()) { //not global
+            ExplosionResources.SOUNDS.get(soundType).ifPresent(t -> explosion.level.playLocalSound(explosion.x, explosion.y, explosion.z, t,
+                    SoundSource.BLOCKS, explosion.random.nextFloat() * loudness,
+                    (1.0F + (explosion.level.random.nextFloat() - explosion.level.random.nextFloat()) * 0.2F) * 0.7F,
+                    false));
+        }
     }
 
     @SubscribeEvent
     public static void particleEvent(CustomExplosionFinishingEvent event) {
         CustomExplosion explosion = event.explosion;
         int particle = (int) event.data.getValue(AdditionType.PARTICLE);
-        ExplosionParticles.getParticles(particle).forEach(p ->
-                explosion.level.addParticle(p, explosion.x, explosion.y, explosion.z,
-                        1.0D, 0.0D, 0.0D));
+        ExplosionResources.PARTICLES.get(particle).ifPresent(p -> explosion.level.addParticle(p, explosion.x, explosion.y, explosion.z,
+                1.0D, 0.0D, 0.0D));
     }
 
     @SubscribeEvent
@@ -41,7 +40,7 @@ public class ClientExplosionEventHandler {
         CustomExplosion explosion = event.explosion;
         event.data.getItems(AdditionType.FIREWORK).forEach(itemStack -> {
             CompoundTag compoundtag = itemStack.isEmpty() ? null : itemStack.getTag();
-            if(compoundtag!=null && compoundtag.getCompound("Explosion") != null) {
+            if (compoundtag != null) {
                 CompoundTag explosions = compoundtag.getCompound("Explosion");
                 compoundtag.remove("Explosion");
                 ListTag list = new ListTag();

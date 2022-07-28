@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.mojang.math.Transformation;
 import com.mojang.math.Vector3f;
 import com.mojang.math.Vector4f;
+import modist.artoftnt.ArtofTntConfig;
 import modist.artoftnt.core.addition.Addition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -38,8 +39,8 @@ public class BakeModelRenderer {
         this.globalTransform = transform;
     }
 
-    public void putSpecialItemStackQuads(@Nullable ItemStack stack, @Nullable Addition addition, int index, int slot, boolean up, boolean down) {
-        AdditionSpecialRenderer.putSpecialItemStackQuads(this, random, stack, addition, index, slot, up, down);
+    public void putSpecialItemStackQuads(@Nullable ItemStack stack, @Nullable Addition addition, int index, int slot) {
+        AdditionSpecialRenderer.putSpecialItemStackQuads(this, random, stack, addition, index, slot);
     }
 
     public List<BakedQuad> getQuads() {
@@ -127,16 +128,8 @@ public class BakeModelRenderer {
         return quads;
     }
 
-    public void putCubeFace16(float x1, float y1, float z1, float x2, float y2, float z2, ResourceLocation r, Direction direction, int color) {
-        quads.add(createCubeFace(v(x1 / 16F, y1 / 16F, z1 / 16F), v(x2 / 16F, y2 / 16F, z2 / 16F), r, direction, color));
-    }
-
     public void putCubeFace16(float x1, float y1, float z1, float x2, float y2, float z2, ResourceLocation r, Direction direction) {
         quads.add(createCubeFace(v(x1 / 16F, y1 / 16F, z1 / 16F), v(x2 / 16F, y2 / 16F, z2 / 16F), r, direction, -1));
-    }
-
-    public void putCube16(float x1, float y1, float z1, float x2, float y2, float z2, ResourceLocation r, boolean up, boolean down, int color) {
-        quads.addAll(createCube(v(x1 / 16F, y1 / 16F, z1 / 16F), v(x2 / 16F, y2 / 16F, z2 / 16F), r, up, down, color));
     }
 
     public void putCube16(float x1, float y1, float z1, float x2, float y2, float z2, ResourceLocation r, boolean up, boolean down) {
@@ -171,6 +164,9 @@ public class BakeModelRenderer {
         private static final int NORMAL = findNormalOffset(DefaultVertexFormat.BLOCK);
         private static final int COLOR = findColorOffset(DefaultVertexFormat.BLOCK);
         private final Transformation transform;
+        private static final float COLOR_R = (ArtofTntConfig.DISGUISE_COLOR_MASK.get() >> 16 & 255)/255F;
+        private static final float COLOR_G = (ArtofTntConfig.DISGUISE_COLOR_MASK.get() >> 8 & 255)/255F;
+        private static final float COLOR_B = (ArtofTntConfig.DISGUISE_COLOR_MASK.get() & 255)/255F;
 
         public ColorQuadTransformer(Transformation transform) {
             this.transform = transform;
@@ -216,14 +212,15 @@ public class BakeModelRenderer {
                 }
             }
 
-            int colorR = color >> 16 & 255;
-            int colorG = color >> 8 & 255;
-            int colorB = color & 255;
+            float colorR = (color >> 16 & 255)/255F;
+            float colorG = (color >> 8 & 255)/255F;
+            float colorB = (color & 255)/255F;
             if(changeColor) {
-                colorB = colorB * 15 >> 4;
-                colorG = colorG * 15 >> 4;
+                colorR = COLOR_R * colorR;
+                colorG = COLOR_G * colorG;
+                colorB = COLOR_B * colorB;
             }
-            color = (colorB << 16) + (colorG << 8) + colorR;
+            color = ((int)(colorB*255) << 16) + ((int)(colorG*255) << 8) + (int)(colorR*255);
             for (int i = 0; i < count; i++) {
                 int offset = COLOR + i * stride;
                 putAtByteOffset(outData, offset, color);
@@ -311,7 +308,7 @@ public class BakeModelRenderer {
             if (index == fmt.getElements().size() || element == null)
                 throw new IllegalStateException("BLOCK format does not have colors?");
             if (element.getType() != VertexFormatElement.Type.UBYTE)
-                throw new RuntimeException("Expected COLOR attribute to have data type UBYTE");
+                throw new RuntimeException("Expected COLOR attribute to have data type U_BYTE");
             if (element.getByteSize() < 4)
                 throw new RuntimeException("Expected COLOR attribute to have at least 4 dimensions");
             return fmt.getOffset(index);

@@ -2,7 +2,7 @@ package modist.artoftnt.client.block.model;
 
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
-import modist.artoftnt.common.block.TntFrameBlock;
+import modist.artoftnt.client.block.TextureLoader;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.Addition;
@@ -17,7 +17,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -30,7 +29,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 @OnlyIn(Dist.CLIENT)
-//TODO special render when completely empty? (for cloner)
+//TODO special render and COLOR for tnt(empty?)
 public class TntFrameBlockBakedModel implements IDynamicBakedModel {
 
     private static final float DELTA = 0.001F; //fix z-fighting
@@ -43,43 +42,23 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
     @Nonnull
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
+        if(side!=null){
+            return Collections.emptyList();
+        }
         TntFrameData data = extraData.getData(TntFrameBlockEntity.ADDITIONS_MODEL_PROPERTY);
         BakeModelRenderer renderer = getRenderUtil(state, data); //initialize
-        if (side != null) { //deal with cull face
-            if (data == null) { //default
-                putDefaultQuads(renderer, side, 0);
-                return renderer.getQuads();
-            }
-            if (data.disguise != null) { //disguise
-                if (data.size == 1F) {
-                    if (data.disguise.getBlock() == Blocks.AIR || data.disguise.getBlock() instanceof TntFrameBlock) { //no recursion
-                        putDefaultQuads(renderer, side, data.tier);
-                    } else {
-                        renderer.transformBlock(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(data.disguise).
-                                getQuads(data.disguise, side, rand, EmptyModelData.INSTANCE), data.disguise);
-                    }
-                }
-                return renderer.getQuads();
-            }
-            return renderer.getQuads();
-        }
         Direction[] directions = new Direction[]{
                 Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.NORTH, null
         };
-        if (data == null) { //ignore
+        if (data == null) { //default
+            Arrays.stream(directions).forEach(d -> {
+                renderer.transform(existingModel.getQuads(state, d, rand, extraData)); //frame
+            });
             return renderer.getQuads();
         }
         if (data.disguise != null) { //disguise
-            if (data.size < 1F) {
-                Arrays.stream(directions).forEach(d -> {
-                    if (data.disguise.getBlock() == Blocks.AIR) {
-                        putDefaultQuads(renderer, d, data.tier);
-                    } else {
-                        renderer.transformBlock(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(data.disguise).
-                                getQuads(data.disguise, d, rand, EmptyModelData.INSTANCE), data.disguise);
-                    }
-                });
-            }
+                Arrays.stream(directions).forEach(d -> renderer.transformBlock(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(data.disguise).
+                        getQuads(data.disguise, d, rand, EmptyModelData.INSTANCE), data.disguise));
             return renderer.getQuads();
         }
         Arrays.stream(directions).forEach(d -> {
@@ -92,33 +71,19 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
                 data.getWeight(), data.getValue(AdditionType.INSTABILITY));
         return renderer.getQuads();
     }
-
-    private void putDefaultQuads(BakeModelRenderer renderer, Direction side, int tier) {
-        if (side != null) {
-            switch (side) {
-                case UP ->
-                        renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_TOP[tier], side);
-                case DOWN ->
-                        renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_BOTTOM[tier], side);
-                default ->
-                        renderer.putCubeFace16(0, 0, 0, 16, 16, 16, AdditionSpecialRenderer.TNT_FRAME_SIDE[tier], side);
-            }
-        }
-    }
-
     private void putSideQuads(boolean fixed, BakeModelRenderer renderer, Addition shape, float weight, float instability) {
         renderer.putCube16(0, 0, 0, 16, 16, 16, getWeightTexture(weight), false, false);
         renderer.putCube16(0, 0, 0, 16, 16, 16, getInstabilityTexture(instability), false, false);
         renderer.putCubeFace16(0, 16 - DELTA, 0, 16, 16 - DELTA, 16,
-                fixed ? AdditionSpecialRenderer.FIXED_TOP : AdditionSpecialRenderer.TOP, Direction.UP);
+                fixed ? TextureLoader.FIXED_TOP : TextureLoader.TOP, Direction.UP);
     }
 
     private ResourceLocation getInstabilityTexture(float instability) {
-        return AdditionSpecialRenderer.INSTABILITY[getInstabilityTextureId(instability)];
+        return TextureLoader.INSTABILITY[getInstabilityTextureId(instability)];
     }
 
     private ResourceLocation getWeightTexture(float weight) {
-        return AdditionSpecialRenderer.WEIGHT[getWeightTextureId(weight)];
+        return TextureLoader.WEIGHT[getWeightTextureId(weight)];
     }
 
     public static int getInstabilityTextureId(float instability) {
@@ -143,7 +108,7 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
 
     private void putSingleItemStackQuads(BakeModelRenderer renderer, @Nullable ItemStack stack, int index, int slot, boolean up, boolean down) {
         if (stack == null) {
-            renderer.putSpecialItemStackQuads(null, null, index, slot, up, down);
+            renderer.putSpecialItemStackQuads(null, null, index, slot);
             return;
         }
         Addition addition = Addition.fromItem(stack.getItem());
@@ -152,17 +117,13 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
                     AdditionSlot.getU(slot) + 2, index * 2 + 2 - (index == 7 ? 2 * DELTA : 0), AdditionSlot.getV(slot) + 2,
                     addition.resourceLocation, up, down);
         } else {
-            renderer.putSpecialItemStackQuads(stack, addition, index, slot, up, down);
+            renderer.putSpecialItemStackQuads(stack, addition, index, slot);
         }
     }
 
     private BakeModelRenderer getRenderUtil(BlockState state, TntFrameData data) {
         if (data == null) {
-            if (state != null && state.getBlock() instanceof TntFrameBlock tfb) {
-                return new BakeModelRenderer(Transformation.identity());
-            } else {
-                return new BakeModelRenderer(Transformation.identity());
-            }
+            return new BakeModelRenderer(Transformation.identity());
         }
         float d = data.getDeflation();
         float scale = data.size;

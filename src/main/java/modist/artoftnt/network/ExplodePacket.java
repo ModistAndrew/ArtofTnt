@@ -46,16 +46,18 @@ public class ExplodePacket extends ClientboundExplodePacket {
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> doExplode()
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::doExplode
                 ));
         ctx.get().setPacketHandled(true);
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void doExplode(){
+    private void doExplode() {
         Minecraft minecraft = Minecraft.getInstance();
         CustomExplosion exp = new CustomExplosion(vec, stack, minecraft.level, null, this.getX(), this.getY(), this.getZ(), this.getPower(), this.getToBlow());
         exp.finalizeExplosion(true);
-        minecraft.player.setDeltaMovement(minecraft.player.getDeltaMovement().add(this.getKnockbackX(), this.getKnockbackY(), this.getKnockbackZ()));
+        if (minecraft.player != null) {
+            minecraft.player.setDeltaMovement(minecraft.player.getDeltaMovement().add(this.getKnockbackX(), this.getKnockbackY(), this.getKnockbackZ()));
+        }
     }
 }

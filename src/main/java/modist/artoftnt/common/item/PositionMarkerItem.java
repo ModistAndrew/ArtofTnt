@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -38,7 +37,7 @@ public final boolean isContainer;
         ItemStack marker = pContext.getItemInHand();
         Level level = pContext.getLevel();
         BlockPos blockpos = pContext.getClickedPos();
-        if(pContext.getPlayer().isShiftKeyDown()){
+        if(pContext.getPlayer()!=null && pContext.getPlayer().isShiftKeyDown()){
             marker.addTagElement("position", NbtUtils.writeBlockPos(blockpos));
             return InteractionResult.SUCCESS;
         }

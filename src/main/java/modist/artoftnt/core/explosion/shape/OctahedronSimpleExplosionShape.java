@@ -2,7 +2,6 @@ package modist.artoftnt.core.explosion.shape;
 
 import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 

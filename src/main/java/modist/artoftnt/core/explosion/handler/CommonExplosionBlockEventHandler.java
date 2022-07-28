@@ -7,15 +7,16 @@ import modist.artoftnt.common.item.PositionMarkerItem;
 import modist.artoftnt.common.item.TntFireworkStarItem;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
-import modist.artoftnt.core.explosion.event.*;
+import modist.artoftnt.core.explosion.event.CustomExplosionBlockBreakEvent;
+import modist.artoftnt.core.explosion.event.CustomExplosionBlockDropEvent;
+import modist.artoftnt.core.explosion.event.CustomExplosionFinishedEvent;
+import modist.artoftnt.core.explosion.event.CustomExplosionFinishingEvent;
 import modist.artoftnt.core.explosion.manager.ExplosionSpecialDrops;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -27,7 +28,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -35,12 +35,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -145,7 +143,7 @@ public class CommonExplosionBlockEventHandler {
             });
             BlockPos.betweenClosedStream(aabb).filter(bp ->
                     explosion.level.getBlockState(bp).isAir() &&
-                            explosion.getPosition().distanceToSqr(Vec3.atCenterOf(bp)) < light * light).map(bp -> bp.immutable()).forEach(bp -> {
+                            explosion.getPosition().distanceToSqr(Vec3.atCenterOf(bp)) < light * light).map(BlockPos::immutable).forEach(bp -> {
                 explosion.level.setBlockAndUpdate(bp, BlockLoader.DIMINISHING_LIGHT.get().defaultBlockState().
                         setValue(DiminishingLightBlock.LEVEL, 15)); //simply use 15 ad ignore strength
             });
@@ -156,7 +154,7 @@ public class CommonExplosionBlockEventHandler {
     public static void blowUpEvent(CustomExplosionFinishingEvent event) {
         CustomExplosion explosion = event.explosion;
         Level l = explosion.level;
-        if(l instanceof ServerLevel level) {
+        if (l instanceof ServerLevel level) {
             float blowUp = event.data.getValue(AdditionType.BLOW_UP);
             if (blowUp > 0) {
                 List<BlockPos> remove = new ArrayList<>();
@@ -176,7 +174,7 @@ public class CommonExplosionBlockEventHandler {
         }
     }
 
-    private static Entity createFallingBlock(ServerLevel pLevel, Vec3 pPos, Vec3 movement, BlockState pState){
+    private static Entity createFallingBlock(ServerLevel pLevel, Vec3 pPos, Vec3 movement, BlockState pState) {
         CompoundTag tag = new CompoundTag();
         tag.put("BlockState", NbtUtils.writeBlockState(pState));
         ListTag listtag = new ListTag();
@@ -218,13 +216,13 @@ public class CommonExplosionBlockEventHandler {
                 null : event.data.getItems(AdditionType.CONTAINER).peek();
         if (marker != null && marker.getItem() instanceof PositionMarkerItem item) {
             if (item.isContainer) {
-                BlockPos pos = new BlockPos(item.getPos(event.explosion.level, explosion.getPosition(), marker));
-                if (pos != null) {
+                Vec3 vec = item.getPos(event.explosion.level, explosion.getPosition(), marker);
+                if (vec != null) {
+                    BlockPos pos = new BlockPos(vec);
                     containerPos = pos;
                     BlockEntity be = explosion.level.getBlockEntity(pos);
                     if (be != null) {
-                        be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(c ->
-                                container.set(c));
+                        be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(container::set);
                     }
                 }
             }
@@ -251,11 +249,13 @@ public class CommonExplosionBlockEventHandler {
     static void summonLightningBolt(CustomExplosion explosion, BlockPos pos) {
         Level level = explosion.level;
         LightningBolt lightningbolt = EntityType.LIGHTNING_BOLT.create(level);
-        lightningbolt.moveTo(Vec3.atBottomCenterOf(pos));
-        Entity source = explosion.getSourceMob();
-        lightningbolt.setCause(source instanceof ServerPlayer ? (ServerPlayer) source : null);
-        level.addFreshEntity(lightningbolt);
-        level.playSound(null, pos, SoundEvents.TRIDENT_THUNDER, SoundSource.WEATHER, 5.0F, 1.0F);
+        if (lightningbolt != null) {
+            lightningbolt.moveTo(Vec3.atBottomCenterOf(pos));
+            Entity source = explosion.getSourceMob();
+            lightningbolt.setCause(source instanceof ServerPlayer ? (ServerPlayer) source : null);
+            level.addFreshEntity(lightningbolt);
+            level.playSound(null, pos, SoundEvents.TRIDENT_THUNDER, SoundSource.WEATHER, 5.0F, 1.0F);
+        }
     }
 
     @SubscribeEvent

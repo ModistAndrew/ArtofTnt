@@ -1,11 +1,9 @@
 package modist.artoftnt.common.block.entity;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -21,7 +19,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
-import java.awt.im.InputContext;
 import java.util.List;
 import java.util.Stack;
 

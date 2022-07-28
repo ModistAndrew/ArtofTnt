@@ -2,11 +2,8 @@ package modist.artoftnt.core.explosion.manager;
 
 import modist.artoftnt.core.explosion.CustomExplosion;
 import modist.artoftnt.core.explosion.shape.*;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 
@@ -16,8 +13,6 @@ public class ExplosionShapes {
     private static void register(Function<CustomExplosion, AbstractExplosionShape> shape){
         SHAPES.add(shape);
     }
-
-
 
     public static AbstractExplosionShape get(int id, CustomExplosion explosion) {
         if(id >= SHAPES.size()){

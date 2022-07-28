@@ -1,5 +1,4 @@
 {
-    "parent": "artoftnt:block/tnt_frame_0",
     "display": {
         "gui": {
             "rotation": [ 30, 45, 0 ],

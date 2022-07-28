@@ -5,40 +5,92 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import modist.artoftnt.common.block.BlockLoader;
+import modist.artoftnt.common.block.TntClonerBlock;
 import modist.artoftnt.common.block.TntFrameBlock;
+import modist.artoftnt.common.item.TntFrameItem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.BlockSourceImpl;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.world.Containers;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TntClonerBlockEntity extends CoolDownBlockEntity {
-    @Nullable
-    private TntFrameData tntFrame;
+    @NotNull
+    public ItemStack tntFrame = ItemStack.EMPTY;
     protected final List<ItemStack> stacks = new ArrayList<>();
+    private static final DispenseItemBehavior DISPENSE_BEHAVIOUR = new DefaultDispenseItemBehavior();
+    private final int transferTick;
 
     public TntClonerBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
-        super(0, BlockLoader.TNT_CLONER_BLOCK_ENTITY.get(), pWorldPosition, pBlockState);
+        super(20, BlockLoader.TNT_CLONER_BLOCK_ENTITY.get(), pWorldPosition, pBlockState);
+        transferTick = Math.min(8, this.minCoolDown/2);
     }
 
+    //-1 to 1
+    public float getOffset(float pPartialTick) {
+        if(coolDown <= transferTick){
+            return 1 - (coolDown+pPartialTick) / transferTick;
+        }
+        if(coolDown >= maxCoolDown - transferTick){
+            return (maxCoolDown-coolDown-pPartialTick)/transferTick - 1;
+        }
+        return 0;
+    }
+
+    public boolean finished() {
+        return coolDown <= transferTick;
+    }
+
+    public boolean justFinish() {
+        return coolDown == transferTick;
+    }
+    public float finishRate() {
+        if(coolDown==0){
+            return 1/16F;
+        }
+        if(coolDown <= transferTick){
+            return 1;
+        }
+        if(coolDown >= maxCoolDown - transferTick){
+            return 1/16F;
+        }
+        return 1/16F + 15/16F * (maxCoolDown - transferTick - coolDown) / (maxCoolDown - 2*transferTick);
+    }
     @Override
     protected void doDispense() {
-        if (!level.isClientSide && tntFrame != null) {
-            ItemStack stack = TntFrameBlock.dropFrame(true, tntFrame);
-            Containers.dropItemStack(this.level, this.getBlockPos().getX()
-                    , this.getBlockPos().getY(), this.getBlockPos().getZ(), stack);
-            this.tntFrame = null;
+        if (level!=null && !level.isClientSide && tntFrame.getItem() instanceof TntFrameItem item) {
+            BlockEntity be = this.level.getBlockEntity(this.getBlockPos().relative(this.getBlockState()
+                    .getValue(TntClonerBlock.FACING)));
+            AtomicBoolean flag = new AtomicBoolean(false);
+            if(be!=null){
+                be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(c -> {
+                    for(int i=0; i < c.getSlots(); i++){
+                        if(c.insertItem(i, tntFrame, true).isEmpty()){
+                            c.insertItem(i, tntFrame, false);
+                            flag.set(true);
+                            break;
+                        }
+                    }
+                });
+            }
+            if(!flag.get()) {
+                DISPENSE_BEHAVIOUR.dispense(new BlockSourceImpl((ServerLevel) this.level, this.getBlockPos()), tntFrame);
+            }
+            this.tntFrame = ItemStack.EMPTY;
             stacks.clear();
             setChangedAndUpdate();
         }
@@ -46,27 +98,38 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
 
     @Override
     public boolean tryActivate(int level) {
-        AtomicBoolean ret = new AtomicBoolean(false);
-        BlockEntity be = this.level.getBlockEntity(this.getBlockPos().above());
-        if (be != null) {
-            be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(c -> {
-                ret.set(suckItemFrom(c));
-            });
+        if(this.level!=null) {
+            AtomicBoolean ret = new AtomicBoolean(false);
+            BlockEntity be = this.level.getBlockEntity(this.getBlockPos().above());
+            BlockEntity beFrame = this.level.getBlockEntity(this.getBlockPos().relative(this.getBlockState()
+                    .getValue(TntClonerBlock.FACING).getOpposite()));
+            if (be != null && beFrame != null) {
+                be.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+                        .ifPresent(c -> beFrame.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+                                .ifPresent(c1 -> ret.set(suckItemFrom(c, c1))));
+            }
+            return ret.get();
         }
-        return ret.get();
+        return false;
     }
-
-    private boolean suckItemFrom(IItemHandler handler) {
-        if (this.level.getBlockEntity(this.getBlockPos().below()) instanceof TntFrameBlockEntity blockEntity) {
-            List<ItemStack> drops = blockEntity.getDrops();
+    private boolean suckItemFrom(IItemHandler handler1, IItemHandler handler2) {
+        if (this.level!=null && this.level.getBlockEntity(this.getBlockPos().below()) instanceof TntFrameBlockEntity blockEntity) {
+            List<ItemStack> drops = blockEntity.getAdditions();
             Object2IntMap<ItemStackWrapper> materials = StackInSlotData.transform(drops);
-            HashMap<ItemStackWrapper, StackInSlotData> items = StackInSlotData.transform(handler);
-            if (StackInSlotData.containAllAndTransform(materials, items)) {
+            HashMap<ItemStackWrapper, StackInSlotData> items = StackInSlotData.transform(handler1);
+            if (StackInSlotData.containAll(materials, items)) {
                 HashMap<ItemStackWrapper, StackInSlotData> itemsToSuck = StackInSlotData.transform(materials, items);
-                if (StackInSlotData.draw(itemsToSuck, handler)) {
-                    this.stacks.addAll(drops);
-                    this.tntFrame = blockEntity.getData();
-                    return true;
+                ItemStack frame = blockEntity.getFrame();
+                for(int i=0; i<handler2.getSlots(); i++){
+                    if(ItemStack.matches(frame, handler2.extractItem(i, 1, true))){
+                        if (StackInSlotData.draw(itemsToSuck, handler1)) { //do
+                            handler2.extractItem(i, 1, false);
+                            this.stacks.add(frame);
+                            this.stacks.addAll(drops);
+                            this.tntFrame = TntFrameBlock.dropFrame(true, blockEntity.getData());
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -75,8 +138,8 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
 
     @Override
     protected void setCoolDown() {
-        if (this.level.getBlockEntity(this.getBlockPos().below()) instanceof TntFrameBlockEntity blockEntity) {
-            this.coolDown = blockEntity.getData().getCoolDown() + RENDER_TICK;
+        if (this.level!=null && this.level.getBlockEntity(this.getBlockPos().below()) instanceof TntFrameBlockEntity blockEntity) {
+            this.coolDown = blockEntity.getData().getCoolDown() + minCoolDown;
         }
     }
 
@@ -84,6 +147,7 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
     public NonNullList<ItemStack> getDrops() {
         return NonNullList.of(ItemStack.EMPTY, stacks.toArray(new ItemStack[0]));
     }
+
     @Override
     protected void saveAdditional(CompoundTag pTag) {
         super.saveAdditional(pTag);
@@ -92,10 +156,7 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
             list.add(j, stacks.get(j).serializeNBT());
         }
         pTag.put("stacks", list);
-        if (tntFrame != null) {
-            pTag.put("tntFrame", tntFrame.serializeNBT());
-            pTag.putInt("tntFrameTier", tntFrame.tier);
-        }
+        pTag.put("tntFrame", tntFrame.serializeNBT());
     }
 
     @Override
@@ -105,11 +166,7 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
         for (int j = 0; j < list.size(); j++) {
             stacks.add(ItemStack.of(list.getCompound(j)));
         }
-        if (pTag.contains("tntFrame")) {
-            tntFrame = new TntFrameData(pTag.getInt("tntFrameTier"), pTag.getCompound("tntFrame"));
-        } else {
-            tntFrame = null;
-        }
+        tntFrame = ItemStack.of(pTag.getCompound("tntFrame"));
     }
 
     private static class StackInSlotData {
@@ -151,7 +208,7 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
             return ret;
         }
 
-        public static boolean containAllAndTransform(Object2IntMap<ItemStackWrapper> materials, HashMap<ItemStackWrapper, StackInSlotData> items) {
+        public static boolean containAll(Object2IntMap<ItemStackWrapper> materials, HashMap<ItemStackWrapper, StackInSlotData> items) {
             for (ItemStackWrapper key : materials.keySet()) {
                 if (!items.containsKey(key)) {
                     return false;
@@ -221,7 +278,7 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
 
         @Override
         public int hashCode() {
-            return stack.getItem().hashCode() + (stack.hasTag() ? stack.getTag().hashCode() : 0);
+            return stack.getItem().hashCode() + (stack.getTag()!=null ? stack.getTag().hashCode() : 0);
         }
 
     }

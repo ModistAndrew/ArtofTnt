@@ -1,25 +1,18 @@
 package modist.artoftnt.core.explosion.shape;
 
-import com.google.common.collect.Sets;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class VanillaExplosionShape extends AbstractExplosionShape {
     public VanillaExplosionShape(CustomExplosion explosion) {
@@ -53,7 +46,7 @@ public class VanillaExplosionShape extends AbstractExplosionShape {
                             }
 
                             Optional<Float> optional = EXPLOSION_DAMAGE_CALCULATOR.getBlockExplosionResistance(explosion, this.level, blockpos, blockstate, fluidstate);
-                            float resistance = optional.isPresent() ? (optional.get() + 0.3F) * 0.3F : 0.09F;
+                            float resistance = optional.map(aFloat -> (aFloat + 0.3F) * 0.3F).orElse(0.09F);
                             if (!this.level.getFluidState(blockpos).isEmpty()) {
                                 resistance = interpolate(resistance, 0.09F, fluidFactor / AdditionType.TEMPERATURE.maxValue);
                             }
@@ -86,10 +79,9 @@ public class VanillaExplosionShape extends AbstractExplosionShape {
         net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(this.level, explosion, list, f2);
         Vec3 vec3 = new Vec3(this.x, this.y, this.z);
 
-        for(int k2 = 0; k2 < list.size(); ++k2) {
-            Entity entity = list.get(k2);
+        for (Entity entity : list) {
             if (!entity.ignoreExplosion()) {
-                double d12 = Math.sqrt(entity.distanceToSqr(vec3)) / (double)f2;
+                double d12 = Math.sqrt(entity.distanceToSqr(vec3)) / (double) f2;
                 if (d12 <= 1.0D) {
                     double d5 = entity.getX() - this.x;
                     double d7 = (entity instanceof PrimedTnt ? entity.getY() : entity.getEyeY()) - this.y;

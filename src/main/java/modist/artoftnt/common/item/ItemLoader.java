@@ -1,17 +1,15 @@
 package modist.artoftnt.common.item;
 
 import modist.artoftnt.ArtofTnt;
-import modist.artoftnt.client.block.entity.TntFrameBEWLR;
 import modist.artoftnt.common.block.BlockLoader;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+@SuppressWarnings("unchecked")
 public class ItemLoader {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ArtofTnt.MODID);
 

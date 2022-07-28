@@ -1,6 +1,5 @@
 package modist.artoftnt.common.event;
 
-import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.TargetMarkerItem;
 import modist.artoftnt.common.item.TntDefuserItem;

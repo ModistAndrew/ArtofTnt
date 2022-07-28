@@ -6,16 +6,16 @@ import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameHitBlockEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameTickEvent;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CommonTntFrameEventHandler {
@@ -66,11 +66,14 @@ public class CommonTntFrameEventHandler {
         PrimedTntFrame tnt = event.tnt;
         float elasticity = event.data.getValue(AdditionType.ELASTICITY);
         float slipperiness = event.data.getValue(AdditionType.SLIPPERINESS);
-        if(elasticity>AdditionType.ELASTICITY.initialValue) {
+        if (elasticity > AdditionType.ELASTICITY.initialValue) {
             switch (event.result.getDirection().getAxis()) {
-                case X -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
-                case Y -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -elasticity, slipperiness));
-                case Z -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, slipperiness, -elasticity));
+                case X ->
+                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
+                case Y ->
+                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -elasticity, slipperiness));
+                case Z ->
+                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, slipperiness, -elasticity));
             }
         }
     }
@@ -80,11 +83,14 @@ public class CommonTntFrameEventHandler {
         PrimedTntFrame tnt = event.tnt;
         float elasticity = event.data.getValue(AdditionType.ELASTICITY);
         float slipperiness = event.data.getValue(AdditionType.SLIPPERINESS);
-        if(elasticity<=AdditionType.ELASTICITY.initialValue) {
+        if (elasticity <= AdditionType.ELASTICITY.initialValue) {
             switch (event.result.getDirection().getAxis()) {
-                case X -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
-                case Y -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -elasticity, slipperiness));
-                case Z -> tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, slipperiness, -elasticity));
+                case X ->
+                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
+                case Y ->
+                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -elasticity, slipperiness));
+                case Z ->
+                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, slipperiness, -elasticity));
             }
         }
     }
@@ -112,17 +118,25 @@ public class CommonTntFrameEventHandler {
         float monsterFactor = event.data.getValue(AdditionType.MOB_TARGET);
         if (monsterFactor > 0) {
             final float[] minDistance = {Float.MAX_VALUE};
-            List<Mob> list = tnt.level.getEntitiesOfClass(Mob.class, event.tnt.getBoundingBox().inflate(monsterFactor), e -> {
-                if(!(e instanceof Enemy)){
+            List<Entity> list = new ArrayList<>();
+            if(tnt.getOwner() instanceof LivingEntity le){
+                if(le.getLastHurtMob()!=null && le.distanceTo(le.getLastHurtMob()) < monsterFactor){
+                    list.add(le.getLastHurtMob());
+                }
+            }
+            if(monsterFactor > 10) {
+                list.addAll(tnt.level.getEntitiesOfClass(Mob.class, event.tnt.getBoundingBox().inflate(monsterFactor), e -> {
+                    if (!(e instanceof Enemy)) {
+                        return false;
+                    }
+                    float distance = e.distanceTo(tnt);
+                    if (distance < minDistance[0]) {
+                        minDistance[0] = distance;
+                        return true;
+                    }
                     return false;
-                }
-                float distance = e.distanceTo(tnt);
-                if (distance < minDistance[0]) {
-                    minDistance[0] = distance;
-                    return true;
-                }
-                return false;
-            });
+                }));
+            }
             if (!list.isEmpty()) {
                 Vec3 target = list.get(0).position();
                 Vec3 d = target.subtract(tnt.position());

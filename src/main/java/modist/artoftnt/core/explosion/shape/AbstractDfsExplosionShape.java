@@ -1,19 +1,9 @@
 package modist.artoftnt.core.explosion.shape;
 
-import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
-import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.explosion.CustomExplosion;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.ExplosionDamageCalculator;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -91,7 +81,7 @@ public abstract class AbstractDfsExplosionShape extends AbstractExplosionShape {
         Optional<Float> optional = EXPLOSION_DAMAGE_CALCULATOR.getBlockExplosionResistance(explosion, this.level, pos,
                 level.getBlockState(pos), level.getFluidState(pos));
 
-        float resistance = optional.isPresent() ? (optional.get() + 0.3F) * 0.3F : 0.09F; //TODO stone is too high?
+        float resistance = optional.map(aFloat -> (aFloat + 0.3F) * 0.3F).orElse(0.09F); //TODO stone is too high?
         if (!this.level.getFluidState(pos).isEmpty()) {
             resistance = interpolate(resistance, 0.09F, fluidFactor / AdditionType.TEMPERATURE.maxValue);
         }

@@ -1,24 +1,25 @@
 package modist.artoftnt.common.block;
 
 import com.google.common.collect.Lists;
+import modist.artoftnt.ArtofTntConfig;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntDefuserItem;
 import modist.artoftnt.common.item.TntFrameItem;
+import modist.artoftnt.common.loot.functions.TntFrameFunctionWrapper;
+import modist.artoftnt.common.loot.functions.TntFrameFunctions;
 import modist.artoftnt.core.addition.Addition;
-import modist.artoftnt.core.addition.AdditionType;
+import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.InstabilityHelper;
-import modist.artoftnt.core.explosion.manager.ExplosionSounds;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -28,7 +29,6 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
@@ -51,13 +51,14 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Random;
 
 //TODO should side be rendered? bottom up
 public class TntFrameBlock extends TntBlock implements EntityBlock {
     public final int tier;
 
     public TntFrameBlock(int tier) {
-        super(BlockBehaviour.Properties.of(Material.EXPLOSIVE).instabreak().sound(SoundType.GRASS).noOcclusion());
+        super(BlockBehaviour.Properties.of(Material.EXPLOSIVE).instabreak().sound(SoundType.GRASS).noOcclusion().randomTicks());
         this.tier = tier;
     }
 
@@ -65,13 +66,13 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @Override
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
         if (!pOldState.is(pState.getBlock())) {
-                tryExplode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
+            tryExplode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
         }
     }
 
     @Override
     public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
-            tryExplode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
+        tryExplode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
     }
 
     @Nullable
@@ -87,35 +88,40 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
 
     @Override
     public void stepOn(Level pLevel, BlockPos pPos, BlockState pState, Entity pEntity) {
-        tryExplode(InstabilityHelper.ENTITY_ON_BLOCK_MIN_INSTABILITY, pLevel, pPos,
+        tryExplode(InstabilityHelper.ENTITY_HIT_BLOCK_MIN_INSTABILITY, pLevel, pPos,
                 pEntity instanceof LivingEntity le ? le : null);
     }
 
     @Override
     @SuppressWarnings("deprecation")
+    public void entityInside(BlockState pState, Level pLevel, BlockPos pPos, Entity pEntity) {
+        tryExplode(InstabilityHelper.ENTITY_HIT_BLOCK_MIN_INSTABILITY, pLevel, pPos,
+                pEntity instanceof LivingEntity le ? le : null);
+    }
+
+    @Override
     public void onProjectileHit(Level pLevel, BlockState pState, BlockHitResult pHit, Projectile pProjectile) {
         tryExplode(InstabilityHelper.PROJECTILE_HIT_BLOCK_MIN_INSTABILITY, pLevel, pHit.getBlockPos(),
                 pProjectile.getOwner() instanceof LivingEntity le ? le : null);
     }
 
-    public boolean tryExplode(float minInstability, Level pLevel, BlockPos pPos, @Nullable LivingEntity pEntity) {
+    @Override
+    @SuppressWarnings("deprecation")
+    public void randomTick(BlockState pState, ServerLevel pLevel, BlockPos pPos, Random pRandom) {
+        tryExplode(InstabilityHelper.RANDOM_BLOCK_MIN_INSTABILITY, pLevel, pPos, null);
+    }
+
+
+    public void tryExplode(float minInstability, Level pLevel, BlockPos pPos, @Nullable LivingEntity pEntity) {
         if (!pLevel.isClientSide && pLevel.getBlockEntity(pPos) instanceof TntFrameBlockEntity be) {
             if (be.getInstability() >= minInstability) {
                 PrimedTntFrame tnt = new PrimedTntFrame(be.getDataTag(), pLevel, pPos.getX(), pPos.getY() + be.getDeflation(), pPos.getZ(), pEntity, tier);
                 tnt.shoot(0, 1, 0, 1.0F, 1.0F); //default:up
                 pLevel.addFreshEntity(tnt);
-                float loudness = be.getData().getValue(AdditionType.LOUDNESS);
-                int soundType = (int) be.getData().getValue(AdditionType.TNT_SOUND_TYPE);
-                ExplosionSounds.getSoundEvents(soundType).forEach(t -> //TODO client; tnt
-                        pLevel.playLocalSound(tnt.getX(), tnt.getY(), tnt.getZ(), t,
-                                SoundSource.BLOCKS, pLevel.getRandom().nextFloat() * loudness,
-                                (1.0F + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.2F) * 0.7F,
-                                false));
                 pLevel.gameEvent(pEntity, GameEvent.PRIME_FUSE, pPos);
                 pLevel.setBlock(pPos, Blocks.AIR.defaultBlockState(), 3);
             }
         }
-        return false;
     }
 
     @Override
@@ -156,18 +162,21 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
         }
         return super.getDrops(pState, pBuilder);
     }
-    public static ItemStack dropFrame(boolean shouldFix, TntFrameData data){
-        if(shouldFix) {
+
+    public static ItemStack dropFrame(boolean shouldFix, TntFrameData data) {
+        boolean temp = data.fixed;
+        if (shouldFix) {
             data.fixed = true;
         }
         ItemStack is = new ItemStack(ItemLoader.TNT_FRAMES[data.tier].get());
         TntFrameItem.putTntFrameData(is, data);
+        data.fixed = temp;
         return is;
     }
 
     @Override
     public void setPlacedBy(Level pLevel, BlockPos pPos, BlockState pState, LivingEntity pPlacer, ItemStack pStack) {
-        if(pStack.getItem() instanceof TntFrameItem item) {
+        if (pStack.getItem() instanceof TntFrameItem item) {
             CompoundTag compoundtag = item.getTntFrameDataTag(pStack);
             if (pLevel.getBlockEntity(pPos) instanceof TntFrameBlockEntity be) {
                 be.readDataTag(compoundtag);
@@ -219,7 +228,11 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
             if (Addition.contains(itemstack.getItem())) {
                 ItemStack tItem = itemstack.copy();
                 tItem.setCount(1);
-                if (be.add(tItem)) {
+                AdditionStack.AdditionResult result = be.add(tItem);
+                if (ArtofTntConfig.ENABLE_ADDITION_REPLY.get() && pPlayer instanceof ServerPlayer player && result.reply() != null) {
+                    player.sendMessage(result.reply(), Util.NIL_UUID);
+                }
+                if (result.success()) {
                     if (!pPlayer.isCreative()) {
                         itemstack.shrink(1);
                     }
@@ -234,18 +247,17 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @Override
     public void fillItemCategory(CreativeModeTab pTab, NonNullList<ItemStack> pItems) {
         ItemStack stack = new ItemStack(this);
-        TntFrameItem.putTntFrameData(stack, new TntFrameData(tier));
-        pItems.add(stack);
-        //TODO more demo
-        //TODO set tag? how? new ItemStack breakpoint
-        //TODO command give?
+        for(TntFrameFunctionWrapper function : TntFrameFunctions.FUNCTIONS[tier]) {
+            pItems.add(function.apply(stack.copy()));
+        }
+        super.fillItemCategory(pTab, pItems);
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(ItemStack pStack, @Nullable BlockGetter pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
         super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
-        if(pStack.getItem() instanceof TntFrameItem item) {
+        if (pStack.getItem() instanceof TntFrameItem item) {
             TntFrameData data = item.getTntFrameData(pStack);
             if (pLevel != null) {
                 data.addText(pTooltip);

@@ -10,7 +10,9 @@ import net.minecraft.network.chat.*;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
@@ -41,6 +43,7 @@ public class ArtofTnt {
         ItemLoader.ITEMS.register(ArtofTnt.BUS);
         EntityLoader.ENTITY_TYPES.register(ArtofTnt.BUS);
         RecipeLoader.RECIPES.register(ArtofTnt.BUS);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ArtofTntConfig.COMMON_CONFIG);
     }
 }
 

@@ -55,13 +55,8 @@ public class Addition {
         } else {
             ITEM_MAP.put(addition.item, addition);
             ArtofTnt.LOGGER.warn("duplicate item {} for tnt frame addition json {} and {}, you may want to overwrite by creating a same file",
-                    addition.item.getRegistryName().toString(), ITEM_MAP.get(addition.item).name, name);
+                    addition.item.getRegistryName(), ITEM_MAP.get(addition.item).name, name);
         }
-    }
-
-    @Deprecated
-    public static ResourceLocation createResourceLocation(String name) {
-        return new ResourceLocation(ArtofTnt.MODID, ADDITION+name);
     }
 
     public static boolean contains(Item item) {

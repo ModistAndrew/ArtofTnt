@@ -2,9 +2,9 @@ package modist.artoftnt.common.item;
 
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
+import modist.artoftnt.ArtofTntConfig;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
-import modist.artoftnt.core.ModConstants;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Inventory;
@@ -47,7 +47,7 @@ public class TntDispenserItem extends ProjectileWeaponItem {
                     dispenser.hurtAndBreak(entity.getWeight(), pPlayer, (p_40858_) -> p_40858_.broadcastBreakEvent(pHand));
                 }
                 if (!pPlayer.getAbilities().instabuild) {
-                    if(infinity <= 0 || data.getWeight() > ModConstants.MAX_NO_SHRINK_WEIGHT) {
+                    if(infinity <= 0 || data.getWeight() > ArtofTntConfig.MAX_INFINITY_WEIGHT.get()) {
                         itemstack.shrink(1);
                     }
                     pPlayer.getCooldowns().addCooldown(this, coolDown);
@@ -89,7 +89,7 @@ public class TntDispenserItem extends ProjectileWeaponItem {
 
     @Override
     public Predicate<ItemStack> getAllSupportedProjectiles() {
-        return i -> i.getItem() instanceof TntFrameItem item && item.getTntFrameDataTag(i)!=null;
+        return i -> i.getItem() instanceof TntFrameItem;
     }
 
     @Override

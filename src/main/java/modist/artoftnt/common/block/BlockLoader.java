@@ -17,7 +17,9 @@ public class BlockLoader {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, ArtofTnt.MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, ArtofTnt.MODID);
 
+    @SuppressWarnings("unchecked")
     public static final RegistryObject<Block>[] TNT_FRAMES = new RegistryObject[4];
+    @SuppressWarnings("unchecked")
     public static final RegistryObject<BlockEntityType<TntFrameBlockEntity>>[] TNT_FRAME_BLOCK_ENTITIES = new RegistryObject[4];
     public static final RegistryObject<Block> REMOTE_EXPLODER = BLOCKS.register("remote_exploder", RemoteExploderBlock::new);
     public static final RegistryObject<BlockEntityType<RemoteExploderBlockEntity>> REMOTE_EXPLODER_BLOCK_ENTITY =
@@ -40,6 +42,7 @@ public class BlockLoader {
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     private static <T extends BlockEntity> RegistryObject<BlockEntityType<T>> fromBlock(RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<T> pFactory) {
         return BLOCK_ENTITIES.register(block.getId().getPath()+"_block_entity", ()-> BlockEntityType.Builder.of
                 (pFactory, block.get()).build(null));

@@ -36,7 +36,7 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     public final double x;
     public final double y;
     public final double z;
-    private final float radius;
+    public final float radius;
     private final float strength;
     @Nullable
     private final Entity source;
@@ -102,8 +102,7 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     }
 
     private float getBlockPercentage(BlockPos pos) {
-        float percentage = explosionShape.getToBlowBlocks().getFloat(pos) / strength;
-        return percentage;
+        return explosionShape.getToBlowBlocks().getFloat(pos) / strength;
     }
 
     /**

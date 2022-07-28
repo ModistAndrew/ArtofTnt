@@ -11,6 +11,7 @@ public class EntityLoader {
 
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITIES, ArtofTnt.MODID);
 
+    @SuppressWarnings("unchecked")
     public static final RegistryObject<EntityType<PrimedTntFrame>>[] PRIMED_TNT_FRAMES = new RegistryObject[4];
 
     static {

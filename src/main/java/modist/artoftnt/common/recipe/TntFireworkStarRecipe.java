@@ -3,7 +3,6 @@ package modist.artoftnt.common.recipe;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntFireworkStarItem;
 import modist.artoftnt.common.item.TntFrameItem;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
