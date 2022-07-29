@@ -30,7 +30,7 @@ public class TntFrameDataCriteria {
                 return false;
             }
         }
-        if(size!=0 && data.size != size){
+        if(size!=0 && data.size > size){
             return false;
         }
         if(disguise!=null && !disguise.equals(data.disguise)){

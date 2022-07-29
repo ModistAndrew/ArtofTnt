@@ -20,7 +20,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class TntTurretBlock extends CoolDownBlock { //TODO bounding box
+public class TntTurretBlock extends CoolDownBlock {
     public TntTurretBlock() {
         super(BlockBehaviour.Properties.of(Material.EXPLOSIVE).instabreak().sound(SoundType.GRASS).noOcclusion());
     }

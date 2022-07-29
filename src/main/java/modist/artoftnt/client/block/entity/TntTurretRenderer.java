@@ -50,7 +50,7 @@ public class TntTurretRenderer implements BlockEntityRenderer<TntTurretBlockEnti
     public void renderArrow(TntTurretBlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight) {
         pPoseStack.pushPose();
         float offset = pBlockEntity.getOffset(1-pPartialTick);
-        RenderUtil.transform(pPoseStack, pBlockEntity.getVec(), -0.2F * offset);
+        RenderUtil.transform(pPoseStack, pBlockEntity.getVec().normalize(), -0.2F * offset);
         RenderUtil.rotateAndRenderArrow(pBufferSource, pPoseStack);
         if(pBlockEntity.presentTnt.getItem() instanceof TntFrameItem item){
             pPoseStack.scale(1/8F, 1/8F, 1/8F);

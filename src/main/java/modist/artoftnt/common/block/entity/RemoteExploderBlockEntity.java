@@ -27,7 +27,7 @@ import net.minecraftforge.items.IItemHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
+public class RemoteExploderBlockEntity extends BlockEntity {
     private final ItemStack[] markers = new ItemStack[16];
     private int top; //the first id that is empty
     public static final ModelProperty<ItemStack[]> MARKERS_MODEL_PROPERTY = new ModelProperty<>();

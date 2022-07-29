@@ -3,6 +3,7 @@ package modist.artoftnt.client.block.model;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
 import modist.artoftnt.client.block.TextureLoader;
+import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameData;
 import modist.artoftnt.core.addition.Addition;
@@ -23,13 +24,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.client.model.data.IDynamicBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
 @OnlyIn(Dist.CLIENT)
-//TODO special render and COLOR for tnt(empty?)
 public class TntFrameBlockBakedModel implements IDynamicBakedModel {
 
     private static final float DELTA = 0.001F; //fix z-fighting
@@ -45,17 +46,21 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
         if(side!=null){
             return Collections.emptyList();
         }
-        TntFrameData data = extraData.getData(TntFrameBlockEntity.ADDITIONS_MODEL_PROPERTY);
+        @NotNull TntFrameData data;
+        TntFrameData data1 = extraData.getData(TntFrameBlockEntity.ADDITIONS_MODEL_PROPERTY);
+        if(data1 != null){
+            data =data1;
+        } else {
+            if(state!=null && state.getBlock() instanceof TntFrameBlock block){
+                data = new TntFrameData(block.tier);
+            } else {
+                data = new TntFrameData(0);
+            }
+        }
         BakeModelRenderer renderer = getRenderUtil(state, data); //initialize
         Direction[] directions = new Direction[]{
                 Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.NORTH, null
         };
-        if (data == null) { //default
-            Arrays.stream(directions).forEach(d -> {
-                renderer.transform(existingModel.getQuads(state, d, rand, extraData)); //frame
-            });
-            return renderer.getQuads();
-        }
         if (data.disguise != null) { //disguise
                 Arrays.stream(directions).forEach(d -> renderer.transformBlock(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getBlockModel(data.disguise).
                         getQuads(data.disguise, d, rand, EmptyModelData.INSTANCE), data.disguise));
@@ -68,14 +73,14 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
             putItemStackQuads(renderer, data.getItemStacks(i), i);
         }
         putSideQuads(data.fixed, renderer, data.getItems(AdditionType.SHAPE).isEmpty() ? null : Addition.fromItem(data.getItems(AdditionType.SHAPE).peek().getItem()),
-                data.getWeight(), data.getValue(AdditionType.INSTABILITY));
+                data.getWeight(), data.getValue(AdditionType.INSTABILITY), data.tier);
         return renderer.getQuads();
     }
-    private void putSideQuads(boolean fixed, BakeModelRenderer renderer, Addition shape, float weight, float instability) {
+    private void putSideQuads(boolean fixed, BakeModelRenderer renderer, Addition shape, float weight, float instability, int tier) {
         renderer.putCube16(0, 0, 0, 16, 16, 16, getWeightTexture(weight), false, false);
         renderer.putCube16(0, 0, 0, 16, 16, 16, getInstabilityTexture(instability), false, false);
         renderer.putCubeFace16(0, 16 - DELTA, 0, 16, 16 - DELTA, 16,
-                fixed ? TextureLoader.FIXED_TOP : TextureLoader.TOP, Direction.UP);
+                fixed ? TextureLoader.FIXED_TOP[tier] : TextureLoader.TOP[tier], Direction.UP);
     }
 
     private ResourceLocation getInstabilityTexture(float instability) {

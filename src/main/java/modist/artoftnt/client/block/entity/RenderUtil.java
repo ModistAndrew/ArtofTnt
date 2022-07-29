@@ -8,7 +8,9 @@ import com.mojang.math.Vector3f;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -38,7 +40,7 @@ public class RenderUtil {
         buffer.vertex(matrix, x2, y2, z2).color(a, b, c, alpha).normal(1, 0, 0).endVertex();
     }
 
-    public static void renderLine(MultiBufferSource bufferSource, PoseStack poseStack, Vec3 v1, Vec3 v2) { //TODO:more beautiful?
+    public static void renderLine(MultiBufferSource bufferSource, PoseStack poseStack, Vec3 v1, Vec3 v2) {
         renderLine(bufferSource, poseStack, (float)v1.x, (float)v1.y, (float)v1.z, (float)v2.x,
                 (float)v2.y, (float)v2.z, 1F, 1F, 1F, 1F);
     }
@@ -140,27 +142,33 @@ public class RenderUtil {
     }
 
     public static void renderTnt(TntFrameData data, PoseStack pMatrixStack, MultiBufferSource pRenderTypeBuffer, int pCombinedLight, boolean pDoFullBright) {
-        int i; //TODO shine
+        int i;
         if (pDoFullBright) {
-            i = OverlayTexture.pack(OverlayTexture.u(1.0F), 10);
+            i = OverlayTexture.pack(OverlayTexture.u(1.0F), data.getValue(AdditionType.EMPTY)>0 ? 3 : 10);
         } else {
             i = OverlayTexture.NO_OVERLAY;
         }
+        pCombinedLight = LightTexture.FULL_BRIGHT;
         Direction[] directions = new Direction[]{
                 Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.NORTH, null
         };
         BlockState state = BlockLoader.TNT_FRAMES[data.tier].get().defaultBlockState();
-        BakedModel bakedmodel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, pMatrixStack, pRenderTypeBuffer, pCombinedLight, i,
+                new ModelDataMap.Builder()
+                        .withInitial(TntFrameBlockEntity.ADDITIONS_MODEL_PROPERTY, data)
+                        .build());
+        /*BakedModel bakedmodel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
         Random random = new Random();
         random.setSeed(42L);
+        int finalPCombinedLight = pCombinedLight;
         Arrays.stream(directions).forEach(d-> {
             List<BakedQuad> quads = bakedmodel.getQuads
                     (state, d, random, new ModelDataMap.Builder()
                             .withInitial(TntFrameBlockEntity.ADDITIONS_MODEL_PROPERTY, data)
                             .build());
             quads.forEach(q->pRenderTypeBuffer.getBuffer(RenderType.cutout()).putBulkData(pMatrixStack.last(), q, new float[]{1.0F, 1.0F, 1.0F, 1.0F}, 1.0F, 1.0F, 1.0F,
-                    new int[]{pCombinedLight, pCombinedLight, pCombinedLight, pCombinedLight}, i, true));
-        });
+                    new int[]{finalPCombinedLight, finalPCombinedLight, finalPCombinedLight, finalPCombinedLight}, i, true));
+        });*/
     }
 
 }

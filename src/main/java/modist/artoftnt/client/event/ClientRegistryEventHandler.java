@@ -18,8 +18,10 @@ import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.ForgeModelBakery;
@@ -54,10 +56,9 @@ public class ClientRegistryEventHandler {
     @SubscribeEvent
     public static void addSpecialModels(ModelRegistryEvent event) {
         Arrays.stream(RemoteExploderBlockBakedModel.MARKER_MODEL_LOCATIONS).forEach(ForgeModelBakery::addSpecialModel);
-        ForgeModelBakery.addSpecialModel(TntClonerRenderer.CORE_MODEL_LOCATIONS);
         Minecraft.getInstance().getResourceManager().listResources("models/tnt_frame_additions",
-                (f)->f.endsWith(".json")).stream().map(r -> new ResourceLocation(r.getNamespace(),
-                r.getPath().replace(".json","").replace("models/", ""))).forEach(ForgeModelBakery::addSpecialModel);
+                (f) -> f.endsWith(".json")).stream().map(r -> new ResourceLocation(r.getNamespace(),
+                r.getPath().replace(".json", "").replace("models/", ""))).forEach(ForgeModelBakery::addSpecialModel);
     }
 
     @SubscribeEvent
@@ -94,21 +95,55 @@ public class ClientRegistryEventHandler {
     public static void textureStitch(TextureStitchEvent.Pre event) {
         if (event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS)) {
             Minecraft.getInstance().getResourceManager().listResources("textures/tnt_frame_additions",
-                    (f)->f.endsWith(".png")).stream().map(r -> new ResourceLocation(r.getNamespace(),
-                    r.getPath().replace(".png","").replace("textures/", ""))).forEach(event::addSprite); //force add all
+                    (f) -> f.endsWith(".png")).stream().map(r -> new ResourceLocation(r.getNamespace(),
+                    r.getPath().replace(".png", "").replace("textures/", ""))).forEach(event::addSprite); //force add all
             TextureLoader.TEXTURES.forEach(event::addSprite);
         }
     }
 
-    //TODO firework item color
-    /*@SubscribeEvent
-    public static void blockColors(ColorHandlerEvent.Block event) {
-        Arrays.stream(BlockLoader.TNT_FRAMES).forEach(b -> event.getBlockColors().register((bs, l, p, tint) -> {
-            if(l!=null && p!=null && l.getBlockEntity(p) instanceof TntFrameBlockEntity tntFrameBlockEntity
-                    && tntFrameBlockEntity.getDisguise() != null){
-                return tntFrameBlockEntity.getColorForDisguise(l, p, tint); //return color as disguise
+    @SubscribeEvent
+    public static void itemColors(ColorHandlerEvent.Item event) {
+        event.getItemColors().register((stack, tint) -> {
+            if (tint == 1) {
+                {
+                    CompoundTag compoundtag = stack.getTagElement("Explosion");
+                    int[] aint = compoundtag != null && compoundtag.contains("Colors", 11) ? compoundtag.getIntArray("Colors") : null;
+                    if (aint != null && aint.length != 0) {
+                        if (aint.length == 1) {
+                            return aint[0];
+                        } else {
+                            int i = 0;
+                            int j = 0;
+                            int k = 0;
+
+                            for (int l : aint) {
+                                i += (l & 16711680) >> 16;
+                                j += (l & '\uff00') >> 8;
+                                k += (l & 255);
+                            }
+
+                            i /= aint.length;
+                            j /= aint.length;
+                            k /= aint.length;
+                            return i << 16 | j << 8 | k;
+                        }
+                    } else {
+                        return 9079434;
+                    }
+                }
+            } else if (tint == 0) {
+                int count =-1;
+                CompoundTag tag = stack.getTagElement("tntFrameData");
+                if(tag!=null) {
+                    for (int i = 0; i < 8; i++) {
+                        if (tag.contains("tnt_" + i)) {
+                            count+=2;
+                        }
+                    }
+                }
+                return RedStoneWireBlock.getColorForPower(count==-1 ? 0 : count);
             }
             return -1;
-        }, b.get()));
-    }*/
+        }, ItemLoader.TNT_FIREWORK_STAR.get());
+    }
 }

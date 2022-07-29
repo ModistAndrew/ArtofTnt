@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 
 public class TntClonerBlock extends CoolDownBlock {
-    public static final DirectionProperty FACING = DirectionalBlock.FACING;
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
     public TntClonerBlock() {
         super(BlockBehaviour.Properties.of(Material.EXPLOSIVE).instabreak().sound(SoundType.GRASS).noOcclusion());
@@ -39,7 +39,7 @@ public class TntClonerBlock extends CoolDownBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext pContext) {
-        return this.defaultBlockState().setValue(FACING, pContext.getNearestLookingDirection().getOpposite());
+        return this.defaultBlockState().setValue(FACING, pContext.getHorizontalDirection().getOpposite());
     }
     @Override
     public CoolDownBlockEntity getBlockEntity(BlockPos pPos, BlockState pState) {

@@ -1,7 +1,7 @@
 {
   "type": "fuse",
   "item": "minecraft:string",
-  "increment": 100.0,
+  "increment": 20.0,
   "minTier": 0,
   "maxCount": 8,
   "weight": 0.0,

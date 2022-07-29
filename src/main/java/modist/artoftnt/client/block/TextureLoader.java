@@ -12,8 +12,9 @@ import java.util.Set;
 public class TextureLoader {
     public static final Set<ResourceLocation> TEXTURES = new HashSet<>();
     public static final ResourceLocation DEFAULT_SHAPE = registerTexture("default_shape");
-    public static final ResourceLocation FIXED_TOP = registerTexture("fixed_top");
-    public static final ResourceLocation TOP = registerTexture("top");
+    public static final ResourceLocation TNT_SHAPER = registerTexture("tnt_shaper");
+    public static final ResourceLocation[] FIXED_TOP = new ResourceLocation[4];
+    public static final ResourceLocation[] TOP = new ResourceLocation[4];
     public static final ResourceLocation[] WEIGHT = new ResourceLocation[8];
     public static final ResourceLocation[] INSTABILITY = new ResourceLocation[8];
     public static final ResourceLocation[] BASE_TOP =new ResourceLocation[16];
@@ -28,6 +29,8 @@ public class TextureLoader {
             BASE_TOP[i] = registerTexture("base_top_" + i);
         }
         for (int i = 0; i < 4; i++) {
+            FIXED_TOP[i] = registerTexture("fixed_top_" + i);
+            TOP[i] = registerTexture("top_"+i);
             BASE_TNT[i] = registerTexture("base_tnt_" + i);
         }
     }

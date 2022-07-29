@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't event
+public class PrimedTntFrame extends AbstractHurtingProjectile {
     public final int tier;
     private static final EntityDataAccessor<CompoundTag> DATA_TNT_FRAME = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.COMPOUND_TAG);
     private static final EntityDataAccessor<Integer> DATA_LEFT_COUNT = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.INT);
@@ -55,7 +55,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
         this.entityData.define(DATA_COOL_DOWN, 0);
     }
 
-    public CompoundTag getDataTag() { //TODO command default tag shouldn't be new? just empty TntFrameData...
+    public CompoundTag getDataTag() {
         return this.entityData.get(DATA_TNT_FRAME);
     }
 
@@ -163,7 +163,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
                         false));
             }
         }
-        BlockHitResult hitresult1 = getBlockHitResult(); //TODO ?
+        BlockHitResult hitresult1 = getBlockHitResult();
         EntityHitResult hitresult2 = getEntityHitResult(this::canHitEntity);
         HitResult hitresult = hitresult1 == null ? hitresult2 : hitresult1;
         if(hitresult1!=null) {
@@ -313,7 +313,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile { //TODO:needn't e
     @Override
     protected void onHitBlock(BlockHitResult pResult) {
         if (this.data.getValue(AdditionType.INSTABILITY) >= InstabilityHelper.TNT_HIT_BLOCK_MIN_INSTABILITY) {
-            this.doExplosion(pResult.getLocation()); //TODO
+            this.doExplosion(pResult.getLocation());
         }
     }
 

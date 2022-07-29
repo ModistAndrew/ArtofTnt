@@ -75,8 +75,8 @@ public class TntTurretBlockEntity extends CoolDownBlockEntity {
     }
 
     public float getOffset(float pPartialTick) {
-        return coolDown > minCoolDown ? (maxCoolDown - coolDown - pPartialTick) / (maxCoolDown - minCoolDown) :
-                (coolDown+pPartialTick) / minCoolDown;
+        return coolDown == 0 ? 0 : (coolDown > minCoolDown ? (maxCoolDown - coolDown - pPartialTick) / (maxCoolDown - minCoolDown) :
+                (coolDown+pPartialTick) / minCoolDown);
     }
 
     public float getTntOffset(float pPartialTick) {
@@ -139,22 +139,22 @@ public class TntTurretBlockEntity extends CoolDownBlockEntity {
     private void updateDirection() {
         if(this.level!=null) {
             Vec3 ret = Vec3.ZERO;
-            float rotation = 0;
+            TurretActivators.ActivatorData data = new TurretActivators.ActivatorData(0, 1, 1);
             for (BlockPos pos : FIRE_OFFSETS) {
                 BlockState state = level.getBlockState(this.getBlockPos().offset(pos));
                 ret = ret.add(TurretActivators.getDirection(state, pos));
-                rotation = Math.max(rotation, TurretActivators.getRotation(state));
+                data = data.add(TurretActivators.getData(state));
             }
-            long l = System.currentTimeMillis() / 10;
+            long l = System.currentTimeMillis() / 10 * (int)data.speed();
             float s = (l % 360);
             float radian = (float) Math.toRadians(s);
             if (ret.equals(Vec3.ZERO)) {
                 this.vec = new Vec3(1, 0, 0).xRot(radian).yRot(2 * radian).zRot(3 * radian);
             } else {
                 Vector3f v = new Vector3f(ret);
-                v.transform(new Quaternion(new Vector3f(getNormal(ret)), rotation, true));
+                v.transform(new Quaternion(new Vector3f(getNormal(ret)), data.angle(), true));
                 v.transform(new Quaternion(new Vector3f(ret), s, true));
-                v.mul(-1F);
+                v.mul(-1F * data.strength());
                 this.vec = new Vec3(v);
             }
         }

@@ -5,6 +5,7 @@ import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.entity.EntityLoader;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.recipe.RecipeLoader;
+import modist.artoftnt.core.addition.AdditionManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.item.CreativeModeTab;
@@ -21,22 +22,19 @@ public class ArtofTnt {
     public static final String MODID = "artoftnt";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final IEventBus BUS = FMLJavaModLoadingContext.get().getModEventBus();
-    public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(MODID) {
+    public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(MODID+":tools") {
+        @Override
+        public ItemStack makeIcon() {
+            return new ItemStack(ItemLoader.TNT_SHAPER.get());
+        }
+    };
+
+    public static final CreativeModeTab ITEM_GROUP_FRAME = new CreativeModeTab(MODID+":presets") {
         @Override
         public ItemStack makeIcon() {
             return new ItemStack(ItemLoader.TNT_FRAMES[0].get());
         }
-
-        @Override
-        public Component getDisplayName() {
-            MutableComponent mutablecomponent = (new TextComponent("")).append(super.getDisplayName());
-            MutableComponent mutablecomponent1 = new TextComponent("[WIP!]");
-                mutablecomponent1.withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_AQUA);
-                mutablecomponent.append(mutablecomponent1);
-            return mutablecomponent;
-        }
     };
-
     public ArtofTnt() {
         BlockLoader.BLOCKS.register(ArtofTnt.BUS);
         BlockLoader.BLOCK_ENTITIES.register(ArtofTnt.BUS);
@@ -44,6 +42,7 @@ public class ArtofTnt {
         EntityLoader.ENTITY_TYPES.register(ArtofTnt.BUS);
         RecipeLoader.RECIPES.register(ArtofTnt.BUS);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ArtofTntConfig.COMMON_CONFIG);
+        AdditionManager.REGISTER.register(ArtofTnt.BUS);
     }
 }
 

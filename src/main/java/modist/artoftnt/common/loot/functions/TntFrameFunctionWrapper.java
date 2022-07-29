@@ -5,6 +5,7 @@ import modist.artoftnt.common.item.TntFrameItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -18,6 +19,8 @@ public class TntFrameFunctionWrapper implements INBTSerializable<CompoundTag> {
     public float size = 1F;
     @Nullable
     public BlockState disguise;
+    @Nullable
+    public String name;
     public boolean fixed;
     @Override
     public CompoundTag serializeNBT() {
@@ -64,6 +67,9 @@ public class TntFrameFunctionWrapper implements INBTSerializable<CompoundTag> {
             data.disguise = disguise;
             data.fixed = fixed;
             TntFrameItem.putTntFrameData(itemStack, data);
+            if(name!=null){
+                itemStack.setHoverName(new TextComponent(name));
+            }
         }
         return itemStack;
     }

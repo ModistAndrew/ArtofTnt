@@ -3,6 +3,7 @@ package modist.artoftnt.core.addition;
 import modist.artoftnt.ArtofTnt;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
@@ -41,8 +42,14 @@ public class Addition {
     }
 
     public static void register(ResourceLocation name, AdditionManager.AdditionWrapper wrapper){
+        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(wrapper.item));
+        if(item==null || item== Items.AIR){
+            ArtofTnt.LOGGER.warn("can't find item with id {} for tnt frame addition json {}",
+                    wrapper.item, name);
+            return;
+        }
         register(name, AdditionType.fromString(wrapper.type), wrapper.increment, wrapper.minTier, wrapper.maxCount, wrapper.weight,
-                wrapper.instability, wrapper.specialRenderer, ForgeRegistries.ITEMS.getValue(new ResourceLocation(wrapper.item)));
+                wrapper.instability, wrapper.specialRenderer, item);
     }
 
     public static void register(ResourceLocation name, AdditionType type, float increment, int minTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
@@ -53,9 +60,9 @@ public class Addition {
         if(!ITEM_MAP.containsKey(addition.item)) {
             ITEM_MAP.put(addition.item, addition);
         } else {
-            ITEM_MAP.put(addition.item, addition);
             ArtofTnt.LOGGER.warn("duplicate item {} for tnt frame addition json {} and {}, you may want to overwrite by creating a same file",
                     addition.item.getRegistryName(), ITEM_MAP.get(addition.item).name, name);
+            ITEM_MAP.put(addition.item, addition);
         }
     }
 

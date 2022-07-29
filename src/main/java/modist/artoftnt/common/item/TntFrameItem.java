@@ -1,5 +1,6 @@
 package modist.artoftnt.common.item;
 
+import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.client.block.entity.TntFrameBEWLR;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.block.entity.TntFrameData;
@@ -8,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -26,7 +28,7 @@ public class TntFrameItem extends BlockItem {
     public final int tier;
 
     public TntFrameItem(int tier) {
-        super(BlockLoader.TNT_FRAMES[tier].get(), ItemLoader.getProperty());
+        super(BlockLoader.TNT_FRAMES[tier].get(), new Item.Properties().tab(ArtofTnt.ITEM_GROUP_FRAME));
         this.tier = tier;
     }
 
@@ -68,7 +70,7 @@ public class TntFrameItem extends BlockItem {
         CollisionContext collisioncontext = player == null ? CollisionContext.empty() : CollisionContext.of(player);
         return (!this.mustSurvive() || pState.canSurvive(pContext.getLevel(), pContext.getClickedPos())) &&
                 isUnobstructed(shape, pContext.getLevel(), pState, pContext.getClickedPos(), collisioncontext);
-    } //TODO no
+    }
 
     private boolean isUnobstructed(VoxelShape voxelshape, Level level, BlockState pState, BlockPos pPos, CollisionContext pContext) {
         return voxelshape.isEmpty() ||

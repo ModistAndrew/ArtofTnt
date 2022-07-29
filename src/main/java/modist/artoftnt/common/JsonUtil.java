@@ -4,6 +4,7 @@ import com.google.gson.*;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -96,6 +97,18 @@ public class JsonUtil {
 
         @Override
         public JsonElement serialize(AdditionType src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive(src.toString());
+        }
+    }
+
+    public class ResourceLocationSerializer implements JsonSerializer<ResourceLocation>, JsonDeserializer<ResourceLocation> {
+        @Override
+        public ResourceLocation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            return ResourceLocation.tryParse(json.getAsString());
+        }
+
+        @Override
+        public JsonElement serialize(ResourceLocation src, Type typeOfSrc, JsonSerializationContext context) {
             return new JsonPrimitive(src.toString());
         }
     }

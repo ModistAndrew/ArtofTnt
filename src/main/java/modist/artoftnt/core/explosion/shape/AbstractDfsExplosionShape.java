@@ -81,7 +81,7 @@ public abstract class AbstractDfsExplosionShape extends AbstractExplosionShape {
         Optional<Float> optional = EXPLOSION_DAMAGE_CALCULATOR.getBlockExplosionResistance(explosion, this.level, pos,
                 level.getBlockState(pos), level.getFluidState(pos));
 
-        float resistance = optional.map(aFloat -> (aFloat + 0.3F) * 0.3F).orElse(0.09F); //TODO stone is too high?
+        float resistance = optional.map(aFloat -> (aFloat + 0.3F) * 0.3F).orElse(0.09F);
         if (!this.level.getFluidState(pos).isEmpty()) {
             resistance = interpolate(resistance, 0.09F, fluidFactor / AdditionType.TEMPERATURE.maxValue);
         }

@@ -53,7 +53,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 
-//TODO should side be rendered? bottom up
 public class TntFrameBlock extends TntBlock implements EntityBlock {
     public final int tier;
 
@@ -62,7 +61,6 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
         this.tier = tier;
     }
 
-    //TODO when addition changed notify
     @Override
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
         if (!pOldState.is(pState.getBlock())) {
@@ -84,7 +82,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @Override
     public void onCaughtFire(BlockState state, Level pLevel, BlockPos pPos, @Nullable net.minecraft.core.Direction face, @Nullable LivingEntity pEntity) {
         tryExplode(InstabilityHelper.FIRE_MIN_INSTABILITY, pLevel, pPos, pEntity);
-    } //TODO:not available
+    }
 
     @Override
     public void stepOn(Level pLevel, BlockPos pPos, BlockState pState, Entity pEntity) {
@@ -135,7 +133,6 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
         tryExplode(InstabilityHelper.EXPLODED_MIN_INSTABILITY, pLevel, pPos, pExplosion.getSourceMob());
     }
 
-    //TODO drop is strange!
     //deal with creative player block drop
     @Override
     public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {

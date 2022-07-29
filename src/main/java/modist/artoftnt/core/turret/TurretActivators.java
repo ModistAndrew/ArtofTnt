@@ -2,6 +2,7 @@ package modist.artoftnt.core.turret;
 
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import modist.artoftnt.common.block.ModBlockTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -9,17 +10,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.function.Function;
 
-//TODO:direction not correct (or see: TileEntity?)
 public class TurretActivators {
     private static final HashMap<TagKey<Block>, Function<BlockPos, Vec3>> ACTIVATORS =
             new HashMap<>();
-    private static final Object2FloatMap<TagKey<Block>> ACTIVATORS_ROTATION =
-            new Object2FloatOpenHashMap<>();
-    private static final Random RANDOM = new Random();
+    private static final HashMap<TagKey<Block>, ActivatorData> ACTIVATORS_DATA =
+            new HashMap<>();
 
     public static Vec3 getDirection(BlockState state, BlockPos pos){
         for(TagKey<Block> tag : ACTIVATORS.keySet()){
@@ -30,29 +30,34 @@ public class TurretActivators {
         return Vec3.ZERO;
     }
 
-    public static float getRotation(BlockState state){
-        for(TagKey<Block> tag : ACTIVATORS_ROTATION.keySet()){
+    @Nullable
+    public static ActivatorData getData(BlockState state){
+        for(TagKey<Block> tag : ACTIVATORS_DATA.keySet()){
             if(state.is(tag)){
-                return ACTIVATORS_ROTATION.getFloat(tag);
+                return ACTIVATORS_DATA.get(tag);
             }
         }
-        return 0F;
+        return null;
     }
 
-    public static void register(TagKey<Block> tag, Function<BlockPos, Vec3> function){
-        ACTIVATORS.put(tag, function);
-    }
-
-    public static void registerRotation(TagKey<Block> tag, float rotation){
-        ACTIVATORS_ROTATION.put(tag, rotation);
-    }
-    
-    private static Function<BlockPos, Vec3> create(float strength){
-        return p -> new Vec3(p.getX(), p.getY(), p.getZ()).normalize();
+    public static void register(TagKey<Block> tag, float angle, float strength, float speed){
+        ACTIVATORS.put(tag, p -> new Vec3(p.getX(), p.getY(), p.getZ()).normalize());
+        ACTIVATORS_DATA.put(tag, new ActivatorData(angle, strength, speed));
     }
 
     static{
-        register(BlockTags.FIRE, create(1));
-        registerRotation(BlockTags.FIRE, 90F);
+        register(BlockTags.FIRE, 10F, 1, 2);
+        register(BlockTags.SAND, 10F, 1, 2);
+        register(ModBlockTags.TURRET_NORMAL, 0F, 1, 0);
+    }
+
+    public record ActivatorData(float angle, float strength, float speed){
+        public ActivatorData add(ActivatorData another){
+            if(another==null){
+                return this;
+            }
+            return new ActivatorData(Math.max(this.angle, another.angle),
+                    Math.max(this.strength, another.strength), Math.max(this.speed, another.speed));
+        }
     }
 }

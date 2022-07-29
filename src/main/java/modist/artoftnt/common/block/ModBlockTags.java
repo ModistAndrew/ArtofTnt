@@ -13,6 +13,7 @@ public class ModBlockTags {
     public static final TagKey<Block> TO_BEDROCK = create("to_bedrock");
     public static final TagKey<Block> TO_LAVA = create("to_lava");
     public static final TagKey<Block> TO_NETHERRACK = create("netherrack");
+    public static final TagKey<Block> TURRET_NORMAL = create("turret_normal");
 
 
     public static TagKey<Block> create(String name) {

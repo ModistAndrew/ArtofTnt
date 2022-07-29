@@ -1,7 +1,7 @@
-2b48063b835534b942662189c9163f38d27bbd1b data/artoftnt/tags/blocks/can_collide.json
 96119549ad540fd4b4c8ec63bc67a816e5f2ced9 data/artoftnt/tags/blocks/netherrack.json
 c848c685c2b5dc13234cf64c9ce31042903f4029 data/artoftnt/tags/blocks/tnt_frame_disguise.json
 579d90d478fc161d55fa0998a26c83a0b7fe93d4 data/artoftnt/tags/blocks/to_bedrock.json
 4d777aa65a62a2055e8d846a19c035f3cd79ea53 data/artoftnt/tags/blocks/to_diamond.json
 df9ee6dda975d83a8e9b841997af32145752343a data/artoftnt/tags/blocks/to_glass.json
 96119549ad540fd4b4c8ec63bc67a816e5f2ced9 data/artoftnt/tags/blocks/to_lava.json
+96119549ad540fd4b4c8ec63bc67a816e5f2ced9 data/artoftnt/tags/blocks/turret_normal.json

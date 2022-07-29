@@ -21,7 +21,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Predicate;
 
-//TODO knock back tnt?
 public class TntDispenserItem extends ProjectileWeaponItem {
     public TntDispenserItem() {
         super(ItemLoader.getProperty().durability(384));

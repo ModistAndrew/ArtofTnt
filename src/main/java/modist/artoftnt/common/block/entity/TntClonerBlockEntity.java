@@ -8,9 +8,7 @@ import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.block.TntClonerBlock;
 import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.item.TntFrameItem;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSourceImpl;
-import net.minecraft.core.NonNullList;
+import net.minecraft.core.*;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
@@ -32,7 +30,6 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
     @NotNull
     public ItemStack tntFrame = ItemStack.EMPTY;
     protected final List<ItemStack> stacks = new ArrayList<>();
-    private static final DispenseItemBehavior DISPENSE_BEHAVIOUR = new DefaultDispenseItemBehavior();
     private final int transferTick;
 
     public TntClonerBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
@@ -72,7 +69,7 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
     }
     @Override
     protected void doDispense() {
-        if (level!=null && !level.isClientSide && tntFrame.getItem() instanceof TntFrameItem item) {
+        if (level!=null && !level.isClientSide && tntFrame.getItem() instanceof TntFrameItem) {
             BlockEntity be = this.level.getBlockEntity(this.getBlockPos().relative(this.getBlockState()
                     .getValue(TntClonerBlock.FACING)));
             AtomicBoolean flag = new AtomicBoolean(false);
@@ -88,7 +85,12 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
                 });
             }
             if(!flag.get()) {
-                DISPENSE_BEHAVIOUR.dispense(new BlockSourceImpl((ServerLevel) this.level, this.getBlockPos()), tntFrame);
+                Direction d = this.getBlockState().getValue(TntClonerBlock.FACING);
+                double d0 = this.getBlockPos().getX() + 0.7D * (double)d.getStepX();
+                double d1 = this.getBlockPos().getY() + 0.7D * (double)d.getStepY();
+                double d2 = this.getBlockPos().getZ() + 0.7D * (double)d.getStepZ();
+                Position pos = new PositionImpl(d0, d1, d2);
+                DefaultDispenseItemBehavior.spawnItem(this.level, tntFrame, 6, d, pos);
             }
             this.tntFrame = ItemStack.EMPTY;
             stacks.clear();
@@ -226,10 +228,6 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
                 ret.put(key, new StackInSlotData(materials.getInt(key), items.get(key).slotList)); //use slots as items but change count into materials and remove abundant keys
             }
             return ret;
-        }
-
-        private void setCount(int count) {
-            this.count = count;
         }
 
         public static boolean draw(HashMap<ItemStackWrapper, StackInSlotData> items, IItemHandler handler) {

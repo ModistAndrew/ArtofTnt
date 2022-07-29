@@ -2,6 +2,7 @@ package modist.artoftnt.data;
 
 import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.common.block.ModBlockTags;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.data.DataGenerator;
@@ -28,5 +29,6 @@ public class BlockTagGenerator extends BlockTagsProvider {
         this.tag(ModBlockTags.TO_GLASS).addTags(BlockTags.SAND);
         this.tag(ModBlockTags.TO_LAVA).addTags(BlockTags.BASE_STONE_OVERWORLD);
         this.tag(ModBlockTags.TO_NETHERRACK).addTags(BlockTags.BASE_STONE_OVERWORLD);
+        this.tag(ModBlockTags.TURRET_NORMAL).addTags(BlockTags.BASE_STONE_OVERWORLD);
     }
 }

@@ -60,12 +60,18 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
     @Override
     public void deserializeNBT(@Nullable CompoundTag tag) {
         if (tag != null) {
-            this.fixed = tag.getBoolean("fixed");
-            this.size = tag.getFloat("size");
+            if(tag.contains("fixed")) {
+                this.fixed = tag.getBoolean("fixed");
+            }
+            if(tag.contains("size")) {
+                this.size = tag.getFloat("size");
+            }
             if (tag.contains("disguise")) {
                 this.disguise = NbtUtils.readBlockState(tag.getCompound("disguise"));
             }
-            this.additions.deserializeNBT(tag.getCompound("additions"));
+            if(tag.contains("additions")) {
+                this.additions.deserializeNBT(tag.getCompound("additions"));
+            }
         }
     }
 
@@ -82,7 +88,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void addText(List<Component> pTooltip) { //TODO shift?
+    public void addText(List<Component> pTooltip) {
         addTooltip("weight", additions.getWeight(), pTooltip, ChatFormatting.AQUA);
         addTooltip(AdditionType.INSTABILITY.toString(), additions.getValue(AdditionType.INSTABILITY), pTooltip, ChatFormatting.AQUA);
         addTooltip("fixed", fixed, pTooltip, ChatFormatting.AQUA);
@@ -95,7 +101,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
         if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT)) {
             addTooltip("type_values", null, pTooltip, ChatFormatting.BLACK);
             for (AdditionType type : AdditionType.getTypes()) {
-                if (type != AdditionType.INSTABILITY && additions.getValue(type) != type.initialValue) { //TODO: what to show
+                if (type != AdditionType.INSTABILITY && additions.getValue(type) != type.initialValue) {
                     addTooltip(type.toString(), additions.getValue(type), pTooltip);
                 }
             }

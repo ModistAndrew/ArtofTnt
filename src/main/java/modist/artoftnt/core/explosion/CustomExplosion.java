@@ -54,7 +54,6 @@ public class CustomExplosion extends Explosion { //have to override private fiel
         this.toBlow.addAll(pPositions);
     }
 
-    //TODO: client no shape
     public CustomExplosion(Vec3 vec, AdditionStack stack, Level pLevel, @Nullable Entity pSource, @Nullable DamageSource pDamageSource, @Nullable ExplosionDamageCalculator pDamageCalculator, double pToBlowX, double pToBlowY, double pToBlowZ, float pRadius, boolean pFire, net.minecraft.world.level.Explosion.BlockInteraction pBlockInteraction) {
         super(pLevel, pSource, pDamageSource, pDamageCalculator, pToBlowX, pToBlowY, pToBlowZ, pRadius, pFire, pBlockInteraction);
         this.vec = vec;
@@ -78,10 +77,6 @@ public class CustomExplosion extends Explosion { //have to override private fiel
 
     public AdditionStack getAdditionStack(){
         return stack;
-    }
-
-    private ExplosionDamageCalculator makeDamageCalculator(@Nullable Entity pEntity) {
-        return pEntity == null ? EXPLOSION_DAMAGE_CALCULATOR : new EntityBasedExplosionDamageCalculator(pEntity);
     }
 
     /**
@@ -132,7 +127,6 @@ public class CustomExplosion extends Explosion { //have to override private fiel
     }
 
     public static void addBlockDrops(ObjectArrayList<Pair<ItemStack, BlockPos>> pDropPositionArray, ItemStack pStack, BlockPos pPos) {
-        //TODO
         int i = pDropPositionArray.size();
         for (int j = 0; j < i; ++j) { //try to merge items into groups with size of 16(64?)
             Pair<ItemStack, BlockPos> pair = pDropPositionArray.get(j);

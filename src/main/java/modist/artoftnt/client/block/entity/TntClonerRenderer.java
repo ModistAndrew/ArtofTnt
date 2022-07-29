@@ -24,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 
 @OnlyIn(Dist.CLIENT)
 public class TntClonerRenderer implements BlockEntityRenderer<TntClonerBlockEntity> {
-    public static final ResourceLocation CORE_MODEL_LOCATIONS = TextureLoader.getLocation("cloner_core");
 
     public TntClonerRenderer() {
     }
@@ -40,9 +39,6 @@ public class TntClonerRenderer implements BlockEntityRenderer<TntClonerBlockEnti
                 3/8F * rate, 0.5), rate);
         RenderUtil.renderArrow(pBufferSource, pPoseStack, new Vec3(0.5, 1, 0.5), new Vec3(0.5,
                 1-3/8F * rate, 0.5), rate);
-        BakedModel core = Minecraft.getInstance().getModelManager().getModel(CORE_MODEL_LOCATIONS);
-        Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(pPoseStack.last(), pBufferSource.getBuffer(RenderType.cutout()),
-                pBlockEntity.getBlockState(), core, 1, 1, 1, pPackedLight, pPackedOverlay, EmptyModelData.INSTANCE);
         if (pBlockEntity.tntFrame.getItem() instanceof TntFrameItem item) {
             float offset = pBlockEntity.getOffset(1-pPartialTick);
             pPoseStack.pushPose();
@@ -52,7 +48,7 @@ public class TntClonerRenderer implements BlockEntityRenderer<TntClonerBlockEnti
             long l = System.currentTimeMillis() / 10;
             float s = (l % 360);
             pPoseStack.mulPose(Quaternion.fromXYZDegrees(new Vector3f(0, s, 0)));
-            pPoseStack.translate(-0.5F, -0.5F, -0.5F); //TODO up and down; facing and dispenser and dropper
+            pPoseStack.translate(-0.5F, -0.5F, -0.5F);
             TntFrameData data = item.getTntFrameData(pBlockEntity.tntFrame);
             if(!pBlockEntity.finished()){
                 data = new TntFrameData(data.tier);
