@@ -1,7 +1,9 @@
 package modist.artoftnt.common.block.entity;
 
 import modist.artoftnt.common.block.BlockLoader;
+import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.item.ItemLoader;
+import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -32,12 +34,12 @@ public class TntFrameBlockEntity extends BlockEntity {
         this.data = new TntFrameData(tier);
     }
 
-    public boolean add(ItemStack itemStack) {
-        if (!data.additions.add(itemStack)) {
-            return false;
+    public AdditionStack.AdditionResult add(ItemStack itemStack) {
+        AdditionStack.AdditionResult result = data.additions.add(itemStack);
+        if (result.success()) {
+            update();
         }
-        update();
-        return true;
+        return result;
     }
 
     public void toggleDisguise(BlockState blockState) {
@@ -59,9 +61,9 @@ public class TntFrameBlockEntity extends BlockEntity {
     }
 
     private void update() {
-        if(this.getLevel().isClientSide) {
+        if(this.level!=null && this.level.isClientSide) {
             requestModelDataUpdate();
-            this.getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+            this.level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
         } else {
             this.setChanged();
             this.level.neighborChanged(this.getBlockPos(),
@@ -145,11 +147,23 @@ public class TntFrameBlockEntity extends BlockEntity {
     }
 
     public List<ItemStack> getDrops() {
+        if(this.fixed()){
+            return List.of(TntFrameBlock.dropFrame(false, this.getData()));
+        }
+        List<ItemStack> ret = getAdditions();
+        ret.add(getFrame()); //don't forget tnt frame
+        return ret;
+    }
+
+    public List<ItemStack> getAdditions() {
         List<ItemStack> ret = new ArrayList<>();
         for(int i=0; i<18; i++){
             ret.addAll(data.additions.getItemStacks(i));
         }
-        ret.add(new ItemStack(ItemLoader.TNT_FRAMES[tier].get())); //don't forget tnt frame
         return ret;
+    }
+
+    public ItemStack getFrame() {
+        return new ItemStack(ItemLoader.TNT_FRAMES[tier].get());
     }
 }

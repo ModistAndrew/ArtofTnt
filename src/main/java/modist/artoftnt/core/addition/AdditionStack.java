@@ -2,15 +2,21 @@ package modist.artoftnt.core.addition;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import modist.artoftnt.ArtofTntConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class AdditionStack implements INBTSerializable<CompoundTag> {
+    @SuppressWarnings("unchecked")
     private final Stack<ItemStack>[] additions = new Stack[18]; //stored
     public final int tier; //immutable
     //following should be initialized after additions is loaded; all should be updated after an item is added
@@ -23,6 +29,7 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
     private int usedFreeSlotCounts;
     private float weight;
     private float instability;
+    private static final String PREFIX = "reply.artoftnt.";
 
     @Override
     public CompoundTag serializeNBT() {
@@ -74,29 +81,55 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
         this.deserializeNBT(tag);
     }
 
-    public boolean add(ItemStack itemStack) {
+    public record AdditionResult(boolean success, @Nullable Component reply){}
+
+    public AdditionResult add(ItemStack itemStack) {
         if (itemStack.getCount() > 1) { //simply add for several times
             int count = itemStack.getCount();
             boolean ret = false;
             ItemStack itemStack1 = itemStack.copy();
             itemStack1.setCount(1);
             for (int i = 0; i < count; i++) {
-                ret |= add(itemStack1);
+                ret |= add(itemStack1).success;
             }
-            return ret;
+            return new AdditionResult(ret, null);
         }
         Addition addition = Addition.fromItem(itemStack.getItem());
         if (addition == null) {
-            return false;
+            return new AdditionResult(false, getComponent("item_not_supported"));
         }
-        if (!checkCount(addition)) {
-            return false;
+        AdditionResult countResult = checkCount(addition);
+        if (!countResult.success) {
+            return countResult;
         }
-        addAndUpdate(getFreeSlot(addition.type.slot), itemStack);
-        return true;
+        if(addition.minTier > this.tier) {
+            return new AdditionResult(false, getComponent("tier_low"));
+        }
+        return new AdditionResult(true, addAndUpdate(getFreeSlot(addition.type.slot), itemStack));
     }
 
-    private void addAndUpdate(int freeSlot, ItemStack itemStack) {
+    private AdditionResult checkCount(Addition addition) {
+        if(additionCounts.getInt(addition) >= addition.maxCount){
+            return new AdditionResult(false, getComponent("addition_full"));
+        }
+        if(typeCounts.getInt(addition.type) >= addition.type.maxCount){
+            return new AdditionResult(false, getComponent("type_full"));
+        }
+        if(slotCounts.getInt(addition.type.slot) >= addition.type.slot.maxCount){
+            return new AdditionResult(false, getComponent("slot_full"));
+        }
+        if(!hasFreeSlot(addition.type.slot)){
+            return new AdditionResult(false, getComponent("full"));
+        }
+        return new AdditionResult(true, null);
+    }
+
+    private TranslatableComponent getComponent(String key, Object... pArgs) {
+        return new TranslatableComponent(PREFIX+key, pArgs);
+    }
+
+    private Component addAndUpdate(int freeSlot, ItemStack itemStack) {
+        Component component = null;
         if (!additions[freeSlot].isEmpty() && ItemEntity.areMergable(additions[freeSlot].peek(), itemStack)) {
             additions[freeSlot].peek().grow(1);
         } else {
@@ -105,6 +138,15 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
         Addition addition = Addition.fromItem(itemStack.getItem());
         AdditionType type = addition.type;
         AdditionSlot slot = type.slot;
+        Set<AdditionType> loss = new HashSet<>();
+        for(AdditionType requirement : type.requirements){
+            if(getValue(requirement) == 0){
+                loss.add(requirement);
+            }
+        }
+        if(!loss.isEmpty()){
+            component = getComponent("loss", loss.toArray());
+        }
         if (!typeStorage.containsKey(type)) {
             typeStorage.put(type, new AdditionTypeStorage()); //initialize
         }
@@ -118,13 +160,7 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
         }
         weight += addition.weight;
         instability += addition.instability;
-    }
-
-    private boolean checkCount(Addition addition) {
-        return additionCounts.getInt(addition) < addition.maxCount &&
-                typeCounts.getInt(addition.type) < addition.type.maxCount &&
-                slotCounts.getInt(addition.type.slot) < addition.type.slot.maxCount &&
-                hasFreeSlot(addition.type.slot);
+        return component;
     }
 
     private boolean hasFreeSlot(AdditionSlot slot) {
@@ -151,11 +187,44 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
     }
 
     public Stack<ItemStack> getItems(AdditionType type) {
-        return typeStorage.containsKey(type) ? typeStorage.get(type).itemStacks : new Stack<>();
+        return typeStorage.containsKey(type) ? AdditionTypeStorage.getSplit(typeStorage.get(type).itemStacks) : new Stack<>();
+    }
+
+    public boolean persistent() {
+        return getValue(AdditionType.FUSE) >= ArtofTntConfig.MIN_PERSISTENT_FUSE.get();
+    }
+
+    public boolean globalSound() {
+        return getValue(AdditionType.LOUDNESS) >= ArtofTntConfig.MIN_GLOBAL_SOUND_LOUDNESS.get();
     }
 
     public float getWeight() {
         return this.weight;
+    }
+
+    public int getCoolDown() {
+        return (int)Math.max(1, this.weight - this.getValue(AdditionType.QUICK_CHARGE));
+    }
+
+    public boolean shouldAttack(@Nullable Entity owner, Entity target){
+        float royalty = getValue(AdditionType.LOYALTY);
+        if(owner==null){
+            return royalty >= 0;
+        }
+        if(royalty<0){
+            return owner==target || owner.isAlliedTo(target);
+        } else if (royalty > 0) {
+            return owner!=target && !owner.isAlliedTo(target);
+        }
+        return true;
+    }
+    public boolean isEmpty() {
+        for (Stack<ItemStack> addition : additions) {
+            if (!addition.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static class AdditionTypeStorage {
@@ -169,6 +238,18 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
                 itemStacks.push(stack.copy());
             }
             value += Addition.fromItem(stack.getItem()).increment;
+        }
+
+        public static Stack<ItemStack> getSplit(Stack<ItemStack> itemStacks) { //split into 1
+            Stack<ItemStack> ret = new Stack<>();
+            for(ItemStack stack : itemStacks){
+                for(int i=0; i<stack.getCount(); i++){
+                    ItemStack stack1 = stack.copy();
+                    stack1.setCount(1);
+                    ret.push(stack1);
+                }
+            }
+            return ret;
         }
     }
 }

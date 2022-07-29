@@ -1,0 +1,10 @@
+{
+  "type": "empty",
+  "item": "minecraft:dead_bush",
+  "increment": 1.0,
+  "minTier": 0,
+  "maxCount": 1,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

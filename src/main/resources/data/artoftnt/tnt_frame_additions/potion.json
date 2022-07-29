@@ -1,0 +1,10 @@
+{
+  "type": "potion",
+  "item": "minecraft:lingering_potion",
+  "increment": 1.0,
+  "minTier": 2,
+  "maxCount": 8,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": true
+}

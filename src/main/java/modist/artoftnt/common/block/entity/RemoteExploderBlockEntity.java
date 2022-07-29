@@ -8,30 +8,26 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
+public class RemoteExploderBlockEntity extends BlockEntity {
     private final ItemStack[] markers = new ItemStack[16];
     private int top; //the first id that is empty
     public static final ModelProperty<ItemStack[]> MARKERS_MODEL_PROPERTY = new ModelProperty<>();
@@ -45,47 +41,45 @@ public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side)
     {
         if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return LazyOptional.of(() -> {
-                return new IItemHandler() {
-                    @Override
-                    public int getSlots() {
-                        return 16;
-                    }
-                    @Override
-                    public ItemStack getStackInSlot(int slot) {
-                        return slot < top ? markers[slot] : ItemStack.EMPTY;
-                    }
-                    @Override
-                    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-                        ItemStack stack1 = stack.copy();
-                        if (slot == top && accept(stack1)) {
-                            if(!simulate){
-                                pushMarker(stack);
-                            }
-                            stack1.shrink(1);
+            return LazyOptional.of(() -> new IItemHandler() {
+                @Override
+                public int getSlots() {
+                    return 16;
+                }
+                @Override
+                public ItemStack getStackInSlot(int slot) {
+                    return slot < top ? markers[slot] : ItemStack.EMPTY;
+                }
+                @Override
+                public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+                    ItemStack stack1 = stack.copy();
+                    if (slot == top && accept(stack1)) {
+                        if(!simulate){
+                            pushMarker(stack);
                         }
-                        return stack1;
+                        stack1.shrink(1);
                     }
-                    @Override
-                    public ItemStack extractItem(int slot, int amount, boolean simulate) {
-                        if (slot == top-1 && amount > 0) {
-                            ItemStack ret = markers[top-1];
-                            if(!simulate){
-                                popMarker();
-                            }
-                            return ret;
+                    return stack1;
+                }
+                @Override
+                public ItemStack extractItem(int slot, int amount, boolean simulate) {
+                    if (slot == top-1 && amount > 0) {
+                        ItemStack ret = markers[top-1];
+                        if(!simulate){
+                            popMarker();
                         }
-                        return ItemStack.EMPTY;
+                        return ret;
                     }
-                    @Override
-                    public int getSlotLimit(int slot) {
-                        return 1;
-                    }
-                    @Override
-                    public boolean isItemValid(int slot, ItemStack stack) {
-                        return slot < top && accept(stack);
-                    }
-                };
+                    return ItemStack.EMPTY;
+                }
+                @Override
+                public int getSlotLimit(int slot) {
+                    return 1;
+                }
+                @Override
+                public boolean isItemValid(int slot, ItemStack stack) {
+                    return slot < top && accept(stack);
+                }
             }).cast();
         } else {
             return super.getCapability(cap, side);
@@ -112,17 +106,18 @@ public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
     }
 
     public void explode(float minInstability) {
-        if(!this.level.isClientSide) {
+        if(this.level!=null && !this.level.isClientSide) {
             float strength = 0F;
             for (int j = 0; j < top; j++) {
                 ItemStack stack = markers[j];
                 if(stack.getItem() instanceof PositionMarkerItem item && !item.isContainer) {
                     strength += item.tier+1;
-                    BlockPos pos = item.getPos(stack);
-                    if (pos != null) {
+                    Vec3 vec3 = item.getPos(this.level, Vec3.atCenterOf(this.getBlockPos()), stack);
+                    if (vec3 != null) {
+                        BlockPos pos = new BlockPos(vec3);
                         BlockState state = this.level.getBlockState(pos);
                         if (state.getBlock() instanceof TntFrameBlock tfb && item.tier >= tfb.tier) { //tier
-                            tfb.explode(minInstability, this.level, pos, null);
+                            tfb.tryExplode(minInstability, this.level, pos, null);
                         }
                     }
                 }
@@ -142,9 +137,9 @@ public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
 
     private void setChangedAndUpdate() {
         this.setChanged();
-        this.getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
-        //this.level.neighborChanged(this.getBlockPos(),
-          //      this.getBlockState().getBlock(), this.getBlockPos());
+        if(this.level!=null) {
+            this.level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        }
         // only when updated, not like tnt frame
     }
     
@@ -189,16 +184,16 @@ public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
     public void handleUpdateTag(CompoundTag tag) {
         this.load(tag);
         requestModelDataUpdate();
-        this.getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL); //client update model
+        if(this.level!=null) {
+            this.level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL); //client update model
+        }
     }
 
     @Nonnull
     @Override
     public IModelData getModelData() {
         ItemStack[] stacks = new ItemStack[top];
-        for(int i=0; i<top; i++){
-            stacks[i] = markers[i];
-        }
+        System.arraycopy(markers, 0, stacks, 0, top);
         return new ModelDataMap.Builder()
                 .withInitial(MARKERS_MODEL_PROPERTY, stacks)
                 .build();
@@ -206,9 +201,7 @@ public class RemoteExploderBlockEntity extends BlockEntity { //TODO: capability
 
     public NonNullList<ItemStack> getDrops() {
         ItemStack[] stacks = new ItemStack[top];
-        for(int i=0; i<top; i++){
-            stacks[i] = markers[i];
-        }
+        System.arraycopy(markers, 0, stacks, 0, top);
         return NonNullList.of(ItemStack.EMPTY, stacks);
     }
 }

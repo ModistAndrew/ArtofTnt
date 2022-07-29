@@ -1,0 +1,39 @@
+{
+  "type": "artoftnt:crafting_demo_tnt_frame",
+  "group": "tnt_frame",
+  "pattern": [
+    "   ",
+    " # ",
+    "   "
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:fire_charge"
+    }
+  },
+  "result": {
+    "item": "artoftnt:tnt_frame_0"
+  },
+  "data": {
+    "fixed": true,
+    "disguise": {
+      "Name": "minecraft:tnt"
+    },
+    "additions": [
+      {
+        "item": "minecraft:gunpowder",
+        "count": 2
+      },
+      {
+        "item": "minecraft:iron_ingot",
+        "count": 2
+      },
+      {
+        "item": "minecraft:blaze_powder",
+        "count": 4
+      }
+    ],
+    "name": "fire charge",
+    "size": 0.25
+  }
+}

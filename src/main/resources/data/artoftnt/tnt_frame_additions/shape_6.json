@@ -1,0 +1,10 @@
+{
+  "type": "shape",
+  "item": "minecraft:cyan_dye",
+  "increment": 7.0,
+  "minTier": 1,
+  "maxCount": 1,
+  "weight": 0.0,
+  "instability": 1.0,
+  "specialRenderer": false
+}

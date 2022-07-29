@@ -1,0 +1,10 @@
+{
+  "type": "drop",
+  "item": "minecraft:gravel",
+  "increment": 1,
+  "minTier": 0,
+  "maxCount": 1,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

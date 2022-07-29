@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 
 public class TntResizerItem extends Item {
     public TntResizerItem() {
-        super(ItemLoader.getProperty());
+        super(ItemLoader.getProperty().stacksTo(1));
     }
 
     public InteractionResult useOn(UseOnContext pContext) {

@@ -1,0 +1,10 @@
+ {
+  "type": "east",
+  "item": "artoftnt:gunpowder_east",
+  "increment": 1,
+  "minTier": 1,
+  "maxCount": 8,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": true
+}

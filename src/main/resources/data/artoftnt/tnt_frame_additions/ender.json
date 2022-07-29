@@ -1,0 +1,10 @@
+{
+  "type": "piercing",
+  "item": "minecraft:ender_pearl",
+  "increment": 4,
+  "minTier": 2,
+  "maxCount": 2,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

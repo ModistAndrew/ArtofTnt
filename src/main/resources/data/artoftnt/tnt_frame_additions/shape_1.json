@@ -1,0 +1,10 @@
+{
+  "type": "shape",
+  "item": "minecraft:red_dye",
+  "increment": 2.0,
+  "minTier": 0,
+  "maxCount": 1,
+  "weight": 0.0,
+  "instability": 1.0,
+  "specialRenderer": false
+}
