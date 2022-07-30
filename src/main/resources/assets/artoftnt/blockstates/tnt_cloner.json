@@ -1,0 +1,19 @@
+{
+    "variants": {
+        "facing=east": {
+            "model": "artoftnt:block/tnt_cloner",
+            "y": 90
+        },
+        "facing=north": {
+            "model": "artoftnt:block/tnt_cloner"
+        },
+        "facing=south": {
+            "model": "artoftnt:block/tnt_cloner",
+            "y": 180
+        },
+        "facing=west": {
+            "model": "artoftnt:block/tnt_cloner",
+            "y": 270
+        }
+    }
+}

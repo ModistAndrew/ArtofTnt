@@ -1,0 +1,6 @@
+{
+	"parent": "artoftnt:special/marker",
+	"textures": {
+		"all": "artoftnt:block/marker_0"
+	}
+}

@@ -1,0 +1,28 @@
+{
+  "parent": "artoftnt:tnt",
+  "display": {
+    "icon": {
+      "item": "minecraft:hopper"
+    },
+    "title": {
+      "translate": "advancements.artoftnt.tnt_draw.title"
+    },
+    "description": {
+      "translate": "advancements.artoftnt.tnt_draw.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "tnt": {
+      "trigger": "artoftnt:ignite_tnt_frame",
+      "conditions": {
+        "minAdditions": {
+          "tnt_draw": 10.0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "shape",
+  "item": "minecraft:blue_dye",
+  "increment": 5.0,
+  "minTier": 2,
+  "maxCount": 1,
+  "weight": 0.0,
+  "instability": 1.0,
+  "specialRenderer": false
+}

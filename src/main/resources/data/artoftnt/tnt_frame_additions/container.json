@@ -1,0 +1,10 @@
+{
+  "type": "container",
+  "item": "artoftnt:position_container_marker",
+  "increment": 1,
+  "minTier": 2,
+  "maxCount": 1,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

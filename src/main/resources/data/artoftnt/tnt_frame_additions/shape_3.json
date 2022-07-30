@@ -1,0 +1,10 @@
+{
+  "type": "shape",
+  "item": "minecraft:brown_dye",
+  "increment": 4.0,
+  "minTier": 2,
+  "maxCount": 1,
+  "weight": 0.0,
+  "instability": 1.0,
+  "specialRenderer": false
+}

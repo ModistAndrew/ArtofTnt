@@ -1,0 +1,10 @@
+{
+  "type": "light",
+  "item": "minecraft:glowstone",
+  "increment": 1.0,
+  "minTier": 0,
+  "maxCount": 8,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

@@ -1,0 +1,34 @@
+{
+  "type": "artoftnt:crafting_demo_tnt_frame",
+  "group": "tnt_frame",
+  "pattern": [
+    "   ",
+    " # ",
+    "   "
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:tnt"
+    }
+  },
+  "result": {
+    "item": "artoftnt:tnt_frame_0"
+  },
+  "data": {
+    "fixed": true,
+    "disguise": {
+      "Name": "minecraft:tnt"
+    },
+    "additions": [
+      {
+        "item": "minecraft:gunpowder",
+        "count": 4
+      },
+      {
+        "item": "minecraft:iron_ingot",
+        "count": 4
+      }
+    ],
+    "name": "tnt"
+  }
+}

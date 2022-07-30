@@ -1,0 +1,30 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:tnt"
+    },
+    "title": {
+      "translate": "advancements.artoftnt.tnt.title"
+    },
+    "description": {
+      "translate": "advancements.artoftnt.tnt.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false,
+    "background": "artoftnt:textures/special/default_shape.png"
+  },
+  "criteria": {
+    "tnt": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "nbt": "{\"patchouli:book\":\"artoftnt:artoftnt\"}"
+          }
+        ]
+      }
+    }
+  }
+}

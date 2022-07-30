@@ -1,0 +1,28 @@
+{
+  "parent": "artoftnt:tnt",
+  "display": {
+    "icon": {
+      "item": "minecraft:piston"
+    },
+    "title": {
+      "translate": "advancements.artoftnt.punch.title"
+    },
+    "description": {
+      "translate": "advancements.artoftnt.punch.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "tnt": {
+      "trigger": "artoftnt:ignite_tnt_frame",
+      "conditions": {
+        "minAdditions": {
+          "punch": 10.0
+        }
+      }
+    }
+  }
+}

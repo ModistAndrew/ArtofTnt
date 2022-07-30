@@ -1,0 +1,7 @@
+{
+	"parent": "item/generated",
+	"textures": {
+		"layer0": "artoftnt:item/tnt_firework_star",
+		"layer1": "artoftnt:item/tnt_firework_star_overlay"
+	}
+}
