@@ -127,7 +127,7 @@ public class CommonExplosionEntityEventHandler {
         float flame = event.data.getValue(AdditionType.FLAME);
         if (flame > 0) {
             if (!event.entity.fireImmune()) {
-                event.entity.setRemainingFireTicks((int) (flame * 200 * event.percentage));
+                event.entity.setRemainingFireTicks((int) (flame * 400 * event.percentage));
             }
         }
     }

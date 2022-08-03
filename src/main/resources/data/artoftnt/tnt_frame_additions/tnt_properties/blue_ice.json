@@ -1,9 +1,9 @@
 {
   "type": "slipperiness",
   "item": "minecraft:blue_ice",
-  "increment": 1,
+  "increment": 0.1,
   "minTier": 1,
-  "maxCount": 2,
+  "maxCount": 3,
   "weight": 0.0,
   "instability": 0.0,
   "specialRenderer": true

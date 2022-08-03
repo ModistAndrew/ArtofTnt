@@ -153,7 +153,7 @@ public class CommonExplosionBlockEventHandler {
         CustomExplosion explosion = event.explosion;
         Level l = explosion.level;
         if (l instanceof ServerLevel level) {
-            float blowUp = event.data.getValue(AdditionType.BLOW_UP); //TODO
+            float blowUp = event.data.getValue(AdditionType.BLOW_UP);
             if (blowUp > 0) {
                 List<BlockPos> remove = new ArrayList<>();
                 explosion.getToBlow().forEach(pos -> {

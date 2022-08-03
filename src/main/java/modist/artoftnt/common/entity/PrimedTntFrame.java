@@ -163,6 +163,10 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
             return;
         }
         this.checkOutOfWorld();
+        if(this.onGround) { //have to deal here
+            float slipperiness = data.getValue(AdditionType.SLIPPERINESS);
+            this.setDeltaMovement(this.getDeltaMovement().multiply(0.7D+slipperiness, -0.5D, 0.7D+slipperiness));
+        }
         BlockHitResult hitresult1 = getBlockHitResult();
         EntityHitResult hitresult2 = getEntityHitResult(this::canHitEntity);
         HitResult hitresult = hitresult1 == null ? hitresult2 : hitresult1;

@@ -19,7 +19,7 @@ public class EntityLoader {
             int finalI = i;
             PRIMED_TNT_FRAMES[i] = ENTITY_TYPES.register("primed_tnt_frame_"+i,
                     () -> EntityType.Builder.<PrimedTntFrame>of((t, l) -> new PrimedTntFrame(t, l, finalI), MobCategory.MISC).fireImmune()
-                            .sized(0.98F, 0.98F).clientTrackingRange(10).updateInterval(10).build("primed_tnt_frame"));
+                            .sized(0.98F, 0.98F).clientTrackingRange(20).updateInterval(5).build("primed_tnt_frame"));
         }
     }
 }

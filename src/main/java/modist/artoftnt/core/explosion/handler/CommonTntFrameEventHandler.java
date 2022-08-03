@@ -9,6 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -53,37 +54,11 @@ public class CommonTntFrameEventHandler {
     }
 
     @SubscribeEvent
-    public static void slipperinessEvent(PrimedTntFrameTickEvent event) {
-        PrimedTntFrame tnt = event.tnt;
-        float slipperiness = Math.min(1, event.data.getValue(AdditionType.SLIPPERINESS));
-        if (tnt.isOnGround()) {
-            tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -0.5D, slipperiness));
-        }
-    }
-
-    @SubscribeEvent
-    public static void elasticityEvent(PrimedTntFrameHitBlockEvent.Pre event) {
+    public static void elasticityEventPre(PrimedTntFrameHitBlockEvent.Pre event) {
         PrimedTntFrame tnt = event.tnt;
         float elasticity = event.data.getValue(AdditionType.ELASTICITY);
-        float slipperiness = event.data.getValue(AdditionType.SLIPPERINESS);
+        float slipperiness = elasticity;
         if (elasticity > AdditionType.ELASTICITY.initialValue) {
-            switch (event.result.getDirection().getAxis()) {
-                case X ->
-                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
-                case Y ->
-                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, -elasticity, slipperiness));
-                case Z ->
-                        tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(slipperiness, slipperiness, -elasticity));
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void elasticityEventPost(PrimedTntFrameHitBlockEvent.Post event) {
-        PrimedTntFrame tnt = event.tnt;
-        float elasticity = event.data.getValue(AdditionType.ELASTICITY);
-        float slipperiness = event.data.getValue(AdditionType.SLIPPERINESS);
-        if (elasticity <= AdditionType.ELASTICITY.initialValue) {
             switch (event.result.getDirection().getAxis()) {
                 case X ->
                         tnt.setDeltaMovement(tnt.getDeltaMovement().multiply(-elasticity, slipperiness, slipperiness));
@@ -120,7 +95,7 @@ public class CommonTntFrameEventHandler {
             final float[] minDistance = {Float.MAX_VALUE};
             List<Entity> list = new ArrayList<>();
             if(tnt.getOwner() instanceof LivingEntity le){
-                if(le.getLastHurtMob()!=null && le.distanceTo(le.getLastHurtMob()) < monsterFactor){
+                if(le.getLastHurtMob()!=null && le.distanceTo(le.getLastHurtMob()) < monsterFactor * 2){
                     list.add(le.getLastHurtMob()); //first
                 }
             }

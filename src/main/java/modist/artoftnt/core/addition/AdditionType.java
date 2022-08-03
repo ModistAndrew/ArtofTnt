@@ -21,7 +21,7 @@ public class AdditionType {
     public static final AdditionType LOUDNESS = new Builder("loudness", AdditionSlot.EXPLOSION_SOUND).build();
     public static final AdditionType SOUND_TYPE = new Builder("sound_type", AdditionSlot.EXPLOSION_SOUND).require(AdditionType.LOUDNESS).build();
     public static final AdditionType ELASTICITY = new Builder("elasticity", AdditionSlot.TNT_PROPERTIES).fuse().build();
-    public static final AdditionType SLIPPERINESS = new Builder("slipperiness", AdditionSlot.TNT_PROPERTIES).fuse().build();
+    public static final AdditionType SLIPPERINESS = new Builder("slipperiness", AdditionSlot.TNT_PROPERTIES).fuse().withMaxValue(0.3F).build();
     public static final AdditionType LIGHTNESS = new Builder("lightness", AdditionSlot.TNT_PROPERTIES).fuse().build();
     public static final AdditionType PUNCH = new Builder("punch", AdditionSlot.ENTITY_IMPACT).range().build();
     public static final AdditionType PUNCH_HORIZONTAL = new Builder("punch_horizontal", AdditionSlot.ENTITY_IMPACT).range().build();
