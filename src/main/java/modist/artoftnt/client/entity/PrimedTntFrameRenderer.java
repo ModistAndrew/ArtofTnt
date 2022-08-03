@@ -3,7 +3,7 @@ package modist.artoftnt.client.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import modist.artoftnt.client.block.entity.RenderUtil;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -48,7 +48,10 @@ public class PrimedTntFrameRenderer extends EntityRenderer<PrimedTntFrame> {
         pMatrixStack.mulPose(Vector3f.YP.rotationDegrees(90.0F));
         pMatrixStack.translate(-d, -d, -d);
         int frequency = 2 + (int)(5*i/data.getValue(AdditionType.FUSE));
-        RenderUtil.renderTnt(data, pMatrixStack, pBuffer, pPackedLight, (i/frequency) % frequency == 0);
+        if(data.getValue(AdditionType.EMPTY)>0 || frequency < 2){
+            frequency = 2;
+        }
+            RenderUtil.renderTnt(data, pMatrixStack, pBuffer, pPackedLight, (i / frequency) % frequency == 0);
         pMatrixStack.popPose();
         super.render(pEntity, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight);
     }

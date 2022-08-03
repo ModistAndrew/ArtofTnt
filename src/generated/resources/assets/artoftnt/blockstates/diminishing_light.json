@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "level=0": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=1": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=2": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=3": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=4": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=5": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=6": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=7": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=8": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=9": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=10": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=11": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=12": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=13": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=14": {
+      "model": "artoftnt:block/diminishing_light"
+    },
+    "level=15": {
+      "model": "artoftnt:block/diminishing_light"
+    }
+  }
+}

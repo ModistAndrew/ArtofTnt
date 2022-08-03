@@ -40,7 +40,7 @@ public class ExplosionSpecialDrops<T> {
     public void registerSingleType(TagKey<Block> tag, T drop, AdditionType type, float min, float randomMul) {
         drops.put(tag, event -> {
             float delta = event.data.getValue(type) * event.percentage - min;
-            if (delta > 0 && random.nextFloat() < delta * randomMul) {
+            if (delta >= 0 && random.nextFloat() < randomMul) {
                 return drop;
             }
             return null;
@@ -53,9 +53,8 @@ public class ExplosionSpecialDrops<T> {
 
     static {
         ITEMS.registerSingleType(ModBlockTags.TO_GLASS, new ItemStack(Blocks.GLASS), AdditionType.TEMPERATURE, 1, 1);
-        ITEMS.registerSingleType(ModBlockTags.TO_DIAMOND, new ItemStack(Items.DIAMOND), AdditionType.STRENGTH,1, 1);
+        ITEMS.registerSingleType(ModBlockTags.TO_DIAMOND, new ItemStack(Items.DIAMOND), AdditionType.STRENGTH,1000, 0.05F);
         ITEMS.registerSimple(ModBlockTags.TO_BEDROCK, new ItemStack(Blocks.BEDROCK));
-        BLOCKS.registerSingleType(ModBlockTags.TO_NETHERRACK, Blocks.NETHERRACK.defaultBlockState(), AdditionType.FLAME, 1, 1);
-        BLOCKS.registerSingleType(ModBlockTags.TO_LAVA, Fluids.LAVA.defaultFluidState().createLegacyBlock(), AdditionType.TEMPERATURE, 1, 1);
+        BLOCKS.registerSingleType(ModBlockTags.TO_LAVA, Fluids.LAVA.defaultFluidState().createLegacyBlock(), AdditionType.TEMPERATURE, 2, 0.1F);
     }
 }

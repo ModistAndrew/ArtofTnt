@@ -3,7 +3,7 @@ package modist.artoftnt.client.block.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import modist.artoftnt.client.block.TextureLoader;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.common.block.entity.TntTurretBlockEntity;
 import modist.artoftnt.common.item.TntFrameItem;
 import modist.artoftnt.core.addition.AdditionSlot;

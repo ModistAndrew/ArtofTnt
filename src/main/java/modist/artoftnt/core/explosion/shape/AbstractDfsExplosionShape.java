@@ -83,7 +83,7 @@ public abstract class AbstractDfsExplosionShape extends AbstractExplosionShape {
 
         float resistance = optional.map(aFloat -> (aFloat + 0.3F) * 0.3F).orElse(0.09F);
         if (!this.level.getFluidState(pos).isEmpty()) {
-            resistance = interpolate(resistance, 0.09F, fluidFactor / AdditionType.TEMPERATURE.maxValue);
+            resistance = interpolate(resistance * 10, 0.09F, fluidFactor / AdditionType.TEMPERATURE.maxValue);
         }
         if (strength >= resistance) {
             toBlow.add(pos);

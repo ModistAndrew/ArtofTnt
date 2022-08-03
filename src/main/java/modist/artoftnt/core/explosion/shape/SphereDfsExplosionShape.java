@@ -17,7 +17,7 @@ public class SphereDfsExplosionShape extends AbstractDfsExplosionShape {
 
     @Override
     public Set<BlockPos> getEdge() {
-        int r = (int) radius;
+        int r = (int) actualRadius;
         return BlockPos.betweenClosedStream(p(-r, -r, -r), p(r, r, r))
                 .filter(bp -> (int)Math.sqrt(center.distSqr(bp)) == r)
                 .map(BlockPos::immutable).collect(Collectors.toSet());
@@ -25,13 +25,13 @@ public class SphereDfsExplosionShape extends AbstractDfsExplosionShape {
 
     @Override
     protected List<Entity> getEntities() {
-        int r = (int) radius;
+        int r = (int) actualRadius;
         return level.getEntities(explosion.getSource(), new AABB(pc(-r, -r, -r), pc(r, r, r))).stream()
                 .filter(e -> centerVec.distanceTo(e.position()) <= r).collect(Collectors.toList());
     }
 
     @Override
     protected int getActualRadius() {
-        return (int) radius;
+        return (int) actualRadius;
     }
 }

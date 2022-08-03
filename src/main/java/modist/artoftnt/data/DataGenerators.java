@@ -14,6 +14,10 @@ public class DataGenerators {
         DataGenerator generator = event.getGenerator();
         if (event.includeServer()) {
             generator.addProvider(new BlockTagGenerator(generator, event.getExistingFileHelper()));
+            generator.addProvider(new BlockStateGenerator(generator, event.getExistingFileHelper()));
+            generator.addProvider(new ItemModelGenerator(generator, event.getExistingFileHelper()));
+            generator.addProvider(new RecipeGenerator(generator));
+            generator.addProvider(new LanguageGenerator(generator, "en_us"));
         }
     }
 }

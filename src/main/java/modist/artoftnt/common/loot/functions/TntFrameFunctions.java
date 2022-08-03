@@ -1,5 +1,7 @@
 package modist.artoftnt.common.loot.functions;
 
+import modist.artoftnt.ArtofTnt;
+import modist.artoftnt.common.JsonUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
@@ -78,6 +80,7 @@ public class TntFrameFunctions {
             ret.fixed = fixed;
             ret.name = name;
             FUNCTIONS[tier].add(ret);
+            ArtofTnt.LOGGER.info(JsonUtil.GSON.toJson(ret));
             return ret;
         }
     }

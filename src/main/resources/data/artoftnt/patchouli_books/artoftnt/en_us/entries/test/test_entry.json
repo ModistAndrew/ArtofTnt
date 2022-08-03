@@ -1,11 +1,11 @@
 {
-  "name": "Test Entry",
+  "name": "Intro",
   "icon": "minecraft:writable_book",
   "category": "artoftnt:test_category",
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "This is a test entry, but it should show up!"
+      "text": "Art of TNT is a mod that allows players personalize TNT. By adding different fillers to the TNT framework, players can alter the performance and effect properties of TNT. There are four levels to the framework. The more advanced the TNT framework, the more types of additives that can be added, and the greater and stronger the effect of implementation. The module alters how TNT explodes. It is not necessary for players to use flint or red stone signals. They can manually launch TNT using TNT throwing devices."
     }
   ]
 }

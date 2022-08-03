@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tnt_frame_addition",
+  "pattern": [
+    "xxx",
+    "xWx",
+    "xxx"
+  ],
+  "key": {
+    "x": {
+      "item": "minecraft:chest"
+    },
+    "W": {
+      "item": "artoftnt:position_marker_2"
+    }
+  },
+  "result": {
+    "item": "artoftnt:position_container_marker_2"
+  }
+}

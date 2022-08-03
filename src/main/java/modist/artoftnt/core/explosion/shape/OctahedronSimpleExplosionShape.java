@@ -18,7 +18,7 @@ public class OctahedronSimpleExplosionShape extends AbstractSimpleExplosionShape
     @Override
     public Set<BlockPos> getBlockPoses() {
         Set<BlockPos> ret = new HashSet<>();
-        int r = (int) radius;
+        int r = (int) actualRadius;
         for (int dx = -r; dx <= r; dx++) {
             for(int dy = -r; dy <= r; dy++){
                 for(int dz = -r; dz <= r; dz++){
@@ -33,14 +33,14 @@ public class OctahedronSimpleExplosionShape extends AbstractSimpleExplosionShape
 
     @Override
     protected List<Entity> getEntities() {
-        int r = (int) radius;
+        int r = (int) actualRadius;
         return level.getEntities(explosion.getSource(), new AABB(pc(-r, -r, -r), pc(r, r, r))).stream()
                 .filter(e -> center.distManhattan(e.blockPosition()) <= r).collect(Collectors.toList());
     }
 
     @Override
     protected int getActualRadius() {
-        return (int) radius;
+        return (int) actualRadius;
     }
 
 }

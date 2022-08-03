@@ -3,7 +3,7 @@ package modist.artoftnt.common.block;
 import com.google.common.collect.Lists;
 import modist.artoftnt.ArtofTntConfig;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntDefuserItem;
@@ -20,15 +20,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
@@ -238,7 +237,24 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
                 return InteractionResult.CONSUME;
             }
         }
-        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+        ItemStack itemstack = pPlayer.getItemInHand(pHand); //super, but may not set air
+        if (!itemstack.is(Items.FLINT_AND_STEEL) && !itemstack.is(Items.FIRE_CHARGE)) {
+            return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+        } else {
+            onCaughtFire(pState, pLevel, pPos, pHit.getDirection(), pPlayer);
+            Item item = itemstack.getItem();
+            if (!pPlayer.isCreative()) {
+                if (itemstack.is(Items.FLINT_AND_STEEL)) {
+                    itemstack.hurtAndBreak(1, pPlayer, (p_57425_) -> {
+                        p_57425_.broadcastBreakEvent(pHand);
+                    });
+                } else {
+                    itemstack.shrink(1);
+                }
+            }
+            pPlayer.awardStat(Stats.ITEM_USED.get(item));
+            return InteractionResult.sidedSuccess(pLevel.isClientSide);
+        }
     }
 
     @Override

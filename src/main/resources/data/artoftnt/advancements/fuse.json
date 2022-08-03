@@ -20,7 +20,7 @@
       "trigger": "artoftnt:ignite_tnt_frame",
       "conditions": {
         "minAdditions": {
-          "fuse": 1000.0
+          "fuse": 4000.0
         }
       }
     }

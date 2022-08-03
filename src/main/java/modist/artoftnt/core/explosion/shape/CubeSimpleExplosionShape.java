@@ -12,7 +12,6 @@ import java.util.Set;
 public class CubeSimpleExplosionShape extends AbstractSimpleExplosionShape {
     public CubeSimpleExplosionShape(CustomExplosion explosion) {
         super(explosion);
-        this.useDirection = true;
     }
 
     @Override

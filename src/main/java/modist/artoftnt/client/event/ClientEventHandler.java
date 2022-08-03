@@ -25,7 +25,8 @@ public class ClientEventHandler {
                 event.getPoseStack().translate(-camera.x, -camera.y, -camera.z);
                 Vec3 pos = item.getPos(Minecraft.getInstance().level, player.position(), stack);
                 if (pos != null) {
-                    RenderUtil.renderLine(Minecraft.getInstance().renderBuffers().bufferSource(), event.getPoseStack(), player.position(), pos);
+                    RenderUtil.renderLine(Minecraft.getInstance().renderBuffers().bufferSource(), event.getPoseStack(),
+                            player.getPosition(event.getPartialTick()), pos);
                 }
             }
         }

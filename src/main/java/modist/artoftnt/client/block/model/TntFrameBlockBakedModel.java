@@ -5,7 +5,7 @@ import com.mojang.math.Transformation;
 import modist.artoftnt.client.block.TextureLoader;
 import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.core.addition.Addition;
 import modist.artoftnt.core.addition.AdditionSlot;
 import modist.artoftnt.core.addition.AdditionStack;
@@ -92,7 +92,8 @@ public class TntFrameBlockBakedModel implements IDynamicBakedModel {
     }
 
     public static int getInstabilityTextureId(float instability) {
-        return instability > 7F ? 7 : (int) instability;
+        instability /= 2;
+        return instability > 7F ? 7 : instability < 0 ? 0 : (int) instability;
     }
 
     public static int getWeightTextureId(float weight) {

@@ -1,6 +1,7 @@
 package modist.artoftnt.data;
 
 import modist.artoftnt.ArtofTnt;
+import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.block.ModBlockTags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -29,9 +30,9 @@ public class BlockTagGenerator extends BlockTagsProvider {
         this.tag(ModBlockTags.TO_GLASS).addTags(BlockTags.SAND);
         this.tag(ModBlockTags.TO_LAVA).addTags(BlockTags.BASE_STONE_OVERWORLD);
         this.tag(ModBlockTags.TO_NETHERRACK).addTags(BlockTags.BASE_STONE_OVERWORLD);
-        this.tag(ModBlockTags.TURRET_NORMAL).addTags(BlockTags.BASE_STONE_OVERWORLD);
-        this.tag(ModBlockTags.TURRET_ROTATE).addTags(BlockTags.FIRE);
-        this.tag(ModBlockTags.TURRET_MAX_ROTATE).addTags(BlockTags.CAMPFIRES);
-        this.tag(ModBlockTags.TURRET_STRENGTH).add(Blocks.MAGMA_BLOCK);
+        this.tag(ModBlockTags.TURRET_NORMAL).add(Blocks.MAGMA_BLOCK);
+        this.tag(ModBlockTags.TURRET_ROTATE).add(BlockLoader.BLAZE_BLOCK.get());
+        this.tag(ModBlockTags.TURRET_MAX_ROTATE).add(BlockLoader.BLAZE_BLOCK_2.get());
+        this.tag(ModBlockTags.TURRET_STRENGTH).addTags(BlockTags.FIRE);
     }
 }

@@ -1,6 +1,6 @@
 package modist.artoftnt.common.item;
 
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -52,7 +52,9 @@ public final boolean isContainer;
             if(tag.contains("entityName")){
                 TntFrameData.addTooltip("entityName", tag.getString("entityName"), pTooltipComponents);
             } else {
-                TntFrameData.addTooltip("position", NbtUtils.readBlockPos(tag), pTooltipComponents);
+                BlockPos pos = NbtUtils.readBlockPos(tag);
+                TntFrameData.addTooltip("position",
+                        pos.getX()+", "+pos.getY()+", "+pos.getZ(), pTooltipComponents);
             }
             Player player = Minecraft.getInstance().player;
             if(pLevel != null && player!=null){

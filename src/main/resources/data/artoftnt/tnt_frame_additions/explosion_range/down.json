@@ -1,0 +1,10 @@
+ {
+  "type": "down",
+  "item": "artoftnt:gunpowder_down",
+  "increment": 1,
+  "minTier": 1,
+  "maxCount": 8,
+   "weight": 0.5,
+   "instability": 0.2,
+  "specialRenderer": true
+}

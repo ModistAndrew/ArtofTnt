@@ -1,0 +1,47 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "artoftnt:position_container_marker_3"
+    ]
+  },
+  "criteria": {
+    "has_ender_chest": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:ender_chest"
+            ]
+          }
+        ]
+      }
+    },
+    "has_position_marker_3": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "artoftnt:position_marker_3"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "artoftnt:position_container_marker_3"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_ender_chest",
+      "has_position_marker_3",
+      "has_the_recipe"
+    ]
+  ]
+}

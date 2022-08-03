@@ -7,16 +7,14 @@ import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -27,8 +25,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.data.ModelDataMap;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 @OnlyIn(Dist.CLIENT)
 public class RenderUtil {
@@ -148,10 +144,9 @@ public class RenderUtil {
         } else {
             i = OverlayTexture.NO_OVERLAY;
         }
-        pCombinedLight = LightTexture.FULL_BRIGHT;
-        Direction[] directions = new Direction[]{
-                Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.NORTH, null
-        };
+        if(data.getValue(AdditionType.LIGHT)>0){
+            pCombinedLight = LightTexture.FULL_BRIGHT;
+        }
         BlockState state = BlockLoader.TNT_FRAMES[data.tier].get().defaultBlockState();
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, pMatrixStack, pRenderTypeBuffer, pCombinedLight, i,
                 new ModelDataMap.Builder()

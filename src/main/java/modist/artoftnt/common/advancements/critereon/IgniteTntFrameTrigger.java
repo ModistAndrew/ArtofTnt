@@ -2,7 +2,7 @@ package modist.artoftnt.common.advancements.critereon;
 
 import com.google.gson.JsonObject;
 import modist.artoftnt.ArtofTnt;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import net.minecraft.advancements.critereon.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;

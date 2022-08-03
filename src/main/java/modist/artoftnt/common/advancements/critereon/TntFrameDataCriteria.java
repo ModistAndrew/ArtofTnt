@@ -2,7 +2,7 @@ package modist.artoftnt.common.advancements.critereon;
 
 import com.google.gson.*;
 import modist.artoftnt.common.JsonUtil;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -12,6 +12,7 @@ import java.util.HashMap;
 public class TntFrameDataCriteria {
     public float size;
     public int minTier;
+    public int maxTier = 3;
     @Nullable
     public BlockState disguise;
     public final HashMap<AdditionType, Float> minAdditions = new HashMap<>();
@@ -36,6 +37,6 @@ public class TntFrameDataCriteria {
         if(disguise!=null && !disguise.equals(data.disguise)){
             return false;
         }
-        return data.tier >= minTier;
+        return data.tier >= minTier && data.tier <= maxTier;
     }
 }

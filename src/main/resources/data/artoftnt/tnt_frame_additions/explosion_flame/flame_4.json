@@ -1,0 +1,11 @@
+{
+  "type": "flame",
+  "item": "artoftnt:blaze_block_2",
+  "increment": 4,
+  "minTier": 3,
+  "maxTier": 3,
+  "maxCount": 4,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

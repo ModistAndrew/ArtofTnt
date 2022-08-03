@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tnt_frame_addition",
+  "pattern": [
+    "xxx",
+    "xWx",
+    "xxx"
+  ],
+  "key": {
+    "x": {
+      "item": "minecraft:ender_pearl"
+    },
+    "W": {
+      "item": "minecraft:ghast_tear"
+    }
+  },
+  "result": {
+    "item": "artoftnt:piercing_modifier"
+  }
+}

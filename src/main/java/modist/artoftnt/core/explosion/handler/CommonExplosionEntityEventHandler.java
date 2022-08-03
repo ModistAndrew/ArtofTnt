@@ -171,13 +171,23 @@ public class CommonExplosionEntityEventHandler {
         float loudness = event.data.getValue(AdditionType.LOUDNESS);
         int soundType = (int) event.data.getValue(AdditionType.SOUND_TYPE);
         if (event.data.globalSound() && explosion.level instanceof ServerLevel level) { //global
-            level.players().forEach(p -> ExplosionResources.SOUNDS.get(soundType).ifPresent(t ->
+            level.players().forEach(p -> ExplosionResources.SOUNDS.get(soundType,event.data.tier).ifPresent(t ->
                             p.connection.send
                                     (new ClientboundSoundPacket(t, SoundSource.BLOCKS, p.position().x, p.position().y, p.position().z,
-                                            explosion.random.nextFloat() * loudness,
+                                            loudness, event.data.sound() ? 1 :
                                             (1.0F + (explosion.level.random.nextFloat() - explosion.level.random.nextFloat()) * 0.2F) * 0.7F))
                     )
             );
+        }
+    }
+
+    @SubscribeEvent
+    public static void selfLightningEvent(CustomExplosionFinishingEvent event) {
+        CustomExplosion explosion = event.explosion;
+        float lightning = event.data.getValue(AdditionType.LIGHTNING);
+        if (lightning > 0) {
+            BlockPos pos = new BlockPos(event.explosion.getPosition());
+            CommonExplosionBlockEventHandler.summonLightningBolt(explosion, pos);
         }
     }
 }

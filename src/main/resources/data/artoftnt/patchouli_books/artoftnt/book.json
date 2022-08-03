@@ -1,5 +1,6 @@
 {
   "name": "Art of TNT",
-  "landing_text": "LANDING TEXT",
-  "version": 1
+  "landing_text": "WELCOME TO ART OF TNT TUTORIAL",
+  "model": "artoftnt:artoftnt",
+  "version": 0.1
 }

@@ -98,6 +98,7 @@ public class AdditionManager extends SimpleJsonResourceReloadListener implements
         public String item;
         public float increment;
         public int minTier;
+        public int maxTier = 3;
         public int maxCount;
         public float weight;
         public float instability;

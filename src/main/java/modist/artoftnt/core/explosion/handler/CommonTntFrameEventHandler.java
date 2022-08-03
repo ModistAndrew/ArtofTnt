@@ -121,22 +121,20 @@ public class CommonTntFrameEventHandler {
             List<Entity> list = new ArrayList<>();
             if(tnt.getOwner() instanceof LivingEntity le){
                 if(le.getLastHurtMob()!=null && le.distanceTo(le.getLastHurtMob()) < monsterFactor){
-                    list.add(le.getLastHurtMob());
+                    list.add(le.getLastHurtMob()); //first
                 }
             }
-            if(monsterFactor > 10) {
                 list.addAll(tnt.level.getEntitiesOfClass(Mob.class, event.tnt.getBoundingBox().inflate(monsterFactor), e -> {
                     if (!(e instanceof Enemy)) {
                         return false;
                     }
                     float distance = e.distanceTo(tnt);
                     if (distance < minDistance[0]) {
-                        minDistance[0] = distance;
+                        minDistance[0] = distance; //nearest
                         return true;
                     }
                     return false;
                 }));
-            }
             if (!list.isEmpty()) {
                 Vec3 target = list.get(0).position();
                 Vec3 d = target.subtract(tnt.position());

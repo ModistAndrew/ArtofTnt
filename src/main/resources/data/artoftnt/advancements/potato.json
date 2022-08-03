@@ -19,8 +19,8 @@
     "tnt": {
       "trigger": "artoftnt:ignite_tnt_frame",
       "conditions": {
-        "minAdditions": {
-          "punch": 10.0
+        "disguise": {
+          "Name": "minecraft:potatoes"
         }
       }
     }

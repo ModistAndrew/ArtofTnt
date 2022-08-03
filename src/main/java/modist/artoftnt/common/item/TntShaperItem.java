@@ -3,7 +3,7 @@ package modist.artoftnt.common.item;
 import modist.artoftnt.client.block.entity.TntFrameBEWLR;
 import modist.artoftnt.common.block.ModBlockTags;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

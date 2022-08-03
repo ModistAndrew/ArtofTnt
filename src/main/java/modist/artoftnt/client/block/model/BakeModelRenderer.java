@@ -68,7 +68,7 @@ public class BakeModelRenderer {
     private void putVertexUV(BakedQuadBuilder builder, float u, float v, TextureAtlasSprite sprite, int j, VertexFormatElement e) {
         switch (e.getIndex()) {
             case 0 -> builder.put(j, sprite.getU(u), sprite.getV(v));
-            case 2 -> builder.put(j, 0, 0);
+            case 2 -> builder.put(j, (short)0, (short)0);
             default -> builder.put(j);
         }
     }

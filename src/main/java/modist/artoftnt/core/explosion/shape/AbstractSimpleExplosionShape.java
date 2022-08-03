@@ -22,7 +22,7 @@ public abstract class AbstractSimpleExplosionShape extends AbstractExplosionShap
                     level.getBlockState(pos), level.getFluidState(pos));
             float resistance = optional.map(aFloat -> (aFloat + 0.3F) * 0.3F).orElse(0.09F);
             if (!this.level.getFluidState(pos).isEmpty()) {
-                resistance = interpolate(resistance, 0.09F, fluidFactor / AdditionType.TEMPERATURE.maxValue);
+                resistance = interpolate(resistance * 10, 0.09F, fluidFactor / AdditionType.TEMPERATURE.maxValue);
             }
             if(distancePercentage * strengthFactor  > resistance) {
                 this.toBlowBlocks.put(pos, distancePercentage * strengthFactor);

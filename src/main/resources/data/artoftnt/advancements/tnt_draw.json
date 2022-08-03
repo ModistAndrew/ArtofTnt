@@ -20,7 +20,7 @@
       "trigger": "artoftnt:ignite_tnt_frame",
       "conditions": {
         "minAdditions": {
-          "tnt_draw": 10.0
+          "tnt_draw": 0.4
         }
       }
     }

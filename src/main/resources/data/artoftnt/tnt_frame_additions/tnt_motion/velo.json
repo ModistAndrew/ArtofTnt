@@ -1,0 +1,10 @@
+{
+  "type": "velocity",
+  "item": "minecraft:firework_rocket",
+  "increment": 0.25,
+  "minTier": 0,
+  "maxCount": 8,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

@@ -31,6 +31,7 @@ public class TntFireworkStarItem extends FireworkStarItem { //see CommonEventHan
                     CompoundTag data = tag.getCompound("tnt_"+i);
                     int tier = data.getInt("tier");
                     data.remove("tier");
+                    data.putBoolean("fixed", true); //or tnt may be duplicated
                     PrimedTntFrame entity = new PrimedTntFrame(data,
                             level, explosion.x, explosion.y, explosion.z, explosion.getSourceMob(), tier);
                     entity.shoot(explosion.getVec().x + X_MOTIONS[i], explosion.getVec().y,

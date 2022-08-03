@@ -2,7 +2,7 @@ package modist.artoftnt.common.entity;
 
 import modist.artoftnt.common.advancements.critereon.IgniteTntFrameTrigger;
 import modist.artoftnt.common.block.TntFrameBlock;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.addition.InstabilityHelper;
 import modist.artoftnt.core.explosion.ExplosionHelper;
@@ -151,18 +151,18 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
      */
     @Override
     public void tick() {
-        this.checkOutOfWorld();
         if(this.getFuse()==(int)(data.getValue(AdditionType.FUSE))+1){ //first tick, play sound
             this.setFuse(this.getFuse()-1);
             if(this.level.isClientSide){
                 float loudness = data.getValue(AdditionType.LOUDNESS);
-                int soundType = (int) data.getValue(AdditionType.TNT_SOUND_TYPE);
-                ExplosionResources.TNT_SOUNDS.get(soundType).ifPresent(t -> level.playLocalSound(this.getX(), this.getY(), this.getZ(), t,
-                        SoundSource.BLOCKS, level.getRandom().nextFloat() * loudness,
+                ExplosionResources.TNT_SOUNDS.get(0,tier).ifPresent(t -> level.playLocalSound(this.getX(), this.getY(), this.getZ(), t,
+                        SoundSource.BLOCKS, loudness, data.additions.sound() ? 1 :
                         (1.0F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F,
                         false));
             }
+            return;
         }
+        this.checkOutOfWorld();
         BlockHitResult hitresult1 = getBlockHitResult();
         EntityHitResult hitresult2 = getEntityHitResult(this::canHitEntity);
         HitResult hitresult = hitresult1 == null ? hitresult2 : hitresult1;
@@ -258,7 +258,10 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
             return;
         }
         if (!this.level.isClientSide) {
-            this.explode(pos);
+            int random = (int)this.data.getValue(AdditionType.RANDOM)+1;
+            if(this.random.nextInt(random)<1) {
+                this.explode(pos);
+            }
         }
         int count = this.getLeftCount() - 1;
         this.setLeftCount(count);
@@ -343,10 +346,10 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     }
 
     public void defuse(boolean shouldFix) {
-        if (!this.level.isClientSide) {
-            this.spawnAtLocation(TntFrameBlock.dropFrame(shouldFix, data));
-        }
-        this.discard();
+            if (!this.level.isClientSide) {
+                this.spawnAtLocation(TntFrameBlock.dropFrame(shouldFix, data));
+            }
+            this.discard();
     }
 
     public void knocked(Entity entity, int amount) {

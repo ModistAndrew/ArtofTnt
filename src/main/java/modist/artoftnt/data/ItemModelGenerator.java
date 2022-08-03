@@ -1,6 +1,7 @@
 package modist.artoftnt.data;
 
 import modist.artoftnt.ArtofTnt;
+import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.item.ItemLoader;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
@@ -14,9 +15,11 @@ public class ItemModelGenerator extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        ItemLoader.SIMPLE_ITEMS.forEach(i -> {
+        ItemLoader.SIMPLE_ITEMS.values().forEach(i -> {
             singleTexture(i.get().getRegistryName().getPath(),
                     mcLoc("item/generated"), "layer0", modLoc("item/"+i.get().getRegistryName().getPath()));
         });
+        ItemLoader.SIMPLE_BLOCK_ITEMS.forEach((s, i)->
+                withExistingParent(s, modLoc("block/"+s)));
     }
 }

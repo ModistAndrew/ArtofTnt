@@ -10,7 +10,7 @@
     "description": {
       "translate": "advancements.artoftnt.damage.description"
     },
-    "frame": "task",
+    "frame": "challenge",
     "show_toast": true,
     "announce_to_chat": true,
     "hidden": false
@@ -20,7 +20,7 @@
       "trigger": "artoftnt:ignite_tnt_frame",
       "conditions": {
         "minAdditions": {
-          "damage": 10.0
+          "damage": 80.0
         }
       }
     }

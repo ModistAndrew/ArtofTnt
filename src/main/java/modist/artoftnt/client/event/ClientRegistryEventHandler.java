@@ -51,6 +51,7 @@ public class ClientRegistryEventHandler {
         ItemBlockRenderTypes.setRenderLayer(BlockLoader.REMOTE_EXPLODER.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(BlockLoader.TNT_TURRET.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(BlockLoader.TNT_CLONER.get(), RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(BlockLoader.REINFORCED_GLASS.get(), RenderType.cutout());
     }
 
     @SubscribeEvent

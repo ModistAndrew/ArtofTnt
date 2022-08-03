@@ -1,0 +1,11 @@
+{
+  "type": "lightning",
+  "item": "minecraft:lightning_rod",
+  "increment": 4,
+  "minTier": 0,
+  "maxTier": 1,
+  "maxCount": 2,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

@@ -5,12 +5,28 @@ import modist.artoftnt.common.block.entity.RemoteExploderBlockEntity;
 import modist.artoftnt.common.block.entity.TntClonerBlockEntity;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
 import modist.artoftnt.common.block.entity.TntTurretBlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.GlassBlock;
+import net.minecraft.world.level.block.MagmaBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+
+import java.util.HashMap;
+import java.util.function.Supplier;
 
 public class BlockLoader {
 
@@ -32,6 +48,37 @@ public class BlockLoader {
             fromBlock(TNT_CLONER, TntClonerBlockEntity::new);
     public static final RegistryObject<Block> DIMINISHING_LIGHT = BLOCKS.register("diminishing_light",
             DiminishingLightBlock::new);
+    public static final HashMap<String, RegistryObject<Block>> SIMPLE_BLOCKS = new HashMap<>();
+    public static final RegistryObject<Block> BLAZE_BLOCK = simple("blaze_block",
+            () -> new MagmaBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.NETHER).requiresCorrectToolForDrops().lightLevel((p_152684_) -> {
+                return 7;
+            }).randomTicks().strength(1F).isValidSpawn((p_187421_, p_187422_, p_187423_, p_187424_) -> {
+                return p_187424_.fireImmune();
+            }).hasPostProcess((a, b, c)->true).emissiveRendering((a, b, c)->true)){
+                public void stepOn(Level pLevel, BlockPos pPos, BlockState pState, Entity pEntity) {
+                    if (!pEntity.fireImmune() && pEntity instanceof LivingEntity && !EnchantmentHelper.hasFrostWalker((LivingEntity)pEntity)) {
+                        pEntity.hurt(DamageSource.HOT_FLOOR, 2.0F);
+                    }
+
+                    super.stepOn(pLevel, pPos, pState, pEntity);
+                }
+            });
+    public static final RegistryObject<Block> BLAZE_BLOCK_2 = simple("blaze_block_2",
+            () -> new MagmaBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.NETHER).requiresCorrectToolForDrops().lightLevel((p_152684_) -> 15)
+                    .randomTicks().strength(2F).isValidSpawn((p_187421_, p_187422_, p_187423_, p_187424_) -> p_187424_.fireImmune())
+                    .hasPostProcess((a, b, c)->true).emissiveRendering((a, b, c)->true)){
+                public void stepOn(Level pLevel, BlockPos pPos, BlockState pState, Entity pEntity) {
+                    if (!pEntity.fireImmune() && pEntity instanceof LivingEntity && !EnchantmentHelper.hasFrostWalker((LivingEntity)pEntity)) {
+                        pEntity.hurt(DamageSource.HOT_FLOOR, 4.0F);
+                    }
+
+                    super.stepOn(pLevel, pPos, pState, pEntity);
+                }
+            });
+    public static final RegistryObject<Block> REINFORCED_GLASS = simple("reinforced_glass",
+            ()->new GlassBlock(BlockBehaviour.Properties.of(Material.GLASS).strength(0.3F, Float.MAX_VALUE/2F)
+                    .sound(SoundType.GLASS).noOcclusion().isValidSpawn((a, b, c, d)->false)
+                    .isRedstoneConductor((a, b, c)->false).isSuffocating((a, b, c)->false).isViewBlocking((a, b, c)->false)));
 
 
     static {
@@ -47,5 +94,12 @@ public class BlockLoader {
         return BLOCK_ENTITIES.register(block.getId().getPath()+"_block_entity", ()-> BlockEntityType.Builder.of
                 (pFactory, block.get()).build(null));
     }
+
+    private static RegistryObject<Block> simple(String name, Supplier<? extends Block> sup) {
+        RegistryObject<Block> ret = BLOCKS.register(name, sup);
+        SIMPLE_BLOCKS.put(name, ret);
+        return ret;
+    }
+
 
 }

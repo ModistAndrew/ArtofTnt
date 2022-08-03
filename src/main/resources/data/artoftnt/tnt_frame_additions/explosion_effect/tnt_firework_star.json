@@ -1,0 +1,10 @@
+{
+  "type": "firework",
+  "item": "artoftnt:tnt_firework_star",
+  "increment": 100.0,
+  "minTier": 2,
+  "maxCount": 8,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": true
+}

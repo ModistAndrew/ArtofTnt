@@ -20,7 +20,7 @@
       "trigger": "artoftnt:ignite_tnt_frame",
       "conditions": {
         "minAdditions": {
-          "elasticity": 1.0
+          "elasticity": 1
         }
       }
     }

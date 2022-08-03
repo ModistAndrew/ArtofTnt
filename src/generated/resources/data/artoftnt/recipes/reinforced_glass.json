@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tnt_frame_addition",
+  "pattern": [
+    "xxx",
+    "xWx",
+    "xxx"
+  ],
+  "key": {
+    "x": {
+      "item": "minecraft:iron_block"
+    },
+    "W": {
+      "item": "minecraft:diamond_block"
+    }
+  },
+  "result": {
+    "item": "artoftnt:reinforced_glass"
+  }
+}

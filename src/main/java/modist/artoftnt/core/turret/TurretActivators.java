@@ -47,8 +47,8 @@ public class TurretActivators {
 
     static{
         register(ModBlockTags.TURRET_NORMAL, 0F, 1, 0);
-        register(ModBlockTags.TURRET_ROTATE, 10F, 1, 5);
-        register(ModBlockTags.TURRET_MAX_ROTATE, 90F, 1, 10);
+        register(ModBlockTags.TURRET_ROTATE, 10F, 1, 4);
+        register(ModBlockTags.TURRET_MAX_ROTATE, 90F, 1, 4);
         register(ModBlockTags.TURRET_STRENGTH, 0F, 2, 0);
     }
 

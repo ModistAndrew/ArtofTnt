@@ -97,13 +97,11 @@ public class CommonExplosionBlockEventHandler {
     public static void lightningEvent(CustomExplosionBlockBreakEvent.Post event) {
         CustomExplosion explosion = event.explosion;
         float lightning = event.data.getValue(AdditionType.LIGHTNING);
-        if (lightning > 4F) {
-            if (explosion.random.nextInt(10) < lightning * event.percentage &&
+            if (explosion.random.nextInt(500) < lightning * event.percentage &&
                     explosion.level.getBlockState(event.pos).isAir() &&
                     explosion.level.getBlockState(event.pos.below()).isSolidRender(explosion.level, event.pos.below())) {
                 summonLightningBolt(explosion, event.pos);
             }
-        }
     }
 
     @SubscribeEvent
@@ -136,7 +134,7 @@ public class CommonExplosionBlockEventHandler {
                     e.distanceToSqr(explosion.getPosition()) < light * light).forEach(e -> {
                 if (e instanceof LivingEntity le) {
                     if (le.isAffectedByPotions()) {
-                        MobEffectInstance mobeffectinstance = new MobEffectInstance(MobEffects.GLOWING, (int) (light * 20), 0); //ignore percentage
+                        MobEffectInstance mobeffectinstance = new MobEffectInstance(MobEffects.GLOWING, (int) (light * 200), 0); //ignore percentage
                         le.addEffect(new MobEffectInstance(mobeffectinstance), explosion.getSource());
                     }
                 }
@@ -155,7 +153,7 @@ public class CommonExplosionBlockEventHandler {
         CustomExplosion explosion = event.explosion;
         Level l = explosion.level;
         if (l instanceof ServerLevel level) {
-            float blowUp = event.data.getValue(AdditionType.BLOW_UP);
+            float blowUp = event.data.getValue(AdditionType.BLOW_UP); //TODO
             if (blowUp > 0) {
                 List<BlockPos> remove = new ArrayList<>();
                 explosion.getToBlow().forEach(pos -> {
@@ -169,7 +167,7 @@ public class CommonExplosionBlockEventHandler {
                         level.addFreshEntity(entity);
                     }
                 });
-                explosion.getToBlow().removeAll(remove);
+                explosion.getToBlow().removeAll(remove); //simply remove all
             }
         }
     }

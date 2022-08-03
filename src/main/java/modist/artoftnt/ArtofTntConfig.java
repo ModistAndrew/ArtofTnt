@@ -25,11 +25,11 @@ public class ArtofTntConfig {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
         builder.comment("Art of TNT settings");
         builder.push("general");
-        ENABLE_ADDITION_REPLY = builder.comment("whether return reply when addition cannot be put").define("enable_addition_reply", false);
+        ENABLE_ADDITION_REPLY = builder.comment("whether return reply when addition cannot be put").define("enable_addition_reply", true);
         MIN_GLOBAL_SOUND_LOUDNESS = builder.comment("the least loudness factor to let the sound heard by all players")
-                .defineInRange("min_global_sound_loudness", 1000, 0, Integer.MAX_VALUE);
+                .defineInRange("min_global_sound_loudness", 10000, 0, Integer.MAX_VALUE);
         MIN_PERSISTENT_FUSE = builder.comment("the least fuse factor to let the tnt won't explode")
-                .defineInRange("min_persistent_fuse", 1000, 0, Integer.MAX_VALUE);
+                .defineInRange("min_persistent_fuse", 10000, 0, Integer.MAX_VALUE);
         MIN_TURRET_TICK = builder.comment("the least tick for turret to shoot")
                 .defineInRange("min_turret_tick", 20, 2, Integer.MAX_VALUE);
         MIN_CLONER_TICK = builder.comment("the least tick for cloner to clone")

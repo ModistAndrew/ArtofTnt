@@ -21,12 +21,14 @@ public class CommonEventHandler {
             if (event.getTarget() instanceof PrimedTntFrame tntFrame) {
                 ItemStack stack = event.getPlayer().getMainHandItem();
                 if (stack.getItem() instanceof TntDefuserItem) {
-                    stack.hurtAndBreak
-                            (tntFrame.getWeight() * 10, event.getPlayer(),
-                                    (p_40858_) -> p_40858_.broadcastBreakEvent
-                                            (event.getPlayer().getUsedItemHand()));
-                    tntFrame.defuse(EnchantmentHelper.getItemEnchantmentLevel(
-                            Enchantments.SILK_TOUCH, stack) <= 0 && !event.getPlayer().getAbilities().instabuild);
+                    if(!tntFrame.data.fixed) { //only the unfixed can be defused
+                        stack.hurtAndBreak
+                                (tntFrame.getWeight() * 10, event.getPlayer(),
+                                        (p_40858_) -> p_40858_.broadcastBreakEvent
+                                                (event.getPlayer().getUsedItemHand()));
+                        tntFrame.defuse(EnchantmentHelper.getItemEnchantmentLevel(
+                                Enchantments.SILK_TOUCH, stack) <= 0 && !event.getPlayer().getAbilities().instabuild);
+                    }
                 } else if (stack.getItem() instanceof TntDispenserItem) {
                     int knockBack = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, stack);
                     if(knockBack > 0) {

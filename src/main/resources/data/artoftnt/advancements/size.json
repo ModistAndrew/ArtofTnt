@@ -1,0 +1,27 @@
+{
+  "parent": "artoftnt:tnt",
+  "display": {
+    "icon": {
+      "item": "artoftnt:tnt_frame_0",
+      "nbt": "{\"tntFrameData\":{\"size\":0.25}}"
+    },
+    "title": {
+      "translate": "advancements.artoftnt.size.title"
+    },
+    "description": {
+      "translate": "advancements.artoftnt.size.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "tnt": {
+      "trigger": "artoftnt:ignite_tnt_frame",
+      "conditions": {
+        "size": 0.25
+      }
+    }
+  }
+}

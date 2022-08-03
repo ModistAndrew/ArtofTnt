@@ -1,0 +1,10 @@
+{
+  "type": "firework",
+  "item": "minecraft:firework_star",
+  "increment": 1.0,
+  "minTier": 1,
+  "maxCount": 8,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": true
+}

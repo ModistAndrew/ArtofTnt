@@ -1,0 +1,66 @@
+{
+    "tnt_sound_0": {
+        "subtitle": "tnt_sound_0",
+        "sounds": [
+            {
+                "name": "artoftnt:tnt_sound_0"
+            }
+        ]
+    },
+    "tnt_sound_1": {
+        "subtitle": "tnt_sound_1",
+        "sounds": [
+            {
+                "name": "artoftnt:tnt_sound_1"
+            }
+        ]
+    },
+    "tnt_sound_2": {
+        "subtitle": "tnt_sound_2",
+        "sounds": [
+            {
+                "name": "artoftnt:tnt_sound_2"
+            }
+        ]
+    },
+    "tnt_sound_3": {
+        "subtitle": "tnt_sound_3",
+        "sounds": [
+            {
+                "name": "artoftnt:tnt_sound_3"
+            }
+        ]
+    },
+    "tnt_sound_4": {
+        "subtitle": "tnt_sound_4",
+        "sounds": [
+            {
+                "name": "artoftnt:tnt_sound_4"
+            }
+        ]
+    },
+    "tnt_sound_5": {
+        "subtitle": "tnt_sound_5",
+        "sounds": [
+            {
+                "name": "artoftnt:tnt_sound_5"
+            }
+        ]
+    },
+    "tnt_sound_6": {
+        "subtitle": "tnt_sound_6",
+        "sounds": [
+            {
+                "name": "artoftnt:tnt_sound_6"
+            }
+        ]
+    },
+    "tnt_sound_7": {
+        "subtitle": "tnt_sound_7",
+        "sounds": [
+            {
+                "name": "artoftnt:tnt_sound_7"
+            }
+        ]
+    }
+}

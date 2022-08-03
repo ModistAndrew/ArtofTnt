@@ -1,7 +1,9 @@
 {
+  "parent": "artoftnt:root",
   "display": {
     "icon": {
-      "item": "minecraft:tnt"
+      "item": "patchouli:guide_book",
+      "nbt": "{\"patchouli:book\":\"artoftnt:artoftnt\"}"
     },
     "title": {
       "translate": "advancements.artoftnt.tnt.title"
@@ -12,8 +14,7 @@
     "frame": "task",
     "show_toast": true,
     "announce_to_chat": true,
-    "hidden": false,
-    "background": "artoftnt:textures/special/default_shape.png"
+    "hidden": false
   },
   "criteria": {
     "tnt": {
@@ -21,6 +22,7 @@
       "conditions": {
         "items": [
           {
+            "item": "patchouli:guide_book",
             "nbt": "{\"patchouli:book\":\"artoftnt:artoftnt\"}"
           }
         ]

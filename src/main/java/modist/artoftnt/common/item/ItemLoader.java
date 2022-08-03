@@ -11,6 +11,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
@@ -27,11 +28,42 @@ public class ItemLoader {
     public static final RegistryObject<Item> TNT_TURRET = fromBlock(BlockLoader.TNT_TURRET);
     public static final RegistryObject<Item> TNT_CLONER = fromBlock(BlockLoader.TNT_CLONER);
     public static final RegistryObject<Item>[] POSITION_MARKERS = new RegistryObject[4];
-    public static final RegistryObject<Item> POSITION_CONTAINER_MARKER = ITEMS.register("position_container_marker", () -> new PositionMarkerItem(2, true));
+    public static final RegistryObject<Item> POSITION_CONTAINER_MARKER_2 = ITEMS.register("position_container_marker_2",
+            () -> new PositionMarkerItem(2, true));
+    public static final RegistryObject<Item> POSITION_CONTAINER_MARKER_3 = ITEMS.register("position_container_marker_3",
+            () -> new PositionMarkerItem(3, true));
+
     public static final RegistryObject<Item> TARGET_MARKER =ITEMS.register("target_marker", () -> new TargetMarkerItem(2));
-    public static final List<RegistryObject<Item>> SIMPLE_ITEMS = new ArrayList<>();
+    public static final HashMap<String, RegistryObject<Item>> SIMPLE_ITEMS = new HashMap<>();
+    public static final HashMap<String, RegistryObject<Item>> SIMPLE_BLOCK_ITEMS = new HashMap<>();
     static{
-//        simple("superium_quartz");
+        simple("sound_type_modifier");
+        simple("tnt_particle_modifier");
+        simple("tnt_motion_modifier");
+        simple("tnt_damage_modifier");
+        simple("punch_modifier");
+        simple("horizontal_piston");
+        simple("vertical_piston");
+        simple("tnt_punch_modifier");
+        simple("tnt_draw_modifier");
+        simple("gunpowder_up");
+        simple("gunpowder_down");
+        simple("gunpowder_north");
+        simple("gunpowder_south");
+        simple("gunpowder_east");
+        simple("gunpowder_west");
+        simple("gunpowder_2");
+        simple("gunpowder_3");
+        simple("gunpowder_4");
+        simple("piercing_modifier");
+        simple("block_drop_2");
+        simple("block_drop_3");
+        simple("block_drop_4");
+        simple("lightning_modifier");
+        simple("string_1");
+        simple("string_2");
+        BlockLoader.SIMPLE_BLOCKS.forEach((s, b)->
+                SIMPLE_BLOCK_ITEMS.put(s, ITEMS.register(s, () -> new BlockItem(b.get(), getProperty()))));
     }
 
     static {
@@ -52,7 +84,7 @@ public class ItemLoader {
 
     private static RegistryObject<Item> simple(String name) {
         RegistryObject<Item> ret = ITEMS.register(name, () -> new Item(getProperty()));
-        SIMPLE_ITEMS.add(ret);
+        SIMPLE_ITEMS.put(name, ret);
         return ret;
     }
 

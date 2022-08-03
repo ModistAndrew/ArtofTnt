@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "tnt_frame_addition",
+  "ingredients": [
+    {
+      "item": "artoftnt:gunpowder_3"
+    },
+    {
+      "item": "artoftnt:gunpowder_3"
+    },
+    {
+      "item": "artoftnt:gunpowder_3"
+    },
+    {
+      "item": "artoftnt:gunpowder_3"
+    },
+    {
+      "item": "artoftnt:gunpowder_3"
+    },
+    {
+      "item": "artoftnt:gunpowder_3"
+    },
+    {
+      "item": "artoftnt:gunpowder_3"
+    },
+    {
+      "item": "artoftnt:gunpowder_3"
+    },
+    {
+      "item": "artoftnt:gunpowder_3"
+    }
+  ],
+  "result": {
+    "item": "artoftnt:gunpowder_4"
+  }
+}

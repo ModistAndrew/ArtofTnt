@@ -1,0 +1,11 @@
+{
+  "type": "flame",
+  "item": "minecraft:blaze_powder",
+  "increment": 2,
+  "minTier": 1,
+  "maxTier": 1,
+  "maxCount": 4,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

@@ -1,6 +1,6 @@
 package modist.artoftnt.common.loot.functions;
 
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.common.item.TntFrameItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;

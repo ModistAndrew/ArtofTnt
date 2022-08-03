@@ -1,0 +1,10 @@
+{
+  "type": "strength",
+  "item": "minecraft:iron_block",
+  "increment": 50.0,
+  "minTier": 1,
+  "maxCount": 8,
+  "weight": 2.0,
+  "instability": 0.8,
+  "specialRenderer": false
+}

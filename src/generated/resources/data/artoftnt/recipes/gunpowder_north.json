@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tnt_frame_addition",
+  "pattern": [
+    "xxx",
+    "   ",
+    "   "
+  ],
+  "key": {
+    "x": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "item": "artoftnt:gunpowder_north",
+    "count": 6
+  }
+}

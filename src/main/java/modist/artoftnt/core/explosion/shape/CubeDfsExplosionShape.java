@@ -13,7 +13,6 @@ public class CubeDfsExplosionShape extends AbstractDfsExplosionShape {
 
     public CubeDfsExplosionShape(CustomExplosion explosion) {
         super(explosion);
-        this.useDirection = true;
     }
 
     @Override

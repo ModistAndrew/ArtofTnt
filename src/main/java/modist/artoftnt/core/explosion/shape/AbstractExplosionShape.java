@@ -19,10 +19,11 @@ public abstract class AbstractExplosionShape {
     protected final Level level;
     protected final BlockPos center;
     protected final Vec3 centerVec;
-    protected  final int x;
-    protected  final int y;
-    protected  final int z;
+    protected final int x;
+    protected final int y;
+    protected final int z;
     protected final float radius;
+    protected final float actualRadius;
     protected final float[] directionRadii = new float[6];
     protected final float fluidFactor;
     protected final float piercingFactor;
@@ -31,7 +32,6 @@ public abstract class AbstractExplosionShape {
     protected Object2FloatMap<Entity> toBlowEntities;
     protected Object2FloatMap<BlockPos> toBlowBlocks;
     protected static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new ExplosionDamageCalculator();
-    protected boolean useDirection;
 
     public AbstractExplosionShape(CustomExplosion explosion) {
         this.explosion = explosion;
@@ -52,12 +52,17 @@ public abstract class AbstractExplosionShape {
         this.directionRadii[3] = stack.getValue(AdditionType.SOUTH);
         this.directionRadii[4] = stack.getValue(AdditionType.WEST);
         this.directionRadii[5] = stack.getValue(AdditionType.EAST);
+        float temp = 0;
+        for (int i = 0; i < 6; i++) {
+            temp += directionRadii[i];
+        }
+        actualRadius = temp / 2F + radius;
     }
 
     public Object2FloatMap<Entity> getToBlowEntities() {
-        if(toBlowEntities==null){
+        if (toBlowEntities == null) {
             toBlowEntities = new Object2FloatOpenHashMap<>();
-            if(hasRadius()) {
+            if (hasRadius()) {
                 generateToBlowEntities();
             }
         }
@@ -67,51 +72,49 @@ public abstract class AbstractExplosionShape {
     protected abstract void generateToBlowEntities();
 
     public Object2FloatMap<BlockPos> getToBlowBlocks() {
-        if(toBlowBlocks==null){
+        if (toBlowBlocks == null) {
             toBlowBlocks = new Object2FloatOpenHashMap<>();
-            if(strengthFactor > 0 && hasRadius()) {
+            if (strengthFactor > 0 && hasRadius()) {
                 generateToBlowBlocks();
             }
         }
         return toBlowBlocks;
     }
 
-    private boolean hasRadius(){
+    private boolean hasRadius() {
         boolean ret = radius > 0;
-        if(useDirection) {
-            for (int i = 0; i < 6; i++) {
-                ret |= directionRadii[i] > 0;
-            }
+        for (int i = 0; i < 6; i++) {
+            ret |= directionRadii[i] > 0;
         }
         return ret;
     }
 
     protected abstract void generateToBlowBlocks();
 
-    protected BlockPos p(int x, int y, int z){
-        return new BlockPos(this.center.getX()+x,
-                this.center.getY()+y,
-                this.center.getZ()+z);
+    protected BlockPos p(int x, int y, int z) {
+        return new BlockPos(this.center.getX() + x,
+                this.center.getY() + y,
+                this.center.getZ() + z);
     }
 
-    protected Vec3 pc(int x, int y, int z){
+    protected Vec3 pc(int x, int y, int z) {
         return Vec3.atCenterOf(p(x, y, z));
     }
 
-    protected float interpolate(float origin, float to, float percentage){
-        return origin + percentage * (to-origin);
+    protected float interpolate(float origin, float to, float percentage) {
+        return origin + percentage * (to - origin);
     }
 
-    protected float interpolate(float origin, float to){
-        return interpolate(origin, to, piercingFactor/AdditionType.PIERCING.maxValue);
+    protected float interpolate(float origin, float to) {
+        return interpolate(origin, to, piercingFactor / AdditionType.PIERCING.maxValue);
     }
 
-    protected float toOne(float origin){
-        return interpolate(origin, 1, piercingFactor/AdditionType.PIERCING.maxValue);
+    protected float toOne(float origin) {
+        return interpolate(origin, 1, piercingFactor / AdditionType.PIERCING.maxValue);
     }
 
-    protected float toZero(float origin){
-        return interpolate(origin, 0, piercingFactor/AdditionType.PIERCING.maxValue);
+    protected float toZero(float origin) {
+        return interpolate(origin, 0, piercingFactor / AdditionType.PIERCING.maxValue);
     }
 
     public static float getSeenPercent(Vec3 pExplosionVector, Entity pEntity) {

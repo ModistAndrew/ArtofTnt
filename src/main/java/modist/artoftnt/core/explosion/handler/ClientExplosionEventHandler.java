@@ -20,9 +20,9 @@ public class ClientExplosionEventHandler {
         float loudness = event.data.getValue(AdditionType.LOUDNESS);
         int soundType = (int) event.data.getValue(AdditionType.SOUND_TYPE);
         if (!event.data.globalSound()) { //not global
-            ExplosionResources.SOUNDS.get(soundType).ifPresent(t -> explosion.level.playLocalSound(explosion.x, explosion.y, explosion.z, t,
-                    SoundSource.BLOCKS, explosion.random.nextFloat() * loudness,
-                    (1.0F + (explosion.level.random.nextFloat() - explosion.level.random.nextFloat()) * 0.2F) * 0.7F,
+            ExplosionResources.SOUNDS.get(soundType,event.data.tier).ifPresent(t -> explosion.level.playLocalSound(explosion.x, explosion.y, explosion.z, t,
+                    SoundSource.BLOCKS, loudness, event.data.sound() ? 1 :
+                            (1.0F + (explosion.level.random.nextFloat() - explosion.level.random.nextFloat()) * 0.2F) * 0.7F,
                     false));
         }
     }
@@ -30,9 +30,8 @@ public class ClientExplosionEventHandler {
     @SubscribeEvent
     public static void particleEvent(CustomExplosionFinishingEvent event) {
         CustomExplosion explosion = event.explosion;
-        int particle = (int) event.data.getValue(AdditionType.PARTICLE);
-        ExplosionResources.PARTICLES.get(particle).ifPresent(p -> explosion.level.addParticle(p, explosion.x, explosion.y, explosion.z,
-                1.0D, 0.0D, 0.0D));
+        ExplosionResources.PARTICLES.get(0,event.data.tier).ifPresent(p -> explosion.level.addParticle(p, explosion.x, explosion.y, explosion.z,
+                0.0D, 0.0D, 0.0D));
     }
 
     @SubscribeEvent

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tnt_frame_addition",
+  "pattern": [
+    "xxx",
+    "xWx",
+    "xxx"
+  ],
+  "key": {
+    "x": {
+      "item": "minecraft:hopper"
+    },
+    "W": {
+      "item": "minecraft:conduit"
+    }
+  },
+  "result": {
+    "item": "artoftnt:tnt_draw_modifier"
+  }
+}

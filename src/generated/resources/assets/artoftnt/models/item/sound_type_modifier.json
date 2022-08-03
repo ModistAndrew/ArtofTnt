@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "artoftnt:item/sound_type_modifier"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "elasticity",
+  "item": "minecraft:slime_block",
+  "increment": 0.5,
+  "minTier": 1,
+  "maxCount": 4,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": true
+}

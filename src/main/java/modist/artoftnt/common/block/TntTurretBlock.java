@@ -46,17 +46,19 @@ public class TntTurretBlock extends CoolDownBlock {
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
         ItemStack itemstack = pPlayer.getItemInHand(pHand);
-        if (!pLevel.isClientSide && pHand == InteractionHand.MAIN_HAND && pLevel.getBlockEntity(pPos) instanceof TntTurretBlockEntity blockEntity) {
-            ItemStack ret = blockEntity.tryPutOrGetTnt(pHit.getLocation().subtract(Vec3.atLowerCornerOf(pPos)), itemstack.copy()).copy();
-            if(!ItemStack.matches(itemstack, ret)){
-                if(!pPlayer.getAbilities().instabuild){
-                    pPlayer.getInventory().setItem(pPlayer.getInventory().selected, ret);
-                    pPlayer.inventoryMenu.broadcastChanges();
+        if(itemstack.getItem() instanceof TntFrameItem || itemstack.isEmpty()) {
+            if (!pLevel.isClientSide && pHand == InteractionHand.MAIN_HAND && pLevel.getBlockEntity(pPos) instanceof TntTurretBlockEntity blockEntity) {
+                ItemStack ret = blockEntity.tryPutOrGetTnt(pHit.getLocation().subtract(Vec3.atLowerCornerOf(pPos)), itemstack.copy()).copy();
+                if (!ItemStack.matches(itemstack, ret)) {
+                    if (!pPlayer.getAbilities().instabuild) {
+                        pPlayer.getInventory().setItem(pPlayer.getInventory().selected, ret);
+                        pPlayer.inventoryMenu.broadcastChanges();
+                    }
+                    return InteractionResult.SUCCESS;
                 }
-                return InteractionResult.SUCCESS;
+                return InteractionResult.FAIL;
             }
-            return InteractionResult.CONSUME;
         }
-        return itemstack.getItem() instanceof TntFrameItem ? InteractionResult.CONSUME : super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
     }
 }

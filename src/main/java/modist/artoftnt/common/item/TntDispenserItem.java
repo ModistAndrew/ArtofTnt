@@ -3,7 +3,7 @@ package modist.artoftnt.common.item;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import modist.artoftnt.ArtofTntConfig;
-import modist.artoftnt.common.block.entity.TntFrameData;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -51,6 +51,8 @@ public class TntDispenserItem extends ProjectileWeaponItem {
                     }
                     pPlayer.getCooldowns().addCooldown(this, coolDown);
                 }
+                pPlayer.setDeltaMovement(pPlayer.getDeltaMovement().add
+                            (pPlayer.getViewVector(1.0F).scale(-coolDown/ 10F))); //recoil
                 success = true;
             }
         }

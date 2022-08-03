@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tnt_frame_addition",
+  "pattern": [
+    "xxx"
+  ],
+  "key": {
+    "x": {
+      "item": "minecraft:piston"
+    }
+  },
+  "result": {
+    "item": "artoftnt:horizontal_piston",
+    "count": 6
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "Test Category",
-  "description": "This is a test category for testing!",
+  "name": "Intro",
+  "description": "Introduction of the mod",
   "icon": "minecraft:writable_book"
 }

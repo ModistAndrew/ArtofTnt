@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "tnt_frame_addition",
+  "pattern": [
+    "xWx",
+    "WxW",
+    "xWx"
+  ],
+  "key": {
+    "x": {
+      "item": "artoftnt:block_drop_3"
+    },
+    "W": {
+      "item": "minecraft:gold_block"
+    }
+  },
+  "result": {
+    "item": "artoftnt:block_drop_4"
+  }
+}

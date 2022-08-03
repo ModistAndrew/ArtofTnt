@@ -1,0 +1,47 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "artoftnt:block_drop_3"
+    ]
+  },
+  "criteria": {
+    "has_block_drop_2": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "artoftnt:block_drop_2"
+            ]
+          }
+        ]
+      }
+    },
+    "has_obsidian": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:obsidian"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "artoftnt:block_drop_3"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_block_drop_2",
+      "has_obsidian",
+      "has_the_recipe"
+    ]
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "type": "range",
+  "item": "artoftnt:gunpowder_4",
+  "increment": 8.0,
+  "minTier": 3,
+  "maxCount": 8,
+  "weight": 9.0,
+  "instability": 4,
+  "specialRenderer": false
+}

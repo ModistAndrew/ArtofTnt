@@ -31,8 +31,8 @@ public class CommonRegistryEventHandler {
             DispenserBlock.registerBehavior(BlockLoader.TNT_FRAMES[i].get(), new AbstractProjectileDispenseBehavior() {
                 protected Projectile getProjectile(Level level, Position pos, ItemStack pStack) {
                     TntFrameItem item = (TntFrameItem) pStack.getItem();
-                    return new PrimedTntFrame(item.getTntFrameDataTag(pStack), level, pos.x() + 0.5D, pos.y(),
-                            pos.z() + 0.5D, null, finalI);
+                    return new PrimedTntFrame(item.getTntFrameDataTag(pStack), level, pos.x() - 0.5D, pos.y(),
+                            pos.z() - 0.5D, null, finalI);
                 }
             });
         }

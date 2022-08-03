@@ -1,0 +1,30 @@
+{
+  "display": {
+    "icon": {
+      "item": "artoftnt:tnt_frame_0"
+    },
+    "title": {
+      "translate": "advancements.artoftnt.root.title"
+    },
+    "description": {
+      "translate": "advancements.artoftnt.root.description"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false,
+    "background": "artoftnt:textures/special/tnt_background.png"
+  },
+  "criteria": {
+    "tnt": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "artoftnt:tnt_frame_0"
+          }
+        ]
+      }
+    }
+  }
+}

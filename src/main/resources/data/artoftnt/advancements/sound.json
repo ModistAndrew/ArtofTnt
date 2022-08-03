@@ -1,0 +1,29 @@
+{
+  "parent": "artoftnt:tnt",
+  "display": {
+    "icon": {
+      "item": "artoftnt:sound_type_modifier"
+    },
+    "title": {
+      "translate": "advancements.artoftnt.sound.title"
+    },
+    "description": {
+      "translate": "advancements.artoftnt.sound.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "tnt": {
+      "trigger": "artoftnt:ignite_tnt_frame",
+      "conditions": {
+        "minAdditions": {
+          "loudness": 2.0,
+          "sound_type": 8.0
+        }
+      }
+    }
+  }
+}

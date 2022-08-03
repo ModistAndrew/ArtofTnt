@@ -5,6 +5,7 @@ import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.AdditionType;
+import modist.artoftnt.core.addition.TntFrameData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;

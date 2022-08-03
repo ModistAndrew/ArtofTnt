@@ -1,0 +1,10 @@
+{
+  "type": "tnt_punch",
+  "item": "artoftnt:tnt_punch_modifier",
+  "increment": 0.1,
+  "minTier": 2,
+  "maxCount": 4,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

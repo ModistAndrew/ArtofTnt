@@ -1,0 +1,12 @@
+{
+    "type": "patchouli:shapeless_book_recipe",
+    "ingredients": [
+      {
+        "item": "minecraft:book"
+      },
+      {
+        "item": "artoftnt:tnt_frame_0"
+      }
+    ],
+    "book": "artoftnt:artoftnt"
+}

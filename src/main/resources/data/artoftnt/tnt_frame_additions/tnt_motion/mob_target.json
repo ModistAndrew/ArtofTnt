@@ -1,0 +1,10 @@
+{
+  "type": "mob_target",
+  "item": "minecraft:redstone_torch",
+  "increment": 10,
+  "minTier": 2,
+  "maxCount": 4,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

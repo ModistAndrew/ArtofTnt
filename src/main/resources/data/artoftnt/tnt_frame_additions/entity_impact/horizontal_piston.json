@@ -1,0 +1,10 @@
+{
+  "type": "punch_horizontal",
+  "item": "artoftnt:horizontal_piston",
+  "increment": 1,
+  "minTier": 2,
+  "maxCount": 8,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": true
+}

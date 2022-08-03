@@ -10,7 +10,7 @@
     "description": {
       "translate": "advancements.artoftnt.strength.description"
     },
-    "frame": "task",
+    "frame": "challenge",
     "show_toast": true,
     "announce_to_chat": true,
     "hidden": false
@@ -20,7 +20,7 @@
       "trigger": "artoftnt:ignite_tnt_frame",
       "conditions": {
         "minAdditions": {
-          "strength": 36000000.0
+          "strength": 7200000.0
         }
       }
     }

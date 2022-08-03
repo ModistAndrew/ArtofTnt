@@ -1,0 +1,11 @@
+{
+  "type": "drop",
+  "item": "artoftnt:block_drop_3",
+  "increment": 0.25,
+  "minTier": 2,
+  "maxTier": 2,
+  "maxCount": 4,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

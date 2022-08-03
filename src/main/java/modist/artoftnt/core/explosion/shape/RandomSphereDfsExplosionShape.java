@@ -14,7 +14,7 @@ public class RandomSphereDfsExplosionShape extends SphereDfsExplosionShape {
 
     @Override
     public Set<BlockPos> getEdge() {
-        int r = (int) radius;
+        int r = (int) actualRadius;
         int rm = r + r/4;
         return BlockPos.betweenClosedStream(p(-rm, -rm, -rm), p(rm, rm, rm))
                 .filter(bp -> r<=(int)Math.sqrt(center.distSqr(bp)) &&

@@ -1,0 +1,10 @@
+{
+  "type": "sound_type",
+  "item": "artoftnt:sound_type_modifier",
+  "increment": 1,
+  "minTier": 0,
+  "maxCount": 8,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}

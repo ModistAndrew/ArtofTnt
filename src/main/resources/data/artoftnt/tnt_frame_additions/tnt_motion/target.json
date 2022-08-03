@@ -1,0 +1,10 @@
+{
+  "type": "target",
+  "item": "artoftnt:target_marker",
+  "increment": 1,
+  "minTier": 2,
+  "maxCount": 4,
+  "weight": 0.0,
+  "instability": 0.0,
+  "specialRenderer": false
+}
