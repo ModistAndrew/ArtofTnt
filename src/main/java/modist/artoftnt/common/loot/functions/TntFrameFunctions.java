@@ -34,7 +34,7 @@ public class TntFrameFunctions {
                 .add(Items.STRING, 8).add(Items.GOLD_INGOT, 7).disguise(Blocks.STONE).build();
         new TntFrameFunctionBuilder(3, "draw bullet").add(Items.GUNPOWDER, 6).add(Items.QUARTZ, 2)
                 .add(Blocks.PISTON, 2).size(0.5F).add(Items.FIREWORK_ROCKET, 4)
-                .add(ItemLoader.SIMPLE_ITEMS.get("tnt_draw_modifier").get(), 4)
+                .add(ItemLoader.SIMPLE_ITEMS.get("tnt_draw_modifier").get(), 3)
                 .add(Items.STRING, 8).disguise(Blocks.DIORITE).build();
         new TntFrameFunctionBuilder(3, "missile").add(Items.GUNPOWDER, 6).add(Items.QUARTZ, 2)
                 .add(Blocks.PISTON, 2).size(0.75F).add(Items.FIREWORK_ROCKET, 8)
