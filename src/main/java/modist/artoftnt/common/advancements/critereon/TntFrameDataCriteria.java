@@ -10,7 +10,8 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 
 public class TntFrameDataCriteria {
-    public float size;
+    public float size; //max size
+    public float weight; //min weight
     public int minTier;
     public int maxTier = 3;
     @Nullable
@@ -35,6 +36,9 @@ public class TntFrameDataCriteria {
             return false;
         }
         if(disguise!=null && !disguise.equals(data.disguise)){
+            return false;
+        }
+        if(weight!=0 && data.getWeight() < weight){
             return false;
         }
         return data.tier >= minTier && data.tier <= maxTier;

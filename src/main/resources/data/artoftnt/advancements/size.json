@@ -11,7 +11,7 @@
     "description": {
       "translate": "advancements.artoftnt.size.description"
     },
-    "frame": "task",
+    "frame": "challenge",
     "show_toast": true,
     "announce_to_chat": true,
     "hidden": false
@@ -20,7 +20,8 @@
     "tnt": {
       "trigger": "artoftnt:ignite_tnt_frame",
       "conditions": {
-        "size": 0.25
+        "size": 0.25,
+        "weight": 50.0
       }
     }
   }

@@ -1,7 +1,5 @@
 package modist.artoftnt.common.loot.functions;
 
-import modist.artoftnt.ArtofTnt;
-import modist.artoftnt.common.JsonUtil;
 import modist.artoftnt.common.item.ItemLoader;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -23,7 +21,7 @@ public class TntFrameFunctions {
     public static final Set<TntFrameFunctionWrapper>[] FUNCTIONS = new Set[]{new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>()};
 
     static {
-        new TntFrameFunctionBuilder(3, "tnt").add(Items.GUNPOWDER, 4).add(Items.IRON_INGOT, 4)
+        new TntFrameFunctionBuilder(2, "tnt").add(Items.GUNPOWDER, 4).add(Items.IRON_INGOT, 4)
                 .add(Items.STRING, 8).disguise(Blocks.TNT).build();
         new TntFrameFunctionBuilder(3, "fire charge").add(Items.GUNPOWDER, 4).add(Items.QUARTZ, 2)
                 .add(Blocks.PISTON, 2).size(0.5F).add(ItemLoader.SIMPLE_ITEMS.get("tnt_motion_modifier").get(), 1)

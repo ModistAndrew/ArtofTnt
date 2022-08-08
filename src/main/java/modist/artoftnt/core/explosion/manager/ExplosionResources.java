@@ -36,7 +36,7 @@ public class ExplosionResources<T> {
     }
 
     static {
-        PARTICLES.register(ParticleTypes.BUBBLE_POP, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, ParticleTypes.ANGRY_VILLAGER);
+        PARTICLES.register(ParticleTypes.BUBBLE_POP, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER);
         TNT_PARTICLES.register(null, null, null, null);
         TNT_PARTICLES.register(ParticleTypes.BUBBLE, ParticleTypes.COMPOSTER, ParticleTypes.FLAME, ParticleTypes.SNOWFLAKE);
         SOUNDS.register(SoundEvents.BUBBLE_COLUMN_UPWARDS_INSIDE, SoundEvents.GENERIC_EXPLODE, SoundEvents.DRAGON_FIREBALL_EXPLODE, SoundEvents.WITHER_DEATH);

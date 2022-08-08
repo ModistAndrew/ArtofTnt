@@ -36,7 +36,7 @@ public class TntShaperItem extends Item {
         BlockPos blockpos = pContext.getClickedPos();
         BlockState blockstate = level.getBlockState(blockpos);
         BlockState disguise = getState(shaper);
-        if (level.getBlockEntity(blockpos) instanceof TntFrameBlockEntity tntFrameBlockEntity && disguise!=null) {
+        if (level.getBlockEntity(blockpos) instanceof TntFrameBlockEntity tntFrameBlockEntity) {
             tntFrameBlockEntity.toggleDisguise(disguise);
         } else {
             if (accept(level,blockpos,blockstate)) { //only allow full block

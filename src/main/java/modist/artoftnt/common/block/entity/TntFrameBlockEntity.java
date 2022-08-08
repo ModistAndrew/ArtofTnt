@@ -51,7 +51,7 @@ public class TntFrameBlockEntity extends BlockEntity {
         return success;
     }
 
-    public void toggleDisguise(BlockState blockState) {
+    public void toggleDisguise(@Nullable BlockState blockState) {
         if(data.disguise==null || !data.disguise.equals(blockState)) { //set or change
             data.disguise = blockState;
         } else { //reset
