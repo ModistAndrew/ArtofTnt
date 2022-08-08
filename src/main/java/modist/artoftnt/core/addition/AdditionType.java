@@ -54,7 +54,7 @@ public class AdditionType {
     public static final AdditionType EXPLOSION_COUNT = new Builder("explosion_count", AdditionSlot.EXPLOSION_DURATION).withInitialValue(1).build();
     public static final AdditionType EXPLOSION_INTERVAL = new Builder("explosion_interval", AdditionSlot.EXPLOSION_DURATION).withInitialValue(5).build();
     public static final AdditionType FIREWORK = new Builder("firework", AdditionSlot.EXPLOSION_EFFECT).build();
-    public static final AdditionType TNT_PARTICLE = new Builder("tnt_particle", AdditionSlot.EXPLOSION_EFFECT).withMaxCount(4).fuse().build();
+    public static final AdditionType TNT_PARTICLE = new Builder("tnt_particle", AdditionSlot.EXPLOSION_EFFECT).fuse().build();
     public static final AdditionType LIGHT = new Builder("light", AdditionSlot.EXPLOSION_EFFECT).build();
     public static final AdditionType SHAPE = new Builder("shape", AdditionSlot.EXPLOSION_SHAPE).single().build();
 

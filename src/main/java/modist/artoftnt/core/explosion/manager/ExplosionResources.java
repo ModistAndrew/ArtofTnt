@@ -36,13 +36,14 @@ public class ExplosionResources<T> {
     }
 
     static {
-        PARTICLES.register(ParticleTypes.BUBBLE_POP, ParticleTypes.ANGRY_VILLAGER, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER);
+        PARTICLES.register(ParticleTypes.BUBBLE_POP, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, ParticleTypes.ANGRY_VILLAGER);
         TNT_PARTICLES.register(null, null, null, null);
-        TNT_PARTICLES.register(ParticleTypes.BUBBLE, ParticleTypes.COMPOSTER, ParticleTypes.FLAME, ParticleTypes.SNOWFLAKE);
+        TNT_PARTICLES.register(ParticleTypes.SMOKE, ParticleTypes.COMPOSTER, ParticleTypes.FLAME, ParticleTypes.SNOWFLAKE,
+                ParticleTypes.ASH, ParticleTypes.FALLING_WATER, ParticleTypes.FALLING_LAVA, ParticleTypes.GLOW);
         SOUNDS.register(SoundEvents.BUBBLE_COLUMN_UPWARDS_INSIDE, SoundEvents.GENERIC_EXPLODE, SoundEvents.DRAGON_FIREBALL_EXPLODE, SoundEvents.WITHER_DEATH);
         for(int i=0; i<8; i++){
             SOUNDS.register(SoundEventRegistry.TNT_SOUND[i].get());
         }
-        TNT_SOUNDS.register(null, SoundEvents.TNT_PRIMED, SoundEvents.ANVIL_PLACE, SoundEvents.GHAST_DEATH);
+        TNT_SOUNDS.register(null, SoundEvents.UI_BUTTON_CLICK, SoundEvents.TNT_PRIMED, SoundEvents.ANVIL_PLACE);
     }
 }

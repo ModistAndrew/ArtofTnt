@@ -3,7 +3,7 @@
   "item": "artoftnt:tnt_particle_modifier",
   "increment": 1,
   "minTier": 0,
-  "maxCount": 4,
+  "maxCount": 8,
   "weight": 0.0,
   "instability": 0.0,
   "specialRenderer": false

@@ -3,7 +3,6 @@
   "item": "minecraft:clock",
   "increment": 5,
   "minTier": 0,
-  "maxTier": 1,
   "maxCount": 8,
   "weight": 0.0,
   "instability": 0.0,
