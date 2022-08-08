@@ -140,7 +140,7 @@ public class RenderUtil {
     public static void renderTnt(TntFrameData data, PoseStack pMatrixStack, MultiBufferSource pRenderTypeBuffer, int pCombinedLight, boolean pDoFullBright) {
         int i;
         if (pDoFullBright) {
-            i = OverlayTexture.pack(OverlayTexture.u(1.0F), data.getValue(AdditionType.EMPTY)>0 ? 3 : 10);
+            i = OverlayTexture.pack(OverlayTexture.u(1.0F), 10);
         } else {
             i = OverlayTexture.NO_OVERLAY;
         }

@@ -6,6 +6,7 @@ import com.mojang.math.Vector3f;
 import modist.artoftnt.client.block.TextureLoader;
 import modist.artoftnt.core.addition.Addition;
 import modist.artoftnt.core.addition.AdditionSlot;
+import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
@@ -26,15 +27,22 @@ public class AdditionSpecialRenderer {
             return;
         }
         if (addition.type.slot.index < 16) {
-            Matrix4f mtx = Matrix4f.createScaleMatrix(0.125F, 0.125F-DELTA, 0.125F);
-            mtx.translate(new Vector3f(AdditionSlot.getU(slot)/16F, (index * 2+DELTA)/16F, AdditionSlot.getV(slot)/16F));
-            Transformation temp = renderer.globalTransform;
-            renderer.setTransform(temp.compose(new Transformation(mtx)));
-            renderer.transformItem(Minecraft.getInstance().getModelManager().getModel(addition.resourceLocation).getQuads(
-                    null, null, random, EmptyModelData.INSTANCE), stack);
-            Arrays.stream(Direction.values()).forEach(d -> renderer.transformItem(Minecraft.getInstance().getModelManager().getModel(addition.resourceLocation).getQuads(
-                    null, d, random, EmptyModelData.INSTANCE), stack)); //all faces
-            renderer.setTransform(temp); //pop
+            if(addition.type==AdditionType.EMPTY){ //big!
+                renderer.transformItem(Minecraft.getInstance().getModelManager().getModel(addition.resourceLocation).getQuads(
+                        null, null, random, EmptyModelData.INSTANCE), stack);
+                Arrays.stream(Direction.values()).forEach(d -> renderer.transformItem(Minecraft.getInstance().getModelManager().getModel(addition.resourceLocation).getQuads(
+                        null, d, random, EmptyModelData.INSTANCE), stack)); //all faces
+            } else {
+                Matrix4f mtx = Matrix4f.createScaleMatrix(0.125F, 0.125F - DELTA, 0.125F);
+                mtx.translate(new Vector3f(AdditionSlot.getU(slot) / 16F, (index * 2 + DELTA) / 16F, AdditionSlot.getV(slot) / 16F));
+                Transformation temp = renderer.globalTransform;
+                renderer.setTransform(temp.compose(new Transformation(mtx)));
+                renderer.transformItem(Minecraft.getInstance().getModelManager().getModel(addition.resourceLocation).getQuads(
+                        null, null, random, EmptyModelData.INSTANCE), stack);
+                Arrays.stream(Direction.values()).forEach(d -> renderer.transformItem(Minecraft.getInstance().getModelManager().getModel(addition.resourceLocation).getQuads(
+                        null, d, random, EmptyModelData.INSTANCE), stack)); //all faces
+                renderer.setTransform(temp); //pop
+            }
         } else if (addition.type.slot.index == 16) {
             renderer.putCubeFace16(0, 16, 0, 16, 16, 16,
                     addition.appendIndex(index), Direction.UP);
