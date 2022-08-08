@@ -1,8 +1,6 @@
 package modist.artoftnt.core.addition;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import modist.artoftnt.core.addition.AdditionStack;
-import modist.artoftnt.core.addition.AdditionType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -88,7 +86,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void addText(List<Component> pTooltip) {
+    public void addText(List<Component> pTooltip, boolean showType) {
         if(this.isEmpty()){
             addTooltip("empty_frame", null, pTooltip, ChatFormatting.GREEN);
             return;
@@ -102,15 +100,13 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
         if (disguise != null) {
             addTooltip("disguise", new TranslatableComponent(disguise.getBlock().getDescriptionId()), pTooltip, ChatFormatting.AQUA);
         }
-        if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT)) {
-            addTooltip("type_values", null, pTooltip, ChatFormatting.BLACK);
+        if (showType) {
             for (AdditionType type : AdditionType.getTypes()) {
                 if (type != AdditionType.INSTABILITY && additions.getValue(type) != type.initialValue) {
                     addTooltip(type.toString(), additions.getValue(type), pTooltip);
                 }
             }
         } else {
-            addTooltip("press_shift", null, pTooltip, ChatFormatting.ITALIC,ChatFormatting.RED);
             for(int i=0; i<18; i++){
                 for(ItemStack stack :additions.getItemStacks(i)){
                     if(!stack.isEmpty()){
@@ -120,10 +116,16 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
                     }
                 }
             }
+            addTooltip("press_shift", null, pTooltip, ChatFormatting.ITALIC,ChatFormatting.RED);
         }
     }
 
-    public static void addTooltip(String name, @Nullable Object value, List<Component> pTooltip, ChatFormatting... pFormats) {
+    @OnlyIn(Dist.CLIENT)
+    public void addText(List<Component> pTooltip) {
+        addText(pTooltip, InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT));
+    }
+
+        public static void addTooltip(String name, @Nullable Object value, List<Component> pTooltip, ChatFormatting... pFormats) {
         MutableComponent mutablecomponent = new TranslatableComponent(PREFIX + name);
         if(value!=null) {
             if(value instanceof Float f){

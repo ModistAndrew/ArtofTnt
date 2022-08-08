@@ -4,6 +4,7 @@ import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.common.advancements.critereon.IgniteTntFrameTrigger;
 import modist.artoftnt.common.block.BlockLoader;
 import modist.artoftnt.common.entity.PrimedTntFrame;
+import modist.artoftnt.common.integration.TOPIntegration;
 import modist.artoftnt.common.item.TntFrameItem;
 import modist.artoftnt.common.loot.functions.TntFrameFunction;
 import modist.artoftnt.network.NetworkHandler;
@@ -18,8 +19,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.InterModComms;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CommonRegistryEventHandler {
@@ -45,6 +49,13 @@ public class CommonRegistryEventHandler {
         TntFrameFunction.SET_TNT_FRAME_DATA =
                 Registry.register(Registry.LOOT_FUNCTION_TYPE, new ResourceLocation(ArtofTnt.MODID, "set_tnt_frame_data"),
                         new LootItemFunctionType(TntFrameFunction.SERIALIZER));
+    }
+
+    @SubscribeEvent
+    public static void enqueueIMC(InterModEnqueueEvent event) {
+        if (ModList.get().isLoaded("theoneprobe")) {
+            InterModComms.sendTo("theoneprobe", "getTheOneProbe", TOPIntegration::new);
+        }
     }
 
 }

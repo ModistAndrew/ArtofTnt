@@ -1,7 +1,7 @@
 {
   "type": "temperature",
   "item": "minecraft:lava_bucket",
-  "increment": 1,
+  "increment": 2,
   "minTier": 1,
   "maxCount": 4,
   "weight": 0.0,
