@@ -7,8 +7,6 @@ import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.recipe.RecipeLoader;
 import modist.artoftnt.common.sound.SoundEventRegistry;
 import modist.artoftnt.core.addition.AdditionManager;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.*;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -26,14 +24,14 @@ public class ArtofTnt {
     public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(MODID+"_tools") {
         @Override
         public ItemStack makeIcon() {
-            return new ItemStack(ItemLoader.TNT_SHAPER.get());
+            return new ItemStack(ItemLoader.TNT_DEFUSER.get());
         }
     };
 
     public static final CreativeModeTab ITEM_GROUP_FRAME = new CreativeModeTab(MODID+"_presets") {
         @Override
         public ItemStack makeIcon() {
-            return new ItemStack(ItemLoader.TNT_FRAMES[0].get());
+            return new ItemStack(ItemLoader.TNT_FRAMES[3].get());
         }
     };
     public ArtofTnt() {

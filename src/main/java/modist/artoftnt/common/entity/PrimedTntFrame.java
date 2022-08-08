@@ -346,7 +346,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
 
     @Override
     public float getPickRadius() {
-        return 0.0F;
+        return 0.5F;
     }
 
     public void defuse(boolean shouldFix) {

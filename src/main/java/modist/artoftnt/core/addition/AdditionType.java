@@ -1,9 +1,11 @@
 package modist.artoftnt.core.addition;
 
 import modist.artoftnt.ArtofTnt;
-import modist.artoftnt.core.addition.AdditionSlot;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 public class AdditionType {
