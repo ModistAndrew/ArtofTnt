@@ -162,7 +162,7 @@ public class TntTurretBlockEntity extends CoolDownBlockEntity {
 
     public static Vec3 getNormal(Vec3 vec){
         return vec.cross(new Vec3(1, 0, 0)).equals(Vec3.ZERO) ?
-                vec.cross(new Vec3(0, 1, 0)) : vec.cross(new Vec3(1, 0, 0));
+                vec.cross(new Vec3(0, 1, 0)).normalize() : vec.cross(new Vec3(1, 0, 0)).normalize();
     }
     @Override
     protected void doDispense() {
