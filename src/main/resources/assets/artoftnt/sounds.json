@@ -59,7 +59,8 @@
         "subtitle": "tnt_sound_7",
         "sounds": [
             {
-                "name": "artoftnt:tnt_sound_7"
+                "name": "artoftnt:tnt_sound_7",
+                "stream": true
             }
         ]
     }
