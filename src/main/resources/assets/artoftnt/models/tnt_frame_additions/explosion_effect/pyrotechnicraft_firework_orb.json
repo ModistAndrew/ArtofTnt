@@ -1,8 +1,8 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "artoftnt:block/firework_outer_1",
-		"1": "artoftnt:block/firework_inner_1"
+		"0": "artoftnt:block/firework_outer_2",
+		"1": "artoftnt:block/firework_inner_2"
 	},
 	"elements": [
 		{

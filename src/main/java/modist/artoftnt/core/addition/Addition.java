@@ -4,6 +4,7 @@ import modist.artoftnt.ArtofTnt;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
@@ -47,7 +48,7 @@ public class Addition {
 
     public static void register(ResourceLocation name, AdditionManager.AdditionWrapper wrapper){
         Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(wrapper.item));
-        if(item==null || item== Items.AIR){
+        if((item==null || item== Items.AIR) && ModList.get().isLoaded(name.getNamespace())){
             ArtofTnt.LOGGER.warn("can't find item with id {} for tnt frame addition json {}",
                     wrapper.item, name);
             return;
