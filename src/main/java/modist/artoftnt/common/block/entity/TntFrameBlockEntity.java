@@ -43,6 +43,14 @@ public class TntFrameBlockEntity extends BlockEntity {
         return result;
     }
 
+    public boolean draw(ItemStack itemStack) {
+        boolean success = data.additions.draw(itemStack);
+        if (success) {
+            update();
+        }
+        return success;
+    }
+
     public void toggleDisguise(BlockState blockState) {
         if(data.disguise==null || !data.disguise.equals(blockState)) { //set or change
             data.disguise = blockState;

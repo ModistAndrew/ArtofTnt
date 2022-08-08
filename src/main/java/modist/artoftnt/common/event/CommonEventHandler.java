@@ -1,14 +1,19 @@
 package modist.artoftnt.common.event;
 
+import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.TargetMarkerItem;
 import modist.artoftnt.common.item.TntDefuserItem;
 import modist.artoftnt.common.item.TntDispenserItem;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -21,7 +26,7 @@ public class CommonEventHandler {
             if (event.getTarget() instanceof PrimedTntFrame tntFrame) {
                 ItemStack stack = event.getPlayer().getMainHandItem();
                 if (stack.getItem() instanceof TntDefuserItem) {
-                    if(!tntFrame.data.fixed) { //only the unfixed can be defused
+                    if (!tntFrame.data.fixed) { //only the unfixed can be defused
                         stack.hurtAndBreak
                                 (tntFrame.getWeight() * 10, event.getPlayer(),
                                         (p_40858_) -> p_40858_.broadcastBreakEvent
@@ -31,7 +36,7 @@ public class CommonEventHandler {
                     }
                 } else if (stack.getItem() instanceof TntDispenserItem) {
                     int knockBack = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, stack);
-                    if(knockBack > 0) {
+                    if (knockBack > 0) {
                         event.getPlayer().getMainHandItem().hurtAndBreak
                                 (tntFrame.getWeight() * 10, event.getPlayer(),
                                         (p_40858_) -> p_40858_.broadcastBreakEvent
@@ -45,9 +50,19 @@ public class CommonEventHandler {
 
     @SubscribeEvent
     public static void setTargetEntity(PlayerInteractEvent.EntityInteract event) {
-        if (!event.getPlayer().level.isClientSide && event.getPlayer().isShiftKeyDown() &&
+        if (!event.getPlayer().level.isClientSide && event.getPlayer().isCrouching() &&
                 event.getPlayer().getMainHandItem().getItem() instanceof TargetMarkerItem item) {
             item.saveEntity(event.getPlayer().getMainHandItem(), event.getTarget());
+        }
+    }
+
+    @SubscribeEvent
+    public static void useTntFrame(PlayerInteractEvent.RightClickBlock event) {
+        Level level = event.getPlayer().getLevel();
+        BlockPos pos = event.getPos();
+        BlockState state = level.getBlockState(pos);
+        if(state.getBlock() instanceof TntFrameBlock){
+            event.setUseBlock(Event.Result.ALLOW); //allow for sneaking
         }
     }
 }

@@ -42,7 +42,7 @@ public class RemoteExploderBlock extends Block implements EntityBlock {
                 return InteractionResult.FAIL;
             }
             be.pushMarker(tItem);
-            if (!pPlayer.isCreative()) {
+            if(!pPlayer.getAbilities().instabuild){
                 itemstack.shrink(1);
                 pPlayer.setItemInHand(pHand, itemstack);
             }

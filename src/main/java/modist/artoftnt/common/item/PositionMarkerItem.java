@@ -35,9 +35,8 @@ public final boolean isContainer;
     @Override
     public InteractionResult useOn(UseOnContext pContext) { //always mark
         ItemStack marker = pContext.getItemInHand();
-        Level level = pContext.getLevel();
         BlockPos blockpos = pContext.getClickedPos();
-        if(pContext.getPlayer()!=null && pContext.getPlayer().isShiftKeyDown()){
+        if(pContext.getPlayer()!=null && pContext.getPlayer().isCrouching()){
             marker.addTagElement("position", NbtUtils.writeBlockPos(blockpos));
             return InteractionResult.SUCCESS;
         }

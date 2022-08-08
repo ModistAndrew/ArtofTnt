@@ -1,6 +1,9 @@
 package modist.artoftnt.core.addition;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import modist.artoftnt.common.block.entity.TntClonerBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -86,7 +89,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void addText(List<Component> pTooltip, boolean showType) {
+    public void addText(List<Component> pTooltip, boolean showItems) {
         if(this.isEmpty()){
             addTooltip("empty_frame", null, pTooltip, ChatFormatting.GREEN);
             return;
@@ -100,20 +103,25 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
         if (disguise != null) {
             addTooltip("disguise", new TranslatableComponent(disguise.getBlock().getDescriptionId()), pTooltip, ChatFormatting.AQUA);
         }
-        if (showType) {
-            for (AdditionType type : AdditionType.getTypes()) {
-                if (type != AdditionType.INSTABILITY && additions.getValue(type) != type.initialValue) {
-                    addTooltip(type.toString(), additions.getValue(type), pTooltip);
-                }
-            }
-        } else {
+        if (showItems) {
+            Object2IntMap<TntClonerBlockEntity.ItemStackWrapper> stacks = new Object2IntOpenHashMap<>();
             for(int i=0; i<18; i++){
                 for(ItemStack stack :additions.getItemStacks(i)){
                     if(!stack.isEmpty()){
-                        MutableComponent mutablecomponent = stack.getHoverName().copy();
-                        mutablecomponent.append(" x").append(String.valueOf(stack.getCount()));
-                        pTooltip.add(mutablecomponent);
+                        TntClonerBlockEntity.ItemStackWrapper wrapper = new TntClonerBlockEntity.ItemStackWrapper(stack);
+                        stacks.put(wrapper, stacks.getInt(wrapper) + stack.getCount());
                     }
+                }
+            }
+            stacks.forEach((w, i)->{
+                MutableComponent mutablecomponent = w.stack.getHoverName().copy();
+                mutablecomponent.append(" x").append(String.valueOf(i));
+                pTooltip.add(mutablecomponent);
+            });
+        } else {
+            for (AdditionType type : AdditionType.getTypes()) {
+                if (type != AdditionType.INSTABILITY && additions.getValue(type) != type.initialValue) {
+                    addTooltip(type.toString(), additions.getValue(type), pTooltip);
                 }
             }
             addTooltip("press_shift", null, pTooltip, ChatFormatting.ITALIC,ChatFormatting.RED);

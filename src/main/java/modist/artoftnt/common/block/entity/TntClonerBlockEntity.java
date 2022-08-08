@@ -10,10 +10,8 @@ import modist.artoftnt.common.block.TntFrameBlock;
 import modist.artoftnt.common.item.TntFrameItem;
 import net.minecraft.core.*;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
-import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -261,10 +259,10 @@ public class TntClonerBlockEntity extends CoolDownBlockEntity {
         }
     }
 
-    private static class ItemStackWrapper {
-        private final ItemStack stack;
+    public static class ItemStackWrapper {
+        public final ItemStack stack;
 
-        private ItemStackWrapper(ItemStack stack1) {
+        public ItemStackWrapper(ItemStack stack1) {
             this.stack = stack1.copy();
             this.stack.setCount(1);
         }

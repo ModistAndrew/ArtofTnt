@@ -138,7 +138,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
         BlockEntity blockentity = pLevel.getBlockEntity(pPos);
         if (blockentity instanceof TntFrameBlockEntity tntFrameBlockEntity) {
             if (!pLevel.isClientSide) {
-                if (pPlayer.isCreative()) {
+                if (pPlayer.getAbilities().instabuild) {
                     Block.popResource(pLevel, pPos, dropFrame(false, tntFrameBlockEntity.getData()));
                 } else if (!(pPlayer.getMainHandItem().getItem() instanceof TntDefuserItem)) {
                     tryExplode(InstabilityHelper.BREAK_BLOCK_INSTABILITY, pLevel, pPos, pPlayer);
@@ -224,17 +224,29 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
             if (Addition.contains(itemstack.getItem())) {
                 ItemStack tItem = itemstack.copy();
                 tItem.setCount(1);
-                AdditionStack.AdditionResult result = be.add(tItem);
-                if (ArtofTntConfig.ENABLE_ADDITION_REPLY.get() && pPlayer instanceof ServerPlayer player && result.reply() != null) {
-                    player.sendMessage(result.reply(), Util.NIL_UUID);
-                }
-                if (result.success()) {
-                    if (!pPlayer.isCreative()) {
-                        itemstack.shrink(1);
+                if (pPlayer.isCrouching()) {
+                    if (be.draw(tItem)) {
+                        if (!pPlayer.getAbilities().instabuild) {
+                            ItemStack stack1 = itemstack.copy();
+                            stack1.setCount(1);
+                            pPlayer.getInventory().add(stack1);
+                        }
+                        return InteractionResult.sidedSuccess(pLevel.isClientSide);
                     }
-                    return InteractionResult.sidedSuccess(pLevel.isClientSide);
+                    return InteractionResult.CONSUME;
+                } else {
+                    AdditionStack.AdditionResult result = be.add(tItem);
+                    if (ArtofTntConfig.ENABLE_ADDITION_REPLY.get() && pPlayer instanceof ServerPlayer player && result.reply() != null) {
+                        player.sendMessage(result.reply(), Util.NIL_UUID);
+                    }
+                    if (result.success()) {
+                        if (!pPlayer.getAbilities().instabuild) {
+                            itemstack.shrink(1);
+                        }
+                        return InteractionResult.sidedSuccess(pLevel.isClientSide);
+                    }
+                    return InteractionResult.CONSUME;
                 }
-                return InteractionResult.CONSUME;
             }
         }
         ItemStack itemstack = pPlayer.getItemInHand(pHand); //super, but may not set air
@@ -260,7 +272,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @Override
     public void fillItemCategory(CreativeModeTab pTab, NonNullList<ItemStack> pItems) {
         ItemStack stack = new ItemStack(this);
-        for(TntFrameFunctionWrapper function : TntFrameFunctions.FUNCTIONS[tier]) {
+        for (TntFrameFunctionWrapper function : TntFrameFunctions.FUNCTIONS[tier]) {
             pItems.add(function.apply(stack.copy()));
         }
         super.fillItemCategory(pTab, pItems);

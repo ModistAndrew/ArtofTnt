@@ -33,7 +33,7 @@ import java.util.*;
 @OnlyIn(Dist.CLIENT)
 public class TntFrameBlockBakedModel implements IDynamicBakedModel {
 
-    private static final float DELTA = 0.001F; //fix z-fighting
+    private static final float DELTA = 0.01F; //fix z-fighting
     private final BakedModel existingModel;
 
     public TntFrameBlockBakedModel(BakedModel existingModel) {

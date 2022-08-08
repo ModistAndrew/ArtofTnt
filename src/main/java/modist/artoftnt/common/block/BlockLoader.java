@@ -1,5 +1,6 @@
 package modist.artoftnt.common.block;
 
+import com.mojang.datafixers.DSL;
 import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.common.block.entity.RemoteExploderBlockEntity;
 import modist.artoftnt.common.block.entity.TntClonerBlockEntity;
@@ -92,7 +93,7 @@ public class BlockLoader {
     @SuppressWarnings("ConstantConditions")
     private static <T extends BlockEntity> RegistryObject<BlockEntityType<T>> fromBlock(RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<T> pFactory) {
         return BLOCK_ENTITIES.register(block.getId().getPath()+"_block_entity", ()-> BlockEntityType.Builder.of
-                (pFactory, block.get()).build(null));
+                (pFactory, block.get()).build(DSL.remainderType()));
     }
 
     private static RegistryObject<Block> simple(String name, Supplier<? extends Block> sup) {

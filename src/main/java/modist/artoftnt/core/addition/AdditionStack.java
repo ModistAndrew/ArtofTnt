@@ -2,6 +2,7 @@ package modist.artoftnt.core.addition;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import modist.artoftnt.ArtofTnt;
 import modist.artoftnt.ArtofTntConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -17,11 +18,11 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class AdditionStack implements INBTSerializable<CompoundTag> {
+    public final int tier; //immutable
+    //following should be initialized after additions is loaded; all should be updated after an item is added or drawn
+    //update both on client and on server side
     @SuppressWarnings("unchecked")
     private final Stack<ItemStack>[] additions = new Stack[18]; //stored
-    public final int tier; //immutable
-    //following should be initialized after additions is loaded; all should be updated after an item is added
-    //update both on client and on server side
     private final HashMap<AdditionType, AdditionTypeStorage> typeStorage = new HashMap<>(); //watch out null pointer
     private final int[] counts = new int[18]; //5, 6, 9, 10 for free slots; 16 for fuse, 17 for shape; max 8
     private final Object2IntMap<Addition> additionCounts = new Object2IntOpenHashMap<>();
@@ -82,6 +83,8 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
         this.deserializeNBT(tag);
     }
 
+
+
     public record AdditionResult(boolean success, @Nullable Component reply){}
 
     public AdditionResult add(ItemStack itemStack) {
@@ -96,7 +99,7 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
             return new AdditionResult(ret, null);
         }
         Addition addition = Addition.fromItem(itemStack.getItem());
-        if (addition == null) {
+        if (itemStack.isEmpty() || addition == null) {
             return new AdditionResult(false, getComponent("item_not_supported", itemStack.getItem().getDescriptionId()));
         }
         AdditionResult countResult = checkCount(addition);
@@ -110,6 +113,41 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
             return new AdditionResult(false, getComponent("tier_high", null, this.tier+1, addition.maxTier+1));
         }
         return new AdditionResult(true, addAndUpdate(getFreeSlot(addition.type.slot), itemStack));
+    }
+
+    public boolean draw(ItemStack remove) {
+        if(remove.getCount()!=1){
+            ArtofTnt.LOGGER.error("can only draw one item each time");
+            return false;
+        }
+        for(int i=0; i<additions.length; i++){
+            Stack<ItemStack> stack = additions[i];
+            Iterator<ItemStack> it = stack.iterator();
+            while(it.hasNext()){
+                ItemStack s = it.next();
+                if(ItemStack.isSameItemSameTags(remove, s)){
+                    s.shrink(1);
+                    if(s.isEmpty()){
+                        it.remove();
+                    }
+                    Addition addition = Addition.fromItem(remove.getItem());
+                    AdditionType type = addition.type;
+                    AdditionSlot slot = type.slot;
+                    typeStorage.get(type).remove(remove);
+                    counts[i]--;
+                    additionCounts.put(addition, additionCounts.getInt(addition) - 1);
+                    typeCounts.put(type, typeCounts.getInt(type) - 1);
+                    slotCounts.put(slot, slotCounts.getInt(slot) - 1);
+                    if (i != slot.index) {
+                        usedFreeSlotCounts--;
+                    }
+                    weight -= addition.weight;
+                    instability -= addition.instability;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private AdditionResult checkCount(Addition addition) {
@@ -257,6 +295,20 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
     public static class AdditionTypeStorage {
         private float value;
         private final Stack<ItemStack> itemStacks = new Stack<>();
+
+        public void remove(ItemStack stack) {
+            Iterator<ItemStack> it = itemStacks.iterator();
+            while(it.hasNext()) {
+                ItemStack s = it.next();
+                if (ItemStack.matches(stack, s)) {
+                    s.shrink(1);
+                    if (s.isEmpty()) {
+                        it.remove();
+                    }
+                }
+            }
+            value -= Addition.fromItem(stack.getItem()).increment;
+        }
 
         public void update(ItemStack stack) {
             if (!itemStacks.isEmpty() && ItemEntity.areMergable(itemStacks.peek(), stack)) {
