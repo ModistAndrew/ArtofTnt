@@ -88,7 +88,6 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
         return (1 - size) / 2;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void addText(List<Component> pTooltip, boolean showItems) {
         if(this.isEmpty()){
             addTooltip("empty_frame", null, pTooltip, ChatFormatting.GREEN);
