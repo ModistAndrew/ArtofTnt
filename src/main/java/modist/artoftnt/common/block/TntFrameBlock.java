@@ -3,7 +3,6 @@ package modist.artoftnt.common.block;
 import com.google.common.collect.Lists;
 import modist.artoftnt.ArtofTntConfig;
 import modist.artoftnt.common.block.entity.TntFrameBlockEntity;
-import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.common.item.ItemLoader;
 import modist.artoftnt.common.item.TntDefuserItem;
@@ -13,8 +12,10 @@ import modist.artoftnt.common.loot.functions.TntFrameFunctions;
 import modist.artoftnt.core.addition.Addition;
 import modist.artoftnt.core.addition.AdditionStack;
 import modist.artoftnt.core.addition.InstabilityHelper;
+import modist.artoftnt.core.addition.TntFrameData;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -62,9 +63,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
 
     @Override
     public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
-        if (!pOldState.is(pState.getBlock())) {
-            tryExplode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
-        }
+        tryExplode(InstabilityHelper.signalToMinInstability(pLevel.getBestNeighborSignal(pPos)), pLevel, pPos, null);
     }
 
     @Override
@@ -207,7 +206,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
         return true;
     }
 
-    /*@Override
+    @Override
     public int getFireSpreadSpeed(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         return 15;
     }
@@ -215,7 +214,7 @@ public class TntFrameBlock extends TntBlock implements EntityBlock {
     @Override
     public int getFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         return 100;
-    }*/
+    }
 
     @Override
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {

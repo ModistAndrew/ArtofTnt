@@ -70,13 +70,15 @@ public class TntFrameBlockEntity extends BlockEntity {
     }
 
     private void update() {
-        if(this.level!=null && this.level.isClientSide) {
-            requestModelDataUpdate();
-            this.level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
-        } else {
-            this.setChanged();
-            this.level.neighborChanged(this.getBlockPos(),
-                    this.getBlockState().getBlock(), this.getBlockPos()); //update for signal
+        if(this.level!=null) {
+            if (this.level.isClientSide) {
+                requestModelDataUpdate();
+                this.level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+            } else {
+                this.setChanged();
+                this.level.neighborChanged(this.getBlockPos(),
+                        this.getBlockState().getBlock(), this.getBlockPos()); //update for signal
+            }
         }
     }
 

@@ -13,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -63,6 +64,13 @@ public class CommonEventHandler {
         BlockState state = level.getBlockState(pos);
         if(state.getBlock() instanceof TntFrameBlock){
             event.setUseBlock(Event.Result.ALLOW); //allow for sneaking
+        }
+    }
+
+    @SubscribeEvent
+    public static void notifyTntFrame(BlockEvent.NeighborNotifyEvent event) { //fix clone command
+        if(event.getWorld() instanceof Level level && event.getState().getBlock() instanceof TntFrameBlock){
+            level.neighborChanged(event.getPos(), event.getState().getBlock(), event.getPos());
         }
     }
 }

@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "modist.artoftnt.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "artoftnt.refmap.json",
+  "mixins": [
+    "FireBlockMixin"
+  ]
+}

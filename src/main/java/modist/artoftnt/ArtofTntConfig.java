@@ -42,7 +42,7 @@ public class ArtofTntConfig {
         FIRE_MIN_INSTABILITY = builder.comment("the min instability for the tnt to be primed when lit on")
                 .defineInRange("fire_min_instability", 0, 0, Integer.MAX_VALUE);
         EXPLODED_MIN_INSTABILITY = builder.comment("the min instability for the tnt to be primed when exploded")
-                .defineInRange("exploded_min_instability", 3, 0, Integer.MAX_VALUE);
+                .defineInRange("exploded_min_instability", 0, 0, Integer.MAX_VALUE);
         ENTITY_HIT_BLOCK_MIN_INSTABILITY = builder.comment("the min instability for the tnt to be primed when entity walk on or hit block")
                 .defineInRange("entity_hit_block_min_instability", 8, 0, Integer.MAX_VALUE);
         PROJECTILE_HIT_BLOCK_MIN_INSTABILITY = builder.comment("the min instability for the tnt to be primed when a projectile hit it")
