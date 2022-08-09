@@ -19,7 +19,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 
-version = '1.0'
+version = '0.1.0'
 group = 'modist.artoftnt' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'artoftnt'
 
@@ -151,10 +151,20 @@ repositories {
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so:
-    // flatDir {
-    //     dir 'libs'
-    // }
+    flatDir {
+        dir 'libs'
+    }
     maven { url 'https://maven.blamejared.com' }
+    maven {
+        url "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven { url "https://maven.firstdarkdev.xyz/snapshots" }
+    maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    maven { url 'https://dvs1.progwml6.com/files/maven' }
+    maven {url 'https://cfa2.cursemaven.com'}
 }
 
 dependencies {
@@ -163,6 +173,7 @@ dependencies {
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.60'
 
+    implementation fg.deobf("curse.maven:the-one-probe-245211:3671753")
     compileOnly fg.deobf("vazkii.patchouli:Patchouli:1.18.2-70:api")
     runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:1.18.2-70")
 
@@ -172,7 +183,23 @@ dependencies {
     // implementation fg.deobf("com.tterrag.registrate:Registrate:MC${mc_version}-${registrate_version}") // Adds registrate as a dependency
 
     // Examples using mod jars from ./libs
-    // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
+    implementation fg.deobf("blank:pyrotechnicraft-1.18.2:0.0.1-36")
+    implementation fg.deobf("blank:ShimmerFire-1.18.2:0.2.7-62")
+    implementation fg.deobf("com.lowdragmc.shimmer:Shimmer-forge-1.18.2:0.1.10")
+
+    implementation fg.deobf("blank:garlic-forge-1.18:1.0.0")
+    implementation fg.deobf("com.lowdragmc.ldlib:LowDragLib:1.18.2-0.6.4")
+    implementation fg.deobf("com.lowdragmc.multiblocked:Multiblocked:1.18.2-0.9.6")
+
+    //freamedblock
+    compileOnly fg.deobf("curse.maven:framedblocks-441647:3850130")
+
+    //geckolib
+    implementation fg.deobf('software.bernie.geckolib:geckolib-1.18-forge:3.0.18')
+
+    //JEI
+    compileOnly fg.deobf("mezz.jei:jei-1.18.2:9.7.0.180:api")
+    implementation fg.deobf("mezz.jei:jei-1.18.2:9.7.0.180")
 
     // For more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
