@@ -37,7 +37,7 @@ public class LanguageGenerator extends LanguageProvider {
 //        addItem(ItemLoader.POSITION_CONTAINER_MARKER_2);
 //        addItem(ItemLoader.POSITION_CONTAINER_MARKER_3);
         AdditionType.getTypes().forEach(t ->
-                add("container.artoftnt."+t.toString(), capital(t.toString())));
+                add(t.getTranslation(), capital(t.toString())));
     }
 
     private void addBlock(RegistryObject<Block> b){

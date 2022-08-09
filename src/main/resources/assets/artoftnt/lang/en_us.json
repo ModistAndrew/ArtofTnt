@@ -137,5 +137,13 @@
   "advancements.artoftnt.tnt_draw.title": "Black Hole?",
   "advancements.artoftnt.tnt_draw.description": "Ignite a TNT with Tnt Draw no less than 0.4",
   "advancements.artoftnt.size.title": "Little Busters!",
-  "advancements.artoftnt.size.description": "Ignite a TNT with size no more than 0.25"
+  "advancements.artoftnt.size.description": "Ignite a TNT with size no more than 0.25",
+  "jei.artoftnt.tnt_frame_additions": "TNT Frame Additions",
+  "jei.artoftnt.type": "Type: %s",
+  "jei.artoftnt.increment": "Increment: %f",
+  "jei.artoftnt.minTier": "Min Tier: %d",
+  "jei.artoftnt.maxTier": "Max Tier: %d",
+  "jei.artoftnt.max_count": "Max Count: %d",
+  "jei.artoftnt.weight": "Weight: %f",
+  "jei.artoftnt.instability": "Instability: %f"
 }

@@ -1,10 +1,14 @@
 package modist.artoftnt.common.entity;
 
+import com.lowdragmc.shimmer.client.light.ColorPointLight;
+import com.lowdragmc.shimmer.client.light.LightManager;
+import com.lowdragmc.shimmerfire.block.decorated.ColoredDecorationBlock;
+import com.mojang.math.Vector3f;
 import modist.artoftnt.common.advancements.critereon.IgniteTntFrameTrigger;
 import modist.artoftnt.common.block.TntFrameBlock;
-import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.core.addition.AdditionType;
 import modist.artoftnt.core.addition.InstabilityHelper;
+import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.core.explosion.ExplosionHelper;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameHitBlockEvent;
 import modist.artoftnt.core.explosion.event.PrimedTntFrameTickEvent;
@@ -22,17 +26,24 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Predicate;
 
 public class PrimedTntFrame extends AbstractHurtingProjectile {
+    @OnlyIn(Dist.CLIENT)
+    private ColorPointLight colorPointLight;
     public final int tier;
     private static final EntityDataAccessor<CompoundTag> DATA_TNT_FRAME = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.COMPOUND_TAG);
     private static final EntityDataAccessor<Integer> DATA_LEFT_COUNT = SynchedEntityData.defineId(PrimedTntFrame.class, EntityDataSerializers.INT);
@@ -65,13 +76,13 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
 
     private void setDataTagAndInit(CompoundTag tag) {
         setDataTag(tag);
-        setFuse((int) (data.getValue(AdditionType.FUSE))+1);
+        setFuse((int) (data.getValue(AdditionType.FUSE)) + 1);
         setLeftCount((int) (data.getValue(AdditionType.EXPLOSION_COUNT)));
         setCoolDown(0); //may be overwritten when loaded
         if (data.getValue(AdditionType.LIGHT) > 0) {
             this.setGlowingTag(true);
         }
-        if(data.getValue(AdditionType.NO_PHYSICS) > 0){
+        if (data.getValue(AdditionType.NO_PHYSICS) > 0) {
             this.noPhysics = true; //also client!
         }
     }
@@ -114,7 +125,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         this.zo = z;
         this.setOwner(owner);
         setDataTagAndInit(tag);
-        if(owner instanceof ServerPlayer player){
+        if (owner instanceof ServerPlayer player) {
             IgniteTntFrameTrigger.TRIGGER.trigger(player, this.data);
         }
     }
@@ -125,7 +136,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         if (DATA_TNT_FRAME.equals(pKey)) {
             this.data.deserializeNBT(getDataTag());
             this.refreshDimensions();
-            if(data.getValue(AdditionType.NO_PHYSICS) > 0){
+            if (data.getValue(AdditionType.NO_PHYSICS) > 0) {
                 this.noPhysics = true; //also client!
             }
         }
@@ -151,30 +162,30 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
      */
     @Override
     public void tick() {
-        if(this.getFuse()==(int)(data.getValue(AdditionType.FUSE))+1){ //first tick, play sound
-            this.setFuse(this.getFuse()-1);
-            if(this.level.isClientSide){
+        if (this.getFuse() == (int) (data.getValue(AdditionType.FUSE)) + 1) { //first tick, play sound
+            this.setFuse(this.getFuse() - 1);
+            if (this.level.isClientSide) {
                 float loudness = data.getValue(AdditionType.LOUDNESS);
-                ExplosionResources.TNT_SOUNDS.get(0,tier).ifPresent(t -> level.playLocalSound(this.getX(), this.getY(), this.getZ(), t,
+                ExplosionResources.TNT_SOUNDS.get(0, tier).ifPresent(t -> level.playLocalSound(this.getX(), this.getY(), this.getZ(), t,
                         SoundSource.BLOCKS, loudness, data.additions.sound() ? 1 :
-                        (1.0F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F,
+                                (1.0F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F,
                         false));
             }
             return;
         }
         this.checkOutOfWorld();
-        if(this.onGround) { //have to deal here
+        if (this.onGround) { //have to deal here
             float slipperiness = data.getValue(AdditionType.SLIPPERINESS);
-            this.setDeltaMovement(this.getDeltaMovement().multiply(0.7D+slipperiness, -0.5D, 0.7D+slipperiness));
+            this.setDeltaMovement(this.getDeltaMovement().multiply(0.7D + slipperiness, -0.5D, 0.7D + slipperiness));
         }
         BlockHitResult hitresult1 = getBlockHitResult();
         EntityHitResult hitresult2 = getEntityHitResult(this::canHitEntity);
         HitResult hitresult = hitresult1 == null ? hitresult2 : hitresult1;
-        if(hitresult1!=null) {
+        if (hitresult1 != null) {
             MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitBlockEvent.Pre(this, hitresult1));
         }
         this.move(MoverType.SELF, this.getDeltaMovement());
-        if(hitresult1!=null) {
+        if (hitresult1 != null) {
             MinecraftForge.EVENT_BUS.post(new PrimedTntFrameHitBlockEvent.Post(this, hitresult1));
         }
         if (hitresult != null && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult)) {
@@ -186,7 +197,7 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         if (coolDown >= 0) {
             this.setCoolDown(coolDown); //simply set coolDown
         }
-        if(!data.additions.persistent()) {
+        if (!data.additions.persistent()) {
             int i = this.getFuse() - 1;
             this.setFuse(i);
             if (i <= 0) {
@@ -195,10 +206,66 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
         }
     }
 
+    @OnlyIn(Dist.CLIENT)
+    @Nullable
+    public ColorPointLight getOrCreateLight() {
+        if (colorPointLight == null && this.isAddedToWorld()) { //avoid top rendering
+            float radius = data.additions.getValue(AdditionType.LIGHT);
+            Stack<ItemStack> items = data.additions.getItems(AdditionType.LIGHT);
+            if (radius > 0 && !items.empty()) {
+                int[] color = new int[items.size()];
+                for (int i = 0; i < items.size(); i++) {
+                    if (items.get(i).getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof ColoredDecorationBlock block) {
+                        color[i] = block.color.color;
+                    } else {
+                        color[i] = 16701501; //yellow
+                    }
+                }
+                colorPointLight = LightManager.INSTANCE.addLight(new Vector3f(0, 0, 0), (0xFF << 24) +
+                        blendColor(color), radius + 7);
+            }
+        }
+        return colorPointLight;
+    }
+
+    private int blendColor(int[] colors) {
+        if (colors.length == 0) {
+            return 16701501;
+        }
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        for (int i = 0; i < colors.length; i++) {
+            r += (colors[i] >> 16) & 0xFF;
+            g += (colors[i] >> 8) & 0xFF;
+            b += colors[i] & 0xFF;
+        }
+        int c = colors.length;
+        return (r / c << 16) + (g / c << 8) + b / c;
+    }
+
     @Override
-    public void checkOutOfWorld(){
-        if (this.getY() < (double)(this.level.getMinBuildHeight() - 64) ||
-                (this.data.getValue(AdditionType.LIGHTNESS)>=1 && this.getY() > (double)(this.level.getMaxBuildHeight() + 1024))) {
+    @OnlyIn(Dist.CLIENT)
+    public void onClientRemoval() {
+        if (colorPointLight != null) {
+            colorPointLight.remove();
+        }
+    }
+
+    @Override
+    public void remove(Entity.RemovalReason pReason) {
+        super.remove(pReason);
+        if(this.level.isClientSide){
+            if (colorPointLight != null) {
+                colorPointLight.remove();
+            }
+        }
+    }
+
+        @Override
+    public void checkOutOfWorld() {
+        if (this.getY() < (double) (this.level.getMinBuildHeight() - 64) ||
+                (this.data.getValue(AdditionType.LIGHTNESS) >= 1 && this.getY() > (double) (this.level.getMaxBuildHeight() + 1024))) {
             this.outOfWorld();
         }
     }
@@ -226,8 +293,8 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
 
     @Override
     protected boolean canHitEntity(Entity pTarget) {
-        if(pTarget instanceof PrimedTntFrame frame){
-            return this.getOwner()!=frame.getOwner(); //avoid multi shot
+        if (pTarget instanceof PrimedTntFrame frame) {
+            return this.getOwner() != frame.getOwner(); //avoid multi shot
         }
         return super.canHitEntity(pTarget);
     }
@@ -262,8 +329,8 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
             return;
         }
         if (!this.level.isClientSide) {
-            int random = (int)this.data.getValue(AdditionType.RANDOM)+1;
-            if(this.random.nextInt(random)<1) {
+            int random = (int) this.data.getValue(AdditionType.RANDOM) + 1;
+            if (this.random.nextInt(random) < 1) {
                 this.explode(pos);
             }
         }
@@ -350,10 +417,10 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
     }
 
     public void defuse(boolean shouldFix) {
-            if (!this.level.isClientSide) {
-                this.spawnAtLocation(TntFrameBlock.dropFrame(shouldFix, data));
-            }
-            this.discard();
+        if (!this.level.isClientSide) {
+            this.spawnAtLocation(TntFrameBlock.dropFrame(shouldFix, data));
+        }
+        this.discard();
     }
 
     public void knocked(Entity entity, int amount) {
@@ -362,9 +429,9 @@ public class PrimedTntFrame extends AbstractHurtingProjectile {
             if (!this.level.isClientSide) {
                 Vec3 vec3 = entity.getLookAngle();
                 this.setDeltaMovement(vec3);
-                this.xPower = vec3.x * amount/10D;
-                this.yPower = vec3.y * amount/10D;
-                this.zPower = vec3.z * amount/10D;
+                this.xPower = vec3.x * amount / 10D;
+                this.yPower = vec3.y * amount / 10D;
+                this.zPower = vec3.z * amount / 10D;
             }
         }
     }

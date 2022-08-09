@@ -4,10 +4,12 @@ import modist.artoftnt.ArtofTnt;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Addition {
     public final ResourceLocation name;
@@ -24,11 +26,11 @@ public class Addition {
     public final ResourceLocation resourceLocation;
     private static final Map<Item, Addition> ITEM_MAP = new HashMap<>(); //item 2 addition
     private static final String ADDITION = "tnt_frame_additions/";
-    private static final Addition EMPTY = register(new ResourceLocation(ArtofTnt.MODID, "explosion_effect/empty"), AdditionType.EMPTY,
-            1, 0, 3, 1, 0, 0, true, Items.DEAD_BUSH);
+    public static final Addition EMPTY = register(new ResourceLocation(ArtofTnt.MODID, "explosion_effect/empty"), AdditionType.EMPTY,
+            1, 0, 3, 1, 0, 0, true, Items.DEAD_BUSH, null);
 
     public Addition(ResourceLocation name, AdditionType type, float increment, int minTier, int maxTier,
-                    int maxCount, float weight, float instability, boolean specialRenderer, Item item){
+                    int maxCount, float weight, float instability, boolean specialRenderer, Item item, @Nullable String resource){
         this.item = item;
         this.name = name;
         this.type = type;
@@ -39,7 +41,7 @@ public class Addition {
         this.weight = weight;
         this.instability = instability;
         this.specialRenderer = specialRenderer;
-        this.resourceLocation = new ResourceLocation(name.getNamespace(), ADDITION+name.getPath());
+        this.resourceLocation = new ResourceLocation(name.getNamespace(), resource==null ? ADDITION+name.getPath() : ADDITION+resource);
     }
 
     public ResourceLocation appendIndex(int index){
@@ -48,17 +50,18 @@ public class Addition {
 
     public static void register(ResourceLocation name, AdditionManager.AdditionWrapper wrapper){
         Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(wrapper.item));
-        if((item==null || item== Items.AIR) && ModList.get().isLoaded(name.getNamespace())){
+        if(item==null || item== Items.AIR){
             ArtofTnt.LOGGER.warn("can't find item with id {} for tnt frame addition json {}",
                     wrapper.item, name);
             return;
         }
         register(name, AdditionType.fromString(wrapper.type), wrapper.increment, wrapper.minTier, wrapper.maxTier, wrapper.maxCount, wrapper.weight,
-                wrapper.instability, wrapper.specialRenderer, item);
+                wrapper.instability, wrapper.specialRenderer, item, wrapper.resource);
     }
 
-    public static Addition register(ResourceLocation name, AdditionType type, float increment, int minTier, int maxTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item){
-        Addition addition = new Addition(name, type, increment, minTier, maxTier, maxCount, weight, instability, specialRenderer, item);
+    public static Addition register(ResourceLocation name, AdditionType type, float increment, int minTier,
+                                    int maxTier, int maxCount, float weight, float instability, boolean specialRenderer, Item item, @Nullable String resource){
+        Addition addition = new Addition(name, type, increment, minTier, maxTier, maxCount, weight, instability, specialRenderer, item, resource);
         if(!ITEM_MAP.containsKey(addition.item)) {
             ITEM_MAP.put(addition.item, addition);
         } else {
@@ -67,6 +70,10 @@ public class Addition {
             ITEM_MAP.put(addition.item, addition);
         }
         return addition;
+    }
+
+    public static List<Addition> getAll(){
+        return ITEM_MAP.values().stream().filter(a -> a!=EMPTY).toList(); //hide empty >=)
     }
 
     public static boolean contains(Item item) {

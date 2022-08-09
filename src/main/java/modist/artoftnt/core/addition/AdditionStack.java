@@ -155,7 +155,7 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
             return new AdditionResult(false, getComponent("addition_full", addition.item.getDescriptionId()));
         }
         if(typeCounts.getInt(addition.type) >= addition.type.maxCount){
-            return new AdditionResult(false, getComponent("type_full", "container.artoftnt."+addition.type));
+            return new AdditionResult(false, getComponent("type_full", addition.type.getTranslation()));
         }
         if(slotCounts.getInt(addition.type.slot) >= addition.type.slot.maxCount){
             return new AdditionResult(false, getComponent("slot_full", null, addition.type.slot.name()));
@@ -194,7 +194,7 @@ public class AdditionStack implements INBTSerializable<CompoundTag> {
             MutableComponent mutablecomponent = new TranslatableComponent(PREFIX + "loss");
             for(int i=0; i<loss.size(); i++){
                 AdditionType t = loss.get(i);
-                mutablecomponent.append(new TranslatableComponent("container.artoftnt."+t.toString()));
+                mutablecomponent.append(new TranslatableComponent(t.getTranslation()));
                 if(i!=loss.size()-1) {
                     mutablecomponent.append(", ");
                 }

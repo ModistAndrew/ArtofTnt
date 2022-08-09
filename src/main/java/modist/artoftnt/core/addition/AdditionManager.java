@@ -1,6 +1,8 @@
 package modist.artoftnt.core.addition;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -15,12 +17,13 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.*;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.registries.RegistryBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber
 public class AdditionManager extends SimpleJsonResourceReloadListener implements IForgeRegistryEntry<AdditionManager> {
@@ -103,6 +106,8 @@ public class AdditionManager extends SimpleJsonResourceReloadListener implements
         public float weight;
         public float instability;
         public boolean specialRenderer;
+        @Nullable
+        public String resource;
     }
 
 }

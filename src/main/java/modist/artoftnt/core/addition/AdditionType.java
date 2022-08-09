@@ -82,6 +82,10 @@ public class AdditionType {
         return this.id;
     }
 
+    public String getTranslation(){
+        return TntFrameData.PREFIX+this;
+    }
+
     public static AdditionType fromString(String id){
         return TYPES.getOrDefault(id, EMPTY);
     }

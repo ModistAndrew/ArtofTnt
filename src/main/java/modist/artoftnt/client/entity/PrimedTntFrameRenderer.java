@@ -1,17 +1,19 @@
 package modist.artoftnt.client.entity;
 
+import com.lowdragmc.shimmer.client.light.ColorPointLight;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import modist.artoftnt.client.block.entity.RenderUtil;
-import modist.artoftnt.core.addition.TntFrameData;
 import modist.artoftnt.common.entity.PrimedTntFrame;
 import modist.artoftnt.core.addition.AdditionType;
+import modist.artoftnt.core.addition.TntFrameData;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
@@ -29,6 +31,12 @@ public class PrimedTntFrameRenderer extends EntityRenderer<PrimedTntFrame> {
 
     @Override
     public void render(PrimedTntFrame pEntity, float pEntityYaw, float pPartialTicks, PoseStack pMatrixStack, MultiBufferSource pBuffer, int pPackedLight) {
+        ColorPointLight light = pEntity.getOrCreateLight();
+        Vec3 pos = pEntity.getPosition(pPartialTicks);
+        if (light != null && !light.isRemoved()) {
+            light.setPos((float) pos.x, (float) pos.y, (float) pos.z);
+            light.update();
+        }
         pMatrixStack.pushPose();
         TntFrameData data = new TntFrameData(pEntity.tier, pEntity.getDataTag());
         float r = data.size / 2;

@@ -141,9 +141,9 @@ public class CommonExplosionBlockEventHandler {
             });
             BlockPos.betweenClosedStream(aabb).filter(bp ->
                     explosion.level.getBlockState(bp).isAir() &&
-                            explosion.getPosition().distanceToSqr(Vec3.atCenterOf(bp)) < light * light).map(BlockPos::immutable).forEach(bp -> {
+                            explosion.getPosition().distanceToSqr(Vec3.atCenterOf(bp)) < light).map(BlockPos::immutable).forEach(bp -> {
                 explosion.level.setBlockAndUpdate(bp, BlockLoader.DIMINISHING_LIGHT.get().defaultBlockState().
-                        setValue(DiminishingLightBlock.LEVEL, 15)); //simply use 15 ad ignore strength
+                        setValue(DiminishingLightBlock.LEVEL, 15)); //simply use 15 and ignore strength
             });
         }
     }

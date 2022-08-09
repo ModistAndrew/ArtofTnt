@@ -31,7 +31,7 @@ public class TntFrameData implements INBTSerializable<CompoundTag> {
     //null for no disguise, air for special
     public BlockState disguise;
     public final AdditionStack additions;
-    private static final String PREFIX = "container.artoftnt.";
+    public static final String PREFIX = "container.artoftnt.";
 
     public TntFrameData(int tier) {
         this.tier = tier;

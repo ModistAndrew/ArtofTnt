@@ -1,0 +1,19 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "all": "artoftnt:block/bloom"
+    },
+    "elements": [
+        {   "from": [ 0, 0, 0 ],
+            "to": [ 16, 16, 16 ],
+            "faces": {
+                "down":  { "texture": "#all", "tintindex": 1 },
+                "up":    { "texture": "#all", "tintindex": 1 },
+                "north": { "texture": "#all", "tintindex": 1 },
+                "south": { "texture": "#all", "tintindex": 1 },
+                "west":  { "texture": "#all", "tintindex": 1 },
+                "east":  { "texture": "#all", "tintindex": 1 }
+            }
+        }
+    ]
+}

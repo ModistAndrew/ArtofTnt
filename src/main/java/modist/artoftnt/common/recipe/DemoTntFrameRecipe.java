@@ -15,7 +15,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class DemoTntFrameRecipe extends ShapedRecipe {
+@Deprecated
+public class DemoTntFrameRecipe extends ShapedRecipe { //TODO move to a new machine? or simply remove
     final TntFrameFunctionWrapper function;
 
     public DemoTntFrameRecipe(ResourceLocation pId, String pGroup, int pWidth, int pHeight, NonNullList<Ingredient> pRecipeItems, ItemStack pResult,

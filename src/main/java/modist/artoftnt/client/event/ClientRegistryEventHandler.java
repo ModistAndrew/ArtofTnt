@@ -1,6 +1,7 @@
 package modist.artoftnt.client.event;
 
 import modist.artoftnt.client.block.TextureLoader;
+import modist.artoftnt.client.block.entity.RenderUtil;
 import modist.artoftnt.client.block.entity.TntClonerRenderer;
 import modist.artoftnt.client.block.entity.TntTurretRenderer;
 import modist.artoftnt.client.block.model.RemoteExploderBlockBakedModel;
@@ -57,6 +58,7 @@ public class ClientRegistryEventHandler {
     @SubscribeEvent
     public static void addSpecialModels(ModelRegistryEvent event) {
         Arrays.stream(RemoteExploderBlockBakedModel.MARKER_MODEL_LOCATIONS).forEach(ForgeModelBakery::addSpecialModel);
+        ForgeModelBakery.addSpecialModel(RenderUtil.WHITE_OVERLAY);
         Minecraft.getInstance().getResourceManager().listResources("models/tnt_frame_additions",
                 (f) -> f.endsWith(".json")).stream().map(r -> new ResourceLocation(r.getNamespace(),
                 r.getPath().replace(".json", "").replace("models/", ""))).forEach(ForgeModelBakery::addSpecialModel);
