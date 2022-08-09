@@ -640,6 +640,8 @@
     "minecraft:raw_gold_block",
     "artoftnt:blaze_block",
     "artoftnt:blaze_block_2",
-    "minecraft:potatoes"
+    "minecraft:potatoes",
+    "minecraft:potatoes",
+    "minecraft:grass_block"
   ]
 }

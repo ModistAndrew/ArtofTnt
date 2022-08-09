@@ -56,10 +56,10 @@ public class PrimedTntFrameRenderer extends EntityRenderer<PrimedTntFrame> {
         pMatrixStack.mulPose(Vector3f.YP.rotationDegrees(90.0F));
         pMatrixStack.translate(-d, -d, -d);
         int frequency = 2 + (int)(5*i/data.getValue(AdditionType.FUSE));
-        if(data.getValue(AdditionType.EMPTY)>0 || frequency < 2){
+        if(frequency < 2){
             frequency = 2;
         }
-            RenderUtil.renderTnt(data, pMatrixStack, pBuffer, pPackedLight, (i / frequency) % frequency == 0);
+        RenderUtil.renderTnt(data, pMatrixStack, pBuffer, pPackedLight, data.getValue(AdditionType.EMPTY) > 0 || (i / frequency) % frequency == 0);
         pMatrixStack.popPose();
         super.render(pEntity, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight);
     }
